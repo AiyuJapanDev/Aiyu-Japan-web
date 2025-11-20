@@ -1,0 +1,18 @@
+/* Aller Bold Font - for brand name */
+@font-face {
+  font-family: 'Aller';
+  src: url('https://cdn.jsdelivr.net/gh/webfontworld/daum/Aller-Bold.woff2') format('woff2'),
+       url('https://cdn.jsdelivr.net/gh/webfontworld/daum/Aller-Bold.woff') format('woff');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Aller';
+  src: url('https://cdn.jsdelivr.net/gh/webfontworld/daum/Aller.woff2') format('woff2'),
+       url('https://cdn.jsdelivr.net/gh/webfontworld/daum/Aller.woff') format('woff');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
