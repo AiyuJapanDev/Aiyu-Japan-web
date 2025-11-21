@@ -300,7 +300,7 @@ const Header = () => {
 
           {/* Mobile auth actions */}
           <div className="flex flex-col md:hidden justify-center items-center space-y-2 pb-2">
-            <div className="flex md:hidden justify-center items-center ">
+            <div className="flex md:hidden justify-center items-center mx-auto">
               {user ? (
                 <div className="flex items-center space-x-2">
                   <div className="flex items-center space-x-2">
@@ -326,7 +326,7 @@ const Header = () => {
                   </Button>
                 </div>
               ) : (
-                <div className="space-x-2">
+                <div className="flex gap-2 justify-center items-center flex-wrap">
                   <Link to="/auth" reloadDocument>
                     <Button className="bubble-btn-primary hover-bounce">
                       {t("login")}
@@ -341,7 +341,7 @@ const Header = () => {
               )}
             </div>
             <p
-              className="font-bold"
+              className="font-bold text-center"
               dangerouslySetInnerHTML={{ __html: t("headerParagraph") }} //uses dangerouslySetInnerHTML to render custom html element in translation
             ></p>
           </div>
