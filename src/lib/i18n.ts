@@ -17,7 +17,7 @@ export const translations = {
       "Buy from any <span class='text-red-600'>japanese</span> store!",
 
     // Home Page
-    welcomeTitle: "Welcome to Aiyu Japan",
+    welcomeTitle: "What is Aiyu Japan?",
     subtitle: "Your personal Japanese shopping proxy service",
     heroDescription:
       "Get access to exclusive Japanese products with our reliable proxy shopping service. From anime merchandise to electronics and fashion.",
@@ -861,6 +861,12 @@ export const translations = {
     currency: "Currency",
     logout: "Logout",
     welcome: "Welcome",
+
+    // Blog
+    blog1Title: "Air freight from Japan to Paraguay",
+    blog2Title: "How to use the Aiyu Japan Calculator",
+    blog3Title: "Aiyu Japan Staff Introduction",
+    blog4Title: "Where to buy with Aiyu Japan?",
   },
   es: {
     // Navigation
@@ -878,7 +884,7 @@ export const translations = {
       "¡Compra en cualquier tienda <span class='text-red-600'>japonesa</span>!",
 
     // Home Page
-    welcomeTitle: "Bienvenido a Aiyu Japan",
+    welcomeTitle: "¿Qué es Aiyu Japan?",
     subtitle: "Tu servicio personalizado de compras desde Japón",
     heroDescription:
       "Accede a productos exclusivos japoneses con nuestro servicio confiable. Desde anime merch, electrónicos, figuras y moda — lo conseguimos y lo enviamos directo a tu país.",
@@ -1745,6 +1751,12 @@ export const translations = {
     awaitingPaymentStatus: "Esperando Pago",
     paymentReceivedStatus: "Pago Recibido",
     itemsShipped: "Artículos Enviados",
+
+    // Blog
+    blog1Title: "Envío aéreo desde Japón a Paraguay",
+    blog2Title: "Cómo usar la calculadora de Aiyu Japan",
+    blog3Title: "Presentación del personal de Aiyu Japón",
+    blog4Title: "¿Dónde comprar con Aiyu Japan?",
   },
 };
 

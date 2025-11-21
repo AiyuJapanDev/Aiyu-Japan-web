@@ -1,18 +1,19 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Plus, ShoppingBag } from 'lucide-react';
-import { useApp } from '@/contexts/AppContext';
-import { useAuth } from '@/contexts/useAuth';
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Plus, ShoppingBag } from "lucide-react";
+import { useApp } from "@/contexts/AppContext";
+import { useAuth } from "@/contexts/useAuth";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import YouTubeEmbed from "../ui/youtube-embeded-video";
 
 interface HeroSectionProps {
   title: string;
@@ -29,17 +30,17 @@ const HeroSection = ({
   description,
   showButtons = false,
   showMascot = true,
-  mascotImage = 'MascotBox.png',
+  mascotImage = "MascotBox.png",
 }: HeroSectionProps) => {
   const { t } = useApp();
   const { user, isAdmin } = useAuth();
   const navigate = useNavigate();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [url, setUrl] = useState('');
+  const [url, setUrl] = useState("");
 
   const handleClick = () => {
     if (user && !isAdmin) {
-      navigate('/user-dashboard?tab=submit');
+      navigate("/user-dashboard?tab=submit");
     } else {
       setIsDialogOpen(true);
     }
@@ -47,14 +48,17 @@ const HeroSection = ({
 
   const handleSignIn = () => {
     setIsDialogOpen(false);
-    navigate('/auth');
+    navigate("/auth");
   };
 
   return (
     <section className="relative overflow-hidden animate-fade-in">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="flex flex-col md:grid md:grid-cols-2 md:items-center justify-center text-center md:text-left max-w-5xl mx-auto">
-
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-16">
+        <div
+          className={`${
+            showMascot && "md:grid md:grid-cols-2 md:items-center md:text-left"
+          } flex-col justify-center text-center max-w-5xl mx-auto`}
+        >
           {/* Mascot - Top on mobile, right on desktop */}
           {showMascot && (
             <div className="flex md:hidden justify-center mb-2 -mt-10 animate-scale-in">
@@ -71,13 +75,14 @@ const HeroSection = ({
             <h1 className="text-4xl md:text-5xl font-paytone text-[#3b434d] mb-8 animate-fade-in">
               {title}
             </h1>
-
-            <p className="text-xl md:text-2xl text-gray-700 mb-2 font-medium animate-fade-in">
-              {subtitle}
-            </p>
-            <p className="text-lg text-gray-600 mb-6 animate-fade-in">
-              {description}
-            </p>
+            <div>
+              <YouTubeEmbed
+                videoId="0WErOWz1P5c"
+                title={title}
+                // Optional: Use your own optimized WebP image here
+                thumbnail="/where-to-shop.png"
+              />
+            </div>
 
             {showButtons && (
               <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start animate-scale-in">
@@ -89,7 +94,7 @@ const HeroSection = ({
                 >
                   <Plus className="text-capybara-orange h-5 w-5" />
                   <span className="text-base font-medium text-gray-700">
-                    {t('makeOrderButton')}
+                    {t("makeOrderButton")}
                   </span>
                 </Button>
 
@@ -101,7 +106,7 @@ const HeroSection = ({
                   >
                     <ShoppingBag className="text-capybara-orange h-5 w-5" />
                     <span className="text-base font-medium text-gray-700">
-                      {t('whereToShop')}
+                      {t("whereToShop")}
                     </span>
                   </Button>
                 </Link>
@@ -131,19 +136,19 @@ const HeroSection = ({
           onOpenAutoFocus={(e) => e.preventDefault()}
         >
           <DialogHeader>
-            <DialogTitle>{t('requestProductsTitle')}</DialogTitle>
+            <DialogTitle>{t("requestProductsTitle")}</DialogTitle>
             <DialogDescription>
-              {t('requestProductsDescription')}
+              {t("requestProductsDescription")}
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4 mt-4">
             <div className="space-y-2 p-4 border rounded-lg">
               <div className="flex justify-between items-center mb-2">
-                <Label>{t('productDetails')}</Label>
+                <Label>{t("productDetails")}</Label>
               </div>
               <Input
-                placeholder={t('productUrlPlaceholder')}
+                placeholder={t("productUrlPlaceholder")}
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
                 className="md:col-span-2"
@@ -154,7 +159,7 @@ const HeroSection = ({
               onClick={handleSignIn}
               className="w-full bg-[var(--capybara-orange)] transition-all duration-300 hover:bg-capybara-blue text-white"
             >
-              {t('signInToSubmit')}
+              {t("signInToSubmit")}
             </Button>
           </div>
         </DialogContent>
