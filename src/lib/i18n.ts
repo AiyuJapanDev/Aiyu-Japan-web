@@ -3,6 +3,7 @@ import { intlFormat } from "date-fns";
 export const translations = {
   en: {
     // Navigation
+    newUser: "Are you new to Aiyu Japan?",
     home: "Home",
     services: "Services",
     calculator: "Cost Simulator",
@@ -880,6 +881,7 @@ export const translations = {
   },
   es: {
     // Navigation
+    newUser: "¿Eres Nuevo Usuario?",
     home: "Inicio",
     services: "Servicios",
     calculator: "Estimador de costos",
