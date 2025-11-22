@@ -179,7 +179,7 @@ const FeaturedBlog: React.FC = () => {
             >
               <a
                 href={banner.link}
-                className="relative block w-full h-full"
+                className="relative block w-full h-full transition-transform hover:scale-105"
                 draggable={false}
                 onClick={handleLinkClick} // <--- 2. ATTACH THE BLOCKER HERE
               >

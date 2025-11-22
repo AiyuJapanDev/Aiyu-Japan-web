@@ -52,14 +52,7 @@ const Home = () => {
   return (
     <div className="min-h-screen bg-[url(tile_background.png)] bg-repeat">
       <div className="animate-fade-in">
-        <HeroSection
-          title={t("welcomeTitle")}
-          subtitle={t("subtitle")}
-          description={t("heroDescription")}
-          showButtons={false}
-          showMascot={false}
-          mascotImage="MascotBox.png"
-        />
+        <HeroSection />
       </div>
 
       <AnimatedSection delay={100}>
