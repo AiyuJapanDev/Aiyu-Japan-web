@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/accordion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import FeaturedBlog from "@/components/sections/FeaturedBlog";
+import FeaturedNews from "@/components/sections/FeaturedNews";
 
 const AnimatedSection = ({
   children,
@@ -62,7 +63,10 @@ const Home = () => {
       </div>
 
       <AnimatedSection delay={100}>
-        <FeaturedBlog /> {/* Add the FeaturedBlog component here */}
+        <FeaturedBlog />
+      </AnimatedSection>
+      <AnimatedSection delay={100}>
+        <FeaturedNews />
       </AnimatedSection>
 
       <AnimatedSection delay={100}>

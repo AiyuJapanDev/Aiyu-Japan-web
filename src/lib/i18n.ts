@@ -867,6 +867,14 @@ export const translations = {
     blog2Title: "How to use the Aiyu Japan Calculator",
     blog3Title: "Aiyu Japan Staff Introduction",
     blog4Title: "Where to buy with Aiyu Japan?",
+
+    //News Blog
+    featNewsTitle: "News & Anouncements",
+    featNewsAll: "View All",
+    newsBlog1Title: "New 1",
+    newsBlog2Title: "New 2",
+    newsBlog3Title: "New 3",
+    newsBlog4Title: "New 4",
   },
   es: {
     // Navigation
@@ -1757,6 +1765,14 @@ export const translations = {
     blog2Title: "Cómo usar la calculadora de Aiyu Japan",
     blog3Title: "Presentación del personal de Aiyu Japón",
     blog4Title: "¿Dónde comprar con Aiyu Japan?",
+
+    //News Blog
+    featNewsTitle: "Noticias y Anuncios",
+    featNewsAll: "Ver Todo",
+    newsBlog1Title: "New 1",
+    newsBlog2Title: "New 2",
+    newsBlog3Title: "New 3",
+    newsBlog4Title: "New 4",
   },
 };
 
