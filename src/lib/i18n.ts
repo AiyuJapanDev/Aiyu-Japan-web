@@ -17,10 +17,12 @@ export const translations = {
       "Buy from any <span class='text-red-600'>japanese</span> store!",
 
     // Home Page
-    welcomeTitle: "What is Aiyu Japan?",
-    subtitle: "Your personal Japanese shopping proxy service",
-    heroDescription:
-      "Get access to exclusive Japanese products with our reliable proxy shopping service. From anime merchandise to electronics and fashion.",
+    heroSlide1Title: "From Japan to Your Home Anyday",
+    heroSlide1TitleSubtitle:
+      "Aiyu Japan is passionate about connecting different cultures and building great services.",
+    heroSlide2Title:
+      "Deliver excitement of j-shopping with utmost empathy and responsibility for our customers.",
+    heroSlide2TitleSubtitle: "",
     howItWorks: "How It Works",
     step1Title: "Browse & Request",
     step1Description:
@@ -892,10 +894,12 @@ export const translations = {
       "¡Compra en cualquier tienda <span class='text-red-600'>japonesa</span>!",
 
     // Home Page
-    welcomeTitle: "¿Qué es Aiyu Japan?",
-    subtitle: "Tu servicio personalizado de compras desde Japón",
-    heroDescription:
-      "Accede a productos exclusivos japoneses con nuestro servicio confiable. Desde anime merch, electrónicos, figuras y moda — lo conseguimos y lo enviamos directo a tu país.",
+    heroSlide1Title: "Desde Japón a Tu Casa Cualquier Día",
+    heroSlide1TitleSubtitle:
+      "En Aiyu Japan somos apasionados por conectar diferentes culturas y creado excelentes servicios.",
+    heroSlide2Title:
+      "Ofrecemos la emoción del j-shopping con gran empatía y responsabilidad con nuestros usuarios.",
+    heroSlide2TitleSubtitle: "",
     howItWorks: "Cómo Funciona",
     step1Title: "Navega y Solicita",
     step1Description:
