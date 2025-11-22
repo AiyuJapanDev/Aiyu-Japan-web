@@ -1,7 +1,6 @@
-import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import React, { useState, useEffect, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Plus, ShoppingBag } from "lucide-react";
 import { useApp } from "@/contexts/AppContext";
 import { useAuth } from "@/contexts/useAuth";
 import {
@@ -13,123 +12,149 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import YouTubeEmbed from "../ui/youtube-embeded-video";
+import globeMap from "/global-delivery.png";
 
-interface HeroSectionProps {
+interface SlideData {
+  id: number;
+  bgClass: string;
   title: string;
+  titleColor: string;
   subtitle: string;
-  description: string;
-  showButtons?: boolean;
-  showMascot?: boolean;
-  mascotImage?: string;
+  subtitleColor: string;
+
+  image?: string;
+  CustomVisual?: React.FC;
 }
 
-const HeroSection = ({
-  title,
-  subtitle,
-  description,
-  showButtons = false,
-  showMascot = true,
-  mascotImage = "MascotBox.png",
-}: HeroSectionProps) => {
+// --- MAIN COMPONENT ---
+
+const HeroSection = () => {
   const { t } = useApp();
+  const SLIDES: SlideData[] = [
+    {
+      id: 1,
+      bgClass: "bg-white",
+      title: t("heroSlide1Title"),
+      titleColor: "text-capybara-blue",
+      subtitle: t("heroSlide1TitleSubtitle"),
+      subtitleColor: "text-gray-500",
+      image: globeMap,
+    },
+    {
+      id: 2,
+      bgClass: "bg-capybara-blue",
+      title: t("heroSlide2Title"),
+      titleColor: "text-white",
+      subtitle: "",
+      subtitleColor: "",
+    },
+  ];
+
   const { user, isAdmin } = useAuth();
   const navigate = useNavigate();
+
+  const [currentSlide, setCurrentSlide] = useState(0);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [url, setUrl] = useState("");
 
-  const handleClick = () => {
-    if (user && !isAdmin) {
-      navigate("/user-dashboard?tab=submit");
-    } else {
-      setIsDialogOpen(true);
-    }
+  // Autoplay Logic
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentSlide((prev) => (prev === SLIDES.length - 1 ? 0 : prev + 1));
+    }, 5000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const handleDotClick = (index: number) => {
+    setCurrentSlide(index);
   };
 
+  // Kept your original logic logic
   const handleSignIn = () => {
     setIsDialogOpen(false);
     navigate("/auth");
   };
 
   return (
-    <section className="relative overflow-hidden animate-fade-in">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-16">
-        <div
-          className={`${
-            showMascot && "md:grid md:grid-cols-2 md:items-center md:text-left"
-          } flex-col justify-center text-center max-w-5xl mx-auto`}
-        >
-          {/* Mascot - Top on mobile, right on desktop */}
-          {showMascot && (
-            <div className="flex md:hidden justify-center mb-2 -mt-10 animate-scale-in">
-              <img
-                src={mascotImage}
-                alt="Capybara Mascot"
-                className="w-24 md:w-48"
-              />
-            </div>
-          )}
+    <section className="relative w-full animate-fade-in ">
+      <div className="w-full h-[500px] sm:h-[370px]">
+        <div className="relative group w-full h-full bg-gray-100 overflow-hidden">
+          {/* SLIDER TRACK */}
+          <div
+            className="flex w-full h-full transition-transform duration-700 ease-in-out"
+            style={{ transform: `translateX(-${currentSlide * 100}%)` }}
+          >
+            {SLIDES.map((slide) => (
+              <div key={slide.id} className="min-w-full h-full relative">
+                <div className={`${slide.bgClass} size-full`}>
+                  <div className="relative h-full flex flex-col-reverse sm:flex-row items-center justify-center sm:justify-start py-6 px-8 gap-6 sm:py-0 overflow-hidden sm:mx-auto sm:px-[19px] max-w-[1140px]">
+                    {/* Text Content */}
+                    <div className="flex flex-col gap-6 sm:gap-12 items-center sm:items-start z-10">
+                      <div className="space-y-4 sm:w-[510px] break-words text-center sm:text-left">
+                        <p
+                          className={`${slide.titleColor} font-bold text-[28px] sm:text-[36px] leading-10`}
+                        >
+                          {slide.title}
+                        </p>
+                        {slide.subtitle && (
+                          <p className={`${slide.subtitleColor} text-[16px]`}>
+                            {slide.subtitle}
+                          </p>
+                        )}
+                      </div>
+                      <a href="/login">
+                        <button
+                          type="button"
+                          className={`flex items-center justify-center whitespace-nowrap rounded-3xl font-medium transition-all enabled:active:scale-95 opacity-50 enabled:opacity-100 text-[12px] px-8 h-[44px] border 
+                          bubble-btn-primary`}
+                        >
+                          <span className="font-bold">
+                            Login to use the service
+                          </span>
+                        </button>
+                      </a>
+                    </div>
 
-          {/* Text Content */}
-          <div className="md:order-1">
-            <h1 className="text-4xl md:text-5xl font-paytone text-[#3b434d] mb-8 animate-fade-in">
-              {title}
-            </h1>
-            <div>
-              <YouTubeEmbed
-                videoId="0WErOWz1P5c"
-                title={title}
-                // Optional: Use your own optimized WebP image here
-                thumbnail="/where-to-shop.png"
-              />
-            </div>
-
-            {showButtons && (
-              <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start animate-scale-in">
-                {/* Request Products button */}
-                <Button
-                  onClick={handleClick}
-                  className="flex items-center justify-center gap-2 px-8 py-3 rounded-full border border-capybara-orange/20 bg-white/95 shadow-md 
-                             transition-all duration-300 hover:scale-105 hover:bg-white/80 active:scale-95"
-                >
-                  <Plus className="text-capybara-orange h-5 w-5" />
-                  <span className="text-base font-medium text-gray-700">
-                    {t("makeOrderButton")}
-                  </span>
-                </Button>
-
-                {/* Store Guide button */}
-                <Link to="/store-guide">
-                  <Button
-                    className="flex items-center justify-center gap-2 px-8 py-3 rounded-full border border-capybara-orange/20 bg-white/95 shadow-md 
-                               transition-all duration-300 hover:scale-105 hover:bg-white/80 active:scale-95"
-                  >
-                    <ShoppingBag className="text-capybara-orange h-5 w-5" />
-                    <span className="text-base font-medium text-gray-700">
-                      {t("whereToShop")}
-                    </span>
-                  </Button>
-                </Link>
+                    {/* Visual Content (Image or SVG) */}
+                    {slide.image ? (
+                      <img
+                        src={slide.image}
+                        alt="Banner"
+                        className="sm:absolute sm:top-6 sm:right-5 w-full sm:w-auto" // Added responsive width control
+                      />
+                    ) : (
+                      slide.CustomVisual && (
+                        <div>
+                          <slide.CustomVisual />
+                        </div>
+                      )
+                    )}
+                  </div>
+                </div>
               </div>
-            )}
+            ))}
           </div>
 
-          {/* Mascot - Right on desktop */}
-          {showMascot && (
-            <div className="hidden md:flex order-1 md:order-2 justify-center animate-scale-in">
-              <div className="w-full flex justify-end pr-12 md:pr-16 lg:pr-24 -mt-8">
-                <img
-                  src={mascotImage}
-                  alt="Capybara Mascot"
-                  className="w-48 md:w-56 lg:w-64"
-                />
-              </div>
-            </div>
-          )}
+          {/* NAVIGATION DOTS */}
+          <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex items-center justify-center space-x-2 z-10">
+            {SLIDES.map((_, index) => (
+              <button
+                key={index}
+                type="button"
+                onClick={() => handleDotClick(index)}
+                aria-label={`Go to Slide ${index + 1}`}
+                className={`rounded-full transition-all duration-300 ${
+                  currentSlide === index
+                    ? "w-3 h-3 bg-capybara-blue"
+                    : "w-2 h-2 bg-capybara-blue/50"
+                }`}
+              />
+            ))}
+          </div>
         </div>
       </div>
 
-      {/* Dialog for non-logged-in users */}
+      {/* DIALOG */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent
           className="max-w-2xl max-h-[80vh] overflow-y-auto bg-white rounded-2xl shadow-lg p-6"
@@ -144,14 +169,11 @@ const HeroSection = ({
 
           <div className="space-y-4 mt-4">
             <div className="space-y-2 p-4 border rounded-lg">
-              <div className="flex justify-between items-center mb-2">
-                <Label>{t("productDetails")}</Label>
-              </div>
+              <Label>{t("productDetails")}</Label>
               <Input
                 placeholder={t("productUrlPlaceholder")}
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
-                className="md:col-span-2"
               />
             </div>
 
