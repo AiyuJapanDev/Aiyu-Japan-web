@@ -24,6 +24,8 @@ export const translations = {
     heroSlide2Title:
       "Deliver excitement of j-shopping with utmost empathy and responsibility for our customers.",
     heroSlide2TitleSubtitle: "",
+
+    // How It Works
     howItWorks: "How It Works",
     step1Title: "Browse & Request",
     step1Description:
@@ -115,29 +117,34 @@ export const translations = {
     makeOrder: "Make Order",
 
     // Detailed How It Works
-    howItWorksDetailedTitle: "Steps to shop with Aiyu Japan",
-    step1DetailedTitle: "Send us your product links",
-    step1DetailedDescription:
-      "Send us the links (URLs) of the items you want to buy through any of our social media channels; if you prefer, we also accept a clear image of the product.",
-    step2DetailedTitle: "Wait for the quote",
-    step2DetailedDescription:
-      "We'll verify availability and price, and prepare an electronic receipt with the total cost of your items.",
-    step3DetailedTitle: "Pay for your purchases",
-    step3DetailedDescription:
-      "If you agree with the quote, pay the receipt. We accept credit/debit cards and PayPal.",
-    step4DetailedTitle: "Wait for your products to arrive at our office",
-    step4DetailedDescription:
-      "Your purchases will arrive at our facilities in a few days; we'll notify you by message as soon as we receive them.",
-    step5DetailedTitle: "Plan international shipping",
-    step5DetailedDescription:
-      "When all your items are with us, decide if you want to continue storing them to group more purchases or ship them immediately. (Check our calculator for reference prices per gram).",
-    step6DetailedTitle: "Pay for shipping",
-    step6DetailedDescription:
-      "After weighing and consolidating the products, we'll send you the final receipt for international shipping.",
-    step7DetailedTitle: "Receive your order",
-    step7DetailedDescription:
-      "With our express service, your package arrives in 1 to 2 weeks; economy shipping takes 2 to 3 weeks.",
+    howItWorksDetailedTitle: "How Aiyu Japan Works",
+    howItWorksDetailedDescription1:
+      "Bring a piece of Japan to your home with Aiyu Japan. We help you shop at multiple stores and ship items together, saving on costs. Fast, secure, and simple—Aiyu Japan is your ultimate Japanese shopping companion.",
+    howItWorksDetailedDescription2:
+      "Want to know more? Read our new user guide to learn everything you need to know to start shopping at Aiyu Japan.",
+    newUserLinkBtn: "New user guide",
 
+    step1DetailedTitle: "Step 1 – Find your product",
+    step1DetailedDescription:
+      "Go to your favorite Japanese store (like Uniqlo, Pokémon Center, Animate, or Amazon Japan). When you find something you want, copy the link (URL) of the product page. Example: https://example.com/product123",
+    step2DetailedTitle: "Step 2 – Paste the link in our form",
+    step2DetailedDescription:
+      "Go to our request page: 👉 https://alpha.aiyujapan.com. Youʼll see a form called “Send Product Request”. Paste your product link there — thatʼs how we know exactly what to buy for you!",
+    step3DetailedTitle: "Step 3 – Add quantity",
+    step3DetailedDescription:
+      "In the next box, write how many units you want (for example: 1, 2, or 3).",
+    step4DetailedTitle: "Step 4 – Add a name or label (optional)",
+    step4DetailedDescription:
+      "You can give your order a short name — for example: “Pikachu figure” or “One Piece T-shirt”. This helps you identify it later inside your dashboard.",
+    step5DetailedTitle: "Step 5 – Write a note (optional)",
+    step5DetailedDescription:
+      "If you have special details, like a size, color, or comment, write it here. Example: “Size M, blue color, please choose from official store only.”",
+    step6DetailedTitle: "Step 6 – Add more products",
+    step6DetailedDescription:
+      "Want more items? Just click “Add Another Product.” You can add as many links as you want — each one becomes part of your order.",
+    step7DetailedTitle: "Step 7 – Submit your request",
+    step7DetailedDescription:
+      "When youʼre ready, click “Send Request.” Our team will check your products, confirm availability, and send you a payment link. Once payment is complete, weʼll buy everything for you!",
     // Why Choose Section
     whyChooseTitle: "Why choose Aiyu Japan?",
     whyChooseSubtitle:
@@ -902,6 +909,8 @@ export const translations = {
     heroSlide2Title:
       "Ofrecemos la emoción del j-shopping con gran empatía y responsabilidad con nuestros usuarios.",
     heroSlide2TitleSubtitle: "",
+
+    //How It works
     howItWorks: "Cómo Funciona",
     step1Title: "Navega y Solicita",
     step1Description:
@@ -994,29 +1003,34 @@ export const translations = {
     makeOrder: "Realizar Pedido",
 
     // Detailed How It Works
-    howItWorksDetailedTitle: "Pasos para comprar con Aiyu Japan",
-    step1DetailedTitle: "Envíanos los enlaces de tus productos",
-    step1DetailedDescription:
-      "Mándanos por cualquiera de nuestras redes sociales los enlaces (URL) de los artículos que deseas comprar; si lo prefieres, también aceptamos una imagen clara del producto.",
-    step2DetailedTitle: "Espera la cotización",
-    step2DetailedDescription:
-      "Verificaremos disponibilidad y precio, y prepararemos un recibo electrónico con el costo total de tus artículos.",
-    step3DetailedTitle: "Paga tus compras",
-    step3DetailedDescription:
-      "Si estás de acuerdo con la cotización, abona el recibo. Aceptamos tarjetas de crédito/débito y PayPal.",
-    step4DetailedTitle: "Espera la llegada de tus productos a nuestra oficina",
-    step4DetailedDescription:
-      "Tus compras llegarán a nuestras instalaciones en pocos días; te avisaremos por mensaje apenas las recibamos.",
-    step5DetailedTitle: "Planifica el envío internacional",
-    step5DetailedDescription:
-      "Cuando todos tus artículos estén con nosotros, decide si deseas seguir almacenándolos para agrupar más compras o enviarlos de inmediato. (Consulta nuestra calculadora para precios de referencia por gramo).",
-    step6DetailedTitle: "Paga el envío",
-    step6DetailedDescription:
-      "Tras pesar y consolidar los productos, te enviaremos el recibo final correspondiente al envío internacional.",
-    step7DetailedTitle: "Recibe tu pedido",
-    step7DetailedDescription:
-      "Con nuestro servicio exprés, tu paquete llega entre 1 y 2 semanas; el envío económico tarda de 2 a 3 semanas.",
+    howItWorksDetailedTitle: "Así funciona Aiyu Japan",
+    howItWorksDetailedDescription1:
+      "Trae una parte de Japón 1 tu hogar con Aiyu japan. Te ayudamos a comprar en múltiples tiendas y enviar los artículos juntos, ahorrando en costos. Rápido, seguro y sencillo—Aiyu Japan es tu compañero de compras japonés definitivo.",
+    howItWorksDetailedDescription2:
+      "¿Quieres saber más? Lee nuestra guía para nuevos usuarios para aprender todo lo que necesitas saber para comenzar a comprar en Neokyo.",
+    newUserLinkBtn: "Guía para nuevos usuarios",
 
+    step1DetailedTitle: "Paso 1  Encuentra tu producto",
+    step1DetailedDescription:
+      "Ve a tu tienda japonesa favorita (como Uniqlo, Pokémon Center, Animate o Amazon Japan). Cuando encuentres algo que quieras, copia el enlace (URL) de la página del producto. Ejemplo: https://example.com/product123",
+    step2DetailedTitle: "Paso 2 – Pega el enlace en nuestro formulario",
+    step2DetailedDescription:
+      "Ve a nuestra página de solicitud: 👉 https://alpha.aiyujapan.com. Verás un formulario llamado “Enviar Solicitud de Producto”. Pega el enlace de tu producto allí — ¡así sabremos exactamente qué comprar para ti!",
+    step3DetailedTitle: "Paso 3 – Agrega la cantidad",
+    step3DetailedDescription:
+      "En la siguiente casilla, escribe cuántas unidades deseas (por ejemplo: 1, 2 o 3).",
+    step4DetailedTitle: "Paso 4 – Agrega un nombre o etiqueta (opcional)",
+    step4DetailedDescription:
+      "Puedes darle a tu pedido un nombre corto — por ejemplo: “Figura de Pikachu” o “Camiseta de One Piece”. Esto te ayudará a identificarlo más tarde dentro de tu panel.",
+    step5DetailedTitle: "Paso 5 – Escribe una nota (opcional)",
+    step5DetailedDescription:
+      "Si tienes detalles especiales, como una talla, color o comentario, escríbelo aquí. Ejemplo: “Talla M, color azul, por favor elegir solo de tienda oficial”.",
+    step6DetailedTitle: "Paso 6 – Agrega más productos",
+    step6DetailedDescription:
+      "¿Quieres más artículos? Simplemente haz clic en “Agregar otro producto”. Puedes agregar tantos enlaces como desees — cada uno formará parte de tu pedido.",
+    step7DetailedTitle: "Paso 7 – Envía tu solicitud",
+    step7DetailedDescription:
+      "Cuando estés listo, haz clic en “Enviar solicitud”. Nuestro equipo revisará tus productos, confirmará la disponibilidad y te enviará un enlace de pago. ¡Una vez completado el pago, compraremos todo para ti!",
     // Why Choose Section
     whyChooseTitle: "¿Por qué elegir a Aiyu Japan?",
     whyChooseSubtitle:

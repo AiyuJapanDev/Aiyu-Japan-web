@@ -17,6 +17,8 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import FeaturedBlog from "@/components/sections/FeaturedBlog";
 import FeaturedNews from "@/components/sections/FeaturedNews";
+import HowItWorks from "@/components/sections/HowItWorksSection";
+import RecommendedStoresSection from "@/components/sections/RecommendedStoresSection";
 
 const AnimatedSection = ({
   children,
@@ -58,20 +60,17 @@ const Home = () => {
       <AnimatedSection delay={100}>
         <FeaturedBlog />
       </AnimatedSection>
+
       <AnimatedSection delay={100}>
         <FeaturedNews />
       </AnimatedSection>
 
       <AnimatedSection delay={100}>
-        <DetailedHowItWorks />
-      </AnimatedSection>
-
-      <AnimatedSection delay={200}>
-        <WhyChooseSection />
+        <HowItWorks />
       </AnimatedSection>
 
       <AnimatedSection delay={100}>
-        <AdditionalServices />
+        <RecommendedStoresSection />
       </AnimatedSection>
 
       <AnimatedSection delay={150}>
