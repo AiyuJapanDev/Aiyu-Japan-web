@@ -162,6 +162,11 @@ export const translations = {
     reason4Description:
       "From Japan directly to your door. We reach Europe, North America and most of South America!",
 
+    //Recommended stores section
+    recommendedStoresTitle: "Recommended Sites",
+    recommendedStoresDescription:
+      "Get full access to the most popular Japanese online shops and individual sellers",
+
     // Hero Section Buttons
     makeOrderButton: "Make Order",
     whereToShop: "Where To Shop",
@@ -1047,6 +1052,11 @@ export const translations = {
     reason4Title: "ENVIOS A TODO EL MUNDO",
     reason4Description:
       "Desde Japón directo a tu puerta. Llegamos a Europa, Norte America y la gran mayoria de Sur America!",
+
+    //Recommended stores section
+    recommendedStoresTitle: "Tiendas Recomendadas",
+    recommendedStoresDescription:
+      "Compra de las tiendas más populares de Japón y de vendedores individuales.",
 
     // Hero Section Buttons
     makeOrderButton: "Realizar Pedido",
