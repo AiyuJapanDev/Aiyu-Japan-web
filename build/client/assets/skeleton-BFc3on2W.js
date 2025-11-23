@@ -1,0 +1,1 @@
+import{p as m}from"./chunk-4WY6JWTD-CQ2BrMui.js";import{c as o}from"./utils-CDN07tui.js";function n({className:e,...t}){return m.jsx("div",{className:o("animate-pulse rounded-md bg-muted",e),...t})}export{n as S};
