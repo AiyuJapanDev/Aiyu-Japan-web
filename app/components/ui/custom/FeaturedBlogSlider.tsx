@@ -123,11 +123,11 @@ const FeaturedBlogSlider: React.FC = () => {
   else if (itemCount === 4) gridColsClass = "md:grid-cols-4";
 
   return (
-    <section className="max-w-6xl mx-auto">
+    <section className="max-w-6xl mx-auto px-4 xl:px-0">
       {/* --- MOBILE VIEW (Centered Infinite Slider) --- */}
-      <div className="md:hidden w-full overflow-hidden relative cursor-grab active:cursor-grabbing touch-pan-y">
+      <div className="md:hidden w-full overflow-hidden pb-6 relative cursor-grab active:cursor-grabbing touch-pan-y">
         <div
-          className="flex w-full"
+          className="flex w-full "
           onTransitionEnd={handleTransitionEnd}
           // Drag Events
           onMouseDown={handleDragStart}
@@ -147,14 +147,14 @@ const FeaturedBlogSlider: React.FC = () => {
           {SLIDER_DATA.map((blog, index) => (
             <div
               key={`${blog.id}-${index}`}
-              className="flex-shrink-0 px-2"
+              className="flex-shrink-0 px-2 "
               style={{ width: `${ITEM_WIDTH_PERCENT}%` }}
             >
               <a
                 href={blog.link}
                 draggable={false}
                 onClick={(e) => hasMoved && e.preventDefault()}
-                className="block w-full aspect-video overflow-hidden rounded-xl shadow-md relative group"
+                className="block w-full aspect-video overflow-hidden rounded-xl shadow-lg relative group"
               >
                 <img
                   src={blog.image}
@@ -171,13 +171,13 @@ const FeaturedBlogSlider: React.FC = () => {
 
       {/* --- DESKTOP VIEW (Dynamic Grid with Clip) --- */}
 
-      <div className="hidden md:block w-full max-w-7xl mx-auto overflow-hidden">
+      <div className="hidden md:block w-full max-w-7xl mx-auto ">
         <div className={`grid ${gridColsClass} gap-4`}>
           {BLOG_DATA.map((blog) => (
             <a
               key={blog.id}
               href={blog.link}
-              className="block w-full aspect-video overflow-hidden rounded-xl shadow-md transition-transform hover:scale-105 hover:shadow-lg"
+              className="block w-full aspect-video overflow-hidden rounded-xl shadow-lg transition-transform hover:scale-105 hover:shadow-lg"
             >
               <img
                 src={blog.image}

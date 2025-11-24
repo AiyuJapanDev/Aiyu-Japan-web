@@ -1,7 +1,7 @@
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Search, Calculator, CreditCard, Clock, Truck, DollarSign, Package } from 'lucide-react';
+import { Search, Calculator, CreditCard, Clock, Truck, DollarSign, Package, CloudCog } from 'lucide-react';
 import { useIntersectionObserver } from '@/hooks/useIntersectionObserver';
 import { useApp } from '@/contexts/AppContext';
 
@@ -65,6 +65,8 @@ const DetailedHowItWorks = () => {
     const { ref, hasIntersected } = useIntersectionObserver();
     const IconComponent = step.icon;
     const isEven = index % 2 === 0;
+
+    console.log("Element "+index+" intersected: "+hasIntersected);
     
     return (
       <div 

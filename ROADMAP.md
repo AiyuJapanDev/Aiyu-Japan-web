@@ -27,10 +27,10 @@ Las tareas están organizadas en **3 fases** según urgencia e impacto en la exp
 - `app/components/admin/*`
 
 **Verificación:**
-- [ ] Dashboard de usuario renderiza correctamente
-- [ ] Dashboard de admin renderiza correctamente
-- [ ] Todos los botones son clickeables
-- [ ] Cards y layouts responsive funcionan
+- [✅] Dashboard de usuario renderiza correctamente
+- [✅] Dashboard de admin renderiza correctamente
+- [✅] Todos los botones son clickeables
+- [✅] Cards y layouts responsive funcionan
 
 ---
 
@@ -49,9 +49,9 @@ Las tareas están organizadas en **3 fases** según urgencia e impacto en la exp
 - `app/index.css` (si se necesitan estilos custom)
 
 **Verificación:**
-- [ ] Botón visible en todos los fondos
-- [ ] Contraste adecuado (WCAG AA)
-- [ ] Funciona en mobile y desktop
+- [✅] Botón visible en todos los fondos
+- [✅] Contraste adecuado (WCAG AA)
+- [✅] Funciona en mobile y desktop
 
 ---
 
@@ -70,9 +70,9 @@ Las tareas están organizadas en **3 fases** según urgencia e impacto en la exp
 - Todos los componentes de UI
 
 **Verificación:**
-- [ ] Cards tienen sombra sutil
+- [✅] Cards tienen sombra sutil
 - [ ] Botones tienen sombra en hover
-- [ ] Elementos elevados tienen más sombra
+- [✅] Elementos elevados tienen más sombra
 - [ ] Consistencia en toda la app
 
 ---

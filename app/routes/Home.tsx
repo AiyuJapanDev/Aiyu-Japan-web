@@ -5,6 +5,8 @@ import FeaturedNews from "@/components/sections/FeaturedNews";
 import HeroSection from "@/components/sections/HeroSection";
 import HowItWorks from "@/components/sections/HowItWorksSection";
 import RecommendedStoresSection from "@/components/sections/RecommendedStoresSection";
+import ServiceFeatures from "@/components/sections/ServiceFeatures";
+import SimpleHowItWorks from "@/components/sections/SimpleHowItWorks";
 import SocialMediaSection from "@/components/sections/SocialMediaSection";
 import {
   Accordion,
@@ -64,7 +66,11 @@ const Home = () => {
       </AnimatedSection>
 
       <AnimatedSection delay={300}>
-        <HowItWorks />
+        <SimpleHowItWorks />
+      </AnimatedSection>
+      
+      <AnimatedSection delay={300}>
+        <ServiceFeatures />
       </AnimatedSection>
 
       <AnimatedSection delay={400}>
