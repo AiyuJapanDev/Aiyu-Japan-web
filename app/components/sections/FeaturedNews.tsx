@@ -42,7 +42,7 @@ const FeaturedNews = () => {
 
   return (
     <section className="py-10 px-4">
-      <div className="p-4 w-full drop-shadow-md text-blue-800 bg-white rounded-lg max-w-3xl mx-auto space-y-2">
+      <div className="p-4 w-full shadow-lg text-blue-800 bg-white rounded-lg max-w-3xl mx-auto space-y-2">
         <div className="flex justify-between">
           <div className=" inline-flex gap-2 items-center ">
             <Newspaper size={16} />

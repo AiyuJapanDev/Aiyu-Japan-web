@@ -56,17 +56,93 @@ const HeroSection = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [url, setUrl] = useState("");
+  
+  // Drag/Swipe state
+  const [isDragging, setIsDragging] = useState(false);
+  const [startX, setStartX] = useState(0);
+  const [currentX, setCurrentX] = useState(0);
+  const [dragOffset, setDragOffset] = useState(0);
 
   // Autoplay Logic
   useEffect(() => {
+    if (isDragging) return; // Pause autoplay while dragging
+    
     const timer = setInterval(() => {
       setCurrentSlide((prev) => (prev === SLIDES.length - 1 ? 0 : prev + 1));
     }, 5000);
     return () => clearInterval(timer);
-  }, []);
+  }, [isDragging]);
 
   const handleDotClick = (index: number) => {
     setCurrentSlide(index);
+  };
+
+  // Drag handlers
+  const handleDragStart = (clientX: number) => {
+    setIsDragging(true);
+    setStartX(clientX);
+    setCurrentX(clientX);
+  };
+
+  const handleDragMove = (clientX: number) => {
+    if (!isDragging) return;
+    setCurrentX(clientX);
+    const diff = clientX - startX;
+    setDragOffset(diff);
+  };
+
+  const handleDragEnd = () => {
+    if (!isDragging) return;
+    
+    const diff = currentX - startX;
+    const threshold = 50; // Minimum drag distance to trigger slide change
+
+    if (Math.abs(diff) > threshold) {
+      if (diff > 0 && currentSlide > 0) {
+        // Dragged right, go to previous slide
+        setCurrentSlide(currentSlide - 1);
+      } else if (diff < 0 && currentSlide < SLIDES.length - 1) {
+        // Dragged left, go to next slide
+        setCurrentSlide(currentSlide + 1);
+      }
+    }
+
+    setIsDragging(false);
+    setDragOffset(0);
+    setStartX(0);
+    setCurrentX(0);
+  };
+
+  // Mouse events
+  const handleMouseDown = (e: React.MouseEvent) => {
+    handleDragStart(e.clientX);
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    handleDragMove(e.clientX);
+  };
+
+  const handleMouseUp = () => {
+    handleDragEnd();
+  };
+
+  const handleMouseLeave = () => {
+    if (isDragging) {
+      handleDragEnd();
+    }
+  };
+
+  // Touch events
+  const handleTouchStart = (e: React.TouchEvent) => {
+    handleDragStart(e.touches[0].clientX);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    handleDragMove(e.touches[0].clientX);
+  };
+
+  const handleTouchEnd = () => {
+    handleDragEnd();
   };
 
   // Kept your original logic logic
@@ -78,11 +154,23 @@ const HeroSection = () => {
   return (
     <section className="relative w-full animate-fade-in ">
       <div className="w-full h-[500px] sm:h-[370px]">
-        <div className="relative group w-full h-full bg-gray-100 overflow-hidden">
+        <div 
+          className="relative group w-full h-full bg-gray-100 overflow-hidden cursor-grab active:cursor-grabbing"
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+          onMouseLeave={handleMouseLeave}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+        >
           {/* SLIDER TRACK */}
           <div
-            className="flex w-full h-full transition-transform duration-700 ease-in-out"
-            style={{ transform: `translateX(-${currentSlide * 100}%)` }}
+            className={`flex w-full h-full ${isDragging ? 'transition-none' : 'transition-transform duration-700 ease-in-out'}`}
+            style={{ 
+              transform: `translateX(calc(-${currentSlide * 100}% + ${dragOffset}px))`,
+              userSelect: 'none'
+            }}
           >
             {SLIDES.map((slide) => (
               <div key={slide.id} className="min-w-full h-full relative">
@@ -145,8 +233,8 @@ const HeroSection = () => {
                 aria-label={`Go to Slide ${index + 1}`}
                 className={`rounded-full transition-all duration-300 ${
                   currentSlide === index
-                    ? "w-3 h-3 bg-capybara-blue"
-                    : "w-2 h-2 bg-capybara-blue/50"
+                    ? "w-3 h-3 bg-capybara-blue border-2 border-white"
+                    : "w-2 h-2 bg-capybara-blue/50 border-2 border-white"
                 }`}
               />
             ))}

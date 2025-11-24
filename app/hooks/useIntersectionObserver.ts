@@ -5,6 +5,7 @@ export const useIntersectionObserver = (options?: IntersectionObserverInit) => {
   const [isIntersecting, setIsIntersecting] = useState(false);
   const [hasIntersected, setHasIntersected] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const hasIntersectedRef = useRef(false);
 
   useEffect(() => {
     const element = ref.current;
@@ -13,13 +14,14 @@ export const useIntersectionObserver = (options?: IntersectionObserverInit) => {
     const observer = new IntersectionObserver(
       ([entry]) => {
         setIsIntersecting(entry.isIntersecting);
-        if (entry.isIntersecting && !hasIntersected) {
+        if (entry.isIntersecting && !hasIntersectedRef.current) {
+          hasIntersectedRef.current = true;
           setHasIntersected(true);
         }
       },
       {
-        threshold: 0.01,
-        rootMargin: '-50px 0px',
+        threshold: 0.1,
+        rootMargin: '0px 0px -100px 0px',
         ...options,
       }
     );
@@ -27,9 +29,12 @@ export const useIntersectionObserver = (options?: IntersectionObserverInit) => {
     observer.observe(element);
 
     return () => {
-      observer.unobserve(element);
+      if (element) {
+        observer.unobserve(element);
+      }
+      observer.disconnect();
     };
-  }, [hasIntersected, options]);
+  }, []); // Empty dependency array - only run once
 
   return { ref, isIntersecting, hasIntersected };
 };

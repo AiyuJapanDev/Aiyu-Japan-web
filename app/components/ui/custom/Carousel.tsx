@@ -142,9 +142,9 @@ const FeaturedBlog: React.FC = () => {
   };
 
   return (
-    <div className="w-full max-w-6xl mx-auto">
+    <div className="w-full max-w-6xl mx-auto rounded-xl overflow-hidden shadow-xl">
       <div
-        className="w-full overflow-hidden shadow-2xl group cursor-grab active:cursor-grabbing select-none relative"
+        className="w-full overflow-hidden  group cursor-grab active:cursor-grabbing select-none relative"
         onMouseEnter={() => setIsPaused(true)}
         onMouseLeave={() => {
           setIsPaused(false);
