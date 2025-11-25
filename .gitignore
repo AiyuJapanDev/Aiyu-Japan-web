@@ -22,3 +22,9 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# React Router Types
+.react-router/
+
+# Build files
+build/
