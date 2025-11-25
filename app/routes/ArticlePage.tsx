@@ -1,4 +1,5 @@
-import { Route } from ".react-router/types/app/routes/+types/Article";
+import { Route } from ".react-router/types/app/routes/+types/ArticlePage";
+
 import { getBlogArticle } from "@/lib/strapi";
 import {
   ArticleBlock,
@@ -13,7 +14,7 @@ import { Link } from "react-router";
 import { ArrowLeft, Calendar, Clock, Quote } from "lucide-react";
 
 export async function loader({ params }: Route.LoaderArgs) {
-  const article = await getBlogArticle(params.blogSlug);
+  const article = await getBlogArticle(params.blogSlug, params.lang);
   if (!article) {
     throw new Response("Not Found", { status: 404 });
   }

@@ -2,7 +2,7 @@
 
 import { useApp } from "@/contexts/AppContext";
 import { getArticleNews } from "@/lib/strapi";
-import { NewsEntry } from "@/types/blog";
+import { Article } from "@/types/blog";
 import { Clock, MoveRight, Newspaper } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link } from "react-router";
@@ -11,12 +11,12 @@ const FeaturedNews = () => {
   const { t, language } = useApp();
 
   // Sample blog entries
-  const [newsData, setNewsData] = useState<NewsEntry[]>([]);
+  const [newsData, setNewsData] = useState<Article[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     setLoading(true);
-    getArticleNews(language)
+    getArticleNews({ language })
       .then((data) => {
         setNewsData(data);
       })
@@ -53,7 +53,7 @@ const FeaturedNews = () => {
             {newsData.map((entry) => (
               <Link
                 key={entry.id}
-                to={`${language}/blog/${entry.slug}`}
+                to={`/blog/${language}/${entry.slug}`}
                 className="flex flex-col transition-transform transform hover:translate-x-1"
               >
                 <span className="text-black inline-flex gap-2 items-center">
@@ -62,7 +62,7 @@ const FeaturedNews = () => {
                     month: "short",
                     day: "numeric",
                     year: "numeric",
-                  }).format(new Date(entry.publishedAt))}
+                  }).format(new Date(entry.createdAt))}
                 </span>
                 <p>{entry.title}</p>
               </Link>

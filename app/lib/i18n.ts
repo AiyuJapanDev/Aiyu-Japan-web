@@ -1,5 +1,5 @@
 import { intlFormat } from "date-fns";
-
+export const supportedLocales = ["en", "es"];
 export const translations = {
   en: {
     // Navigation

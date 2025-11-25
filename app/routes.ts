@@ -15,6 +15,6 @@ export default [
   route("contact", "routes/Contact.tsx"),
   route("terms-of-service", "routes/TermsOfService.tsx"),
   route("privacy-policy", "routes/PrivacyPolicy.tsx"),
-
-  route("/:lang?/blog/:blogSlug", "routes/ArticlePage.tsx"),
+  route("/:lang/blog", "routes/Blog.tsx"),
+  route("/:lang/blog/:blogSlug", "routes/ArticlePage.tsx"),
 ] satisfies RouteConfig;

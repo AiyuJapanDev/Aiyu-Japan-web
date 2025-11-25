@@ -1,4 +1,4 @@
-import { NewsEntry } from "@/types/blog";
+import { Article } from "@/types/blog";
 
 const STRAPI_URL = import.meta.env.VITE_STRAPI_URL || "http://localhost:1337";
 
@@ -68,28 +68,31 @@ async function strapiFetchAPI<T>(
   }
 }
 
-const getAllBlogArticles = async (): Promise<NewsEntry[]> => {
-  const data = await strapiFetchAPI<StrapiResponse<NewsEntry[]>>(
+const getAllBlogArticles = async (): Promise<Article[]> => {
+  const data = await strapiFetchAPI<StrapiResponse<Article[]>>(
     `/api/articles?locale=*&filters[category][name][$eq]=news`
   );
   return data.data;
 };
 
-const getBlogArticle = async (slug: string): Promise<NewsEntry | undefined> => {
-  const docId = await strapiFetchAPI<StrapiResponse<NewsEntry[]>>(
+const getBlogArticle = async (
+  slug: string,
+  language: string
+): Promise<Article | undefined> => {
+  const docId = await strapiFetchAPI<StrapiResponse<Article[]>>(
     `/api/articles?locale=*&filters[slug][$eq]=${slug}`
   ).then((res) => {
     return res.data[0].documentId;
   });
 
-  const data = await strapiFetchAPI<StrapiResponse<NewsEntry>>(
-    `/api/articles/${docId}?populate=*`
+  const data = await strapiFetchAPI<StrapiResponse<Article>>(
+    `/api/articles/${docId}?locale=${language}`
   );
 
   return data.data;
 };
-const getFeaturedBlogArticles = async (): Promise<NewsEntry[] | undefined> => {
-  const data = await strapiFetchAPI<StrapiResponse<NewsEntry[]>>(
+const getFeaturedBlogArticles = async (): Promise<Article[] | undefined> => {
+  const data = await strapiFetchAPI<StrapiResponse<Article[]>>(
     `/api/articles?locale=*&filters[featured][$eq]=true&populate[0]=cover`
   );
 
@@ -108,9 +111,23 @@ const getHomeBannerCarousel = async () => {
   return data.data.carousell;
 };
 
-const getArticleNews = async (language: string) => {
-  const data = await strapiFetchAPI<StrapiResponse<any>>(
-    `/api/articles?locale=${language}&filters[category][name][$eq]=news`
+/* Gets the last 5 news article by its date of creation in descending order */
+const getArticleNews = async ({
+  language,
+  limit = 5,
+}: {
+  language: string;
+  limit?: number;
+}) => {
+  const data = await strapiFetchAPI<StrapiResponse<Article[]>>(
+    `/api/articles?locale=${language}&filters[category][name][$eq]=news&sort=createdAt:desc&agination[page]=1&pagination[pageSize]=${limit}`
+  );
+  return data.data;
+};
+
+const getBlogPosts = async (locale: string = "*"): Promise<Article[]> => {
+  const data = await strapiFetchAPI<StrapiResponse<Article[]>>(
+    `/api/articles?locale=${locale}&sort[0]=publishedAt:desc&populate[cover][fields][0]=url&populate[cover][fields][1]=alternativeText&populate[cover][fields][2]=width&populate[cover][fields][3]=height&populate[author][fields][0]=name&populate[category][fields][0]=name`
   );
   return data.data;
 };
@@ -121,5 +138,6 @@ export {
   getHomeBannerCarousel,
   getArticleNews,
   getFeaturedBlogArticles,
+  getBlogPosts,
   StrapiError,
 };
