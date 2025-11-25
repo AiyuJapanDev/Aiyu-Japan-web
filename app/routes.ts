@@ -12,8 +12,9 @@ export default [
   route("dashboard", "routes/Dashboard.tsx"),
   route("user-dashboard", "routes/UserDashboard.tsx"),
   route("admin-dashboard", "routes/AdminDashboard.tsx"),
-  route("edit-order/:orderId", "routes/EditOrder.tsx"),
   route("contact", "routes/Contact.tsx"),
   route("terms-of-service", "routes/TermsOfService.tsx"),
   route("privacy-policy", "routes/PrivacyPolicy.tsx"),
+
+  route("/:lang?/blog/:blogSlug", "routes/Article.tsx"),
 ] satisfies RouteConfig;
