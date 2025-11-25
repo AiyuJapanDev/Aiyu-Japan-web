@@ -86,7 +86,7 @@ const getBlogArticle = async (
   });
 
   const data = await strapiFetchAPI<StrapiResponse<Article>>(
-    `/api/articles/${docId}?locale=${language}`
+    `/api/articles/${docId}?locale=${language}&populate=*`
   );
 
   return data.data;

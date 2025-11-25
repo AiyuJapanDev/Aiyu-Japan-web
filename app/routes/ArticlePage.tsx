@@ -107,6 +107,8 @@ function BlockRenderer({ block }: { block: ArticleBlock }) {
 }
 
 export default function ArticlePage({ loaderData }: Route.ComponentProps) {
+  if (!loaderData) return null;
+
   const {
     title,
     description,
