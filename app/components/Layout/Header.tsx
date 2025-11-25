@@ -12,6 +12,7 @@ import {
   ChevronDown,
   Bell,
   Calculator,
+  CloudCog,
 } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import {
@@ -21,6 +22,15 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useNotifications } from "@/hooks/useNotifications";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../ui/select";
+import MyAccountMenu from "../ui/custom/MyAccountMenu";
+import LogOutBtn from "../ui/custom/LogOutBtn";
 
 const Header = () => {
   const { language, setLanguage, t } = useApp();
@@ -33,7 +43,7 @@ const Header = () => {
   // Utility for display name
   const displayName = profile?.full_name?.trim()
     ? profile?.full_name
-    : user?.email ?? "";
+    : (user?.email ?? "");
 
   // Scroll to top when location changes
   useEffect(() => {
@@ -44,11 +54,18 @@ const Header = () => {
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as Node;
-      // Ignore clicks on the toggle button itself
+      const targetElement = target as HTMLElement;
+
+      // Ignore clicks on:
+      // 1. The toggle button itself
+      // 2. Radix UI Select dropdown (rendered in portal)
       if (
         mobileMenuRef.current &&
         !mobileMenuRef.current.contains(target) &&
-        !(target as HTMLElement).closest("#mobileMenuToggle")
+        !targetElement.closest("#mobileMenuToggle") &&
+        !targetElement.closest('[role="listbox"]') &&
+        !targetElement.closest("[data-radix-select-viewport]") &&
+        !targetElement.closest("[data-radix-select-content]")
       ) {
         setIsMobileMenuOpen(false);
       }
@@ -67,10 +84,6 @@ const Header = () => {
   useEffect(() => {
     setIsMobileMenuOpen(false);
   }, [location.pathname]);
-
-  const handleSignOut = async () => {
-    await signOut();
-  };
 
   return (
     <>
@@ -102,19 +115,8 @@ const Header = () => {
             {/* Centered Desktop Navigation */}
             <div className="hidden md:flex items-center justify-center flex-1">
               <div className="flex items-center space-x-2">
-                <Link
-                  to="/"
-                  className={`px-4 py-2 text-sm font-semibold transition-all duration-300 story-link ${
-                    location.pathname === "/"
-                      ? "text-capybara-orange"
-                      : "text-gray-700 hover:text-capybara-orange"
-                  }`}
-                >
-                  {t("home")}
-                </Link>
-
                 {/* Information Dropdown */}
-                <DropdownMenu>
+                {/*                 <DropdownMenu>
                   <DropdownMenuTrigger className="px-4 py-2 text-sm font-semibold transition-all duration-300 text-gray-700 hover:text-capybara-orange flex items-center space-x-1">
                     <span>{t("information")}</span>
                     <ChevronDown className="w-4 h-4" />
@@ -157,8 +159,28 @@ const Header = () => {
                       </Link>
                     </DropdownMenuItem>
                   </DropdownMenuContent>
-                </DropdownMenu>
+                </DropdownMenu> */}
+                <Link
+                  to="/services"
+                  className={`px-4 py-2 text-sm font-semibold transition-all duration-300 ${
+                    location.pathname === "/services"
+                      ? "text-capybara-orange"
+                      : "text-gray-700 hover:text-capybara-orange"
+                  }`}
+                >
+                  {t("services")}
+                </Link>
 
+                <Link
+                  to="/store-guide"
+                  className={`px-4 py-2 text-sm font-semibold transition-all duration-300 ${
+                    location.pathname === "/store-guide"
+                      ? "text-capybara-orange"
+                      : "text-gray-700 hover:text-capybara-orange"
+                  }`}
+                >
+                  {t("storeGuide")}
+                </Link>
                 <Link
                   to="/calculator"
                   className={` px-4 py-2 text-sm font-semibold transition-all duration-300 story-link ${
@@ -169,16 +191,15 @@ const Header = () => {
                 >
                   {t("calculator")}
                 </Link>
-
                 <Link
-                  to="/dashboard"
-                  className={`px-4 py-2 text-sm font-semibold transition-all duration-300 story-link ${
-                    location.pathname === "/dashboard"
+                  to="/contact"
+                  className={`px-4 py-2 text-sm font-semibold transition-all duration-300 ${
+                    location.pathname === "/contact"
                       ? "text-capybara-orange"
                       : "text-gray-700 hover:text-capybara-orange"
                   }`}
                 >
-                  {t("dashboard")}
+                  {t("contact")}
                 </Link>
               </div>
             </div>
@@ -194,9 +215,6 @@ const Header = () => {
                         <span>Admin</span>
                       </div>
                     )}
-                    <span className="text-sm text-gray-600">
-                      {t("welcome")}, {displayName}
-                    </span>
                   </div>
                   <div className="flex items-center space-x-0">
                     <Link to="/calculator">
@@ -231,15 +249,16 @@ const Header = () => {
                     </Link>
                   </div>
 
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleSignOut}
-                    className="flex items-center space-x-1"
-                  >
-                    <LogOut className="w-4 h-4" />
-                    <span>{t("logout")}</span>
-                  </Button>
+                  <div className="hidden md:flex items-center gap-2">
+                    {isAdmin && (
+                      <div className="flex items-center space-x-1 bg-red-100 text-red-800 px-2 py-1 rounded-full text-xs">
+                        <Crown className="w-3 h-3" />
+                        <span>Admin</span>
+                      </div>
+                    )}
+
+                    <MyAccountMenu />
+                  </div>
                 </div>
               ) : (
                 <Link to="/auth">
@@ -250,6 +269,7 @@ const Header = () => {
               )}
             </div>
 
+            {/* Easy Access Action Icons */}
             <div className="md:hidden flex items-center space-x-1">
               {/* Calculator icon */}
               <Link to="/calculator">
@@ -306,31 +326,7 @@ const Header = () => {
           {/* Mobile auth actions */}
           <div className="flex flex-col md:hidden justify-center items-center space-y-2 pb-2">
             <div className="flex md:hidden justify-center items-center mx-auto">
-              {user ? (
-                <div className="flex items-center space-x-2">
-                  <div className="flex items-center space-x-2">
-                    {isAdmin && (
-                      <div className="flex items-center space-x-1 bg-red-100 text-red-800 px-2 py-1 rounded-full text-xs">
-                        <Crown className="w-3 h-3" />
-                        <span>Admin</span>
-                      </div>
-                    )}
-                    <span className="text-sm text-gray-600">
-                      {t("welcome")}, {displayName}
-                    </span>
-                  </div>
-
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleSignOut}
-                    className="flex items-center space-x-1"
-                  >
-                    <LogOut className="w-4 h-4" />
-                    <span>{t("logout")}</span>
-                  </Button>
-                </div>
-              ) : (
+              {!user && (
                 <div className="flex gap-2 justify-center items-center flex-wrap">
                   <Link to="/auth" reloadDocument>
                     <Button className="bubble-btn-primary hover-bounce">
@@ -345,28 +341,12 @@ const Header = () => {
                 </div>
               )}
             </div>
-            <p
-              className="font-bold text-center"
-              dangerouslySetInnerHTML={{ __html: t("headerParagraph") }} //uses dangerouslySetInnerHTML to render custom html element in translation
-            ></p>
           </div>
 
           {/* Mobile Navigation */}
           {isMobileMenuOpen && (
             <div className="md:hidden animate-fade-in" ref={mobileMenuRef}>
               <div className="px-2 pt-2 pb-2 space-y-2 sm:px-3 bg-white/95 border-t-2 border-capybara-orange/20 rounded-b-3xl min-h-screen">
-                <Link
-                  to="/"
-                  className={`block px-4 py-3 rounded-full text-base font-semibold transition-all duration-300 ${
-                    location.pathname === "/"
-                      ? "text-white bg-capybara-orange"
-                      : "text-gray-700 hover:text-capybara-orange hover:bg-capybara-cream"
-                  }`}
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  {t("home")}
-                </Link>
-
                 {/* Information Section Title */}
                 <div className="px-4 py-2 text-base font-bold text-gray-500">
                   {t("information")}
@@ -420,70 +400,30 @@ const Header = () => {
                   {t("calculator")}
                 </Link>
 
-                <Link
-                  to="/dashboard"
-                  className={`block px-4 py-3 rounded-full text-base font-semibold transition-all duration-300 ${
-                    location.pathname === "/user-dashboard" ||
-                    location.pathname === "/admin-dashboard"
-                      ? "text-white bg-capybara-orange"
-                      : "text-gray-700 hover:text-capybara-orange hover:bg-capybara-cream"
-                  }`}
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  Dashboard
-                </Link>
-
-                <div className="relative w-full">
-                  <Globe className="w-4 h-4 text-capybara-orange absolute top-1/2 left-4 -translate-y-1/2 pointer-events-none" />
-
-                  <select
-                    value={language}
-                    onChange={(e) => setLanguage(e.target.value as "en" | "es")}
-                    className="appearance-none w-full bg-capybara-cream text-gray-700 border-none focus:outline-none font-body rounded-full px-4 py-2 pr-10 pl-10 text-sm cursor-pointer"
-                  >
-                    <option value="en">English</option>
-                    <option value="es">Español</option>
-                  </select>
-
-                  <ChevronDown className="w-4 h-4 text-gray-500 absolute top-1/2 right-4 -translate-y-1/2 pointer-events-none" />
-                </div>
-
-                <div className="flex items-center justify-between px-1 py-3 border-b-2 border-capybara-orange/20">
-                  {user && (
-                    <div className="flex items-center space-x-2">
-                      <div className="flex ml-auto">
-                        {isAdmin && (
-                          <div className="flex items-center space-x-1 bg-red-100 text-red-800 px-2 py-1 rounded-full text-xs">
-                            <Crown className="w-3 h-3" />
-                          </div>
-                        )}
-                        <span className="text-sm text-gray-600">
-                          {t("welcome")}, {displayName}
-                          {userRole && userRole !== "user" && (
-                            <span className="ml-1 text-xs text-gray-500">
-                              ({userRole})
-                            </span>
-                          )}
-                        </span>
-                      </div>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={async () => {
-                          setIsMobileMenuOpen(false);
-                          await handleSignOut();
-                        }}
-                        className="flex items-center space-x-1 text-sm"
-                      >
-                        <LogOut className="w-4 h-4" />
-                        <span>{t("logout")}</span>
-                      </Button>
-                    </div>
-                  )}
+                {/* language selector & logout button */}
+                <div className="relative flex items-center justify-center gap-2 px-1 py-3 border-b-2 border-capybara-orange/20">
+                  <Select value={language} onValueChange={setLanguage}>
+                    <SelectTrigger
+                      aria-label="Language"
+                      className=" relative flex items-center justify-normal gap-2 w-auto border border-input bg-background hover:bg-accent hover:text-accent-foreground"
+                    >
+                      <Globe className="w-4 h-4" />
+                      <SelectValue placeholder="Select a language" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="en">English</SelectItem>
+                      <SelectItem value="es">Español</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  {user && <LogOutBtn />}
                 </div>
               </div>
             </div>
           )}
+          <p
+            className="font-bold text-center"
+            dangerouslySetInnerHTML={{ __html: t("headerParagraph") }} //uses dangerouslySetInnerHTML to render custom html element in translation
+          ></p>
         </nav>
       </header>
 
