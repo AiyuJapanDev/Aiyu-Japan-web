@@ -50,7 +50,6 @@ const Home = () => {
     window.scrollTo(0, 0);
   }, []);
 
-
   return (
     <div className="min-h-screen bg-[url(tile_background.png)] bg-repeat">
       <div className="animate-fade-in">
@@ -68,7 +67,7 @@ const Home = () => {
       <AnimatedSection delay={300}>
         <SimpleHowItWorks />
       </AnimatedSection>
-      
+
       <AnimatedSection delay={300}>
         <ServiceFeatures />
       </AnimatedSection>
@@ -81,7 +80,7 @@ const Home = () => {
         <SocialMediaSection />
       </AnimatedSection>
 
-       <AnimatedSection delay={600}>
+      <AnimatedSection delay={600}>
         {/* FAQ Section */}
         <div className="mt-10">
           <div className="text-center mb-8">
@@ -123,15 +122,11 @@ const Home = () => {
           </div>
         </div>
       </AnimatedSection>
-      <AnimatedSection delay={700}>
-        <CTASection />
-      </AnimatedSection>
+
       <AnimatedSection delay={800}>
         <ChatAssistant />
       </AnimatedSection>
-
     </div>
-
   );
 };
 
