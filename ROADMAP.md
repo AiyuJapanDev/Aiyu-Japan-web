@@ -352,7 +352,7 @@ My Account ▼
 
 **Verificación:**
 
-- [ ] Strapi instalado y corriendo
+- [✅] Strapi instalado y corriendo
 - [ ] Collection Types creados
 - [ ] API accesible
 - [ ] Deploy en producción
