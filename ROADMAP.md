@@ -205,7 +205,7 @@ My Account ▼
 **Verificación:**
 
 - [ ] Secciones migradas al homepage
-- [ ] "Ready to Shop" eliminado
+- [✅] "Ready to Shop" eliminado
 - [ ] Instagram feed con padding reducido
 - [ ] Orden lógico de secciones
 
