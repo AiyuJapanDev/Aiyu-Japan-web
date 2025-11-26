@@ -204,10 +204,10 @@ My Account ▼
 
 **Verificación:**
 
-- [ ] Secciones migradas al homepage
+- [✅] Secciones migradas al homepage
 - [✅] "Ready to Shop" eliminado
-- [ ] Instagram feed con padding reducido
-- [ ] Orden lógico de secciones
+- [✅] Instagram feed con padding reducido
+- [✅] Orden lógico de secciones
 
 ---
 
@@ -232,6 +232,35 @@ My Account ▼
 - [ ] Orden consistente con Shopping Guide
 - [ ] Layout de izquierda a derecha
 - [ ] Responsive en mobile
+
+---
+
+### 2.6 Reemplazar sección Store Guide y actualizar Recommended Store Cards
+
+**Prioridad:** 🟡 ALTA  
+**Tiempo estimado:** 5-6 horas  
+**Impacto:** Alto - Mejora contenido y diseño de tiendas
+
+**Descripción:**
+
+- Reemplazar completamente la sección de Store Guide con código nuevo
+- Actualizar los Recommended Store Cards con los nuevos diseños y datos
+- Asegurar consistencia visual y funcional en toda la sección
+- Mantener responsive design en mobile y desktop
+
+**Archivos afectados:**
+
+- `app/routes/StoreGuide.tsx` (reemplazar sección completa)
+- `app/components/sections/RecommendedStoresSection.tsx` (actualizar cards)
+- Posiblemente crear: `app/components/store/StoreCard.tsx` (nuevo componente)
+
+**Verificación:**
+
+- [ ] Nueva sección Store Guide implementada
+- [ ] Recommended Store Cards actualizados con nuevo diseño
+- [ ] Datos de tiendas correctamente mostrados
+- [ ] Responsive en mobile y desktop
+- [ ] Consistencia visual con el resto de la aplicación
 
 ---
 

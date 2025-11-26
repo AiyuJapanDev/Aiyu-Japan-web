@@ -18,7 +18,7 @@ const SocialMediaSection = () => {
           </div>
 
           {/* Instagram Profile Embed */}
-          <div className="w-full max-w-md flex flex-col items-center">
+          <div className="w-full max-w-md flex flex-col items-center mx-auto">
             <h3 className="text-2xl font-bold text-gray-900 mb-6 text-center">
               {t("instagramFeed")}
             </h3>
