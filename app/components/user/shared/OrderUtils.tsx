@@ -1,17 +1,17 @@
-import React from 'react';
-import { 
-  Package, 
-  Clock, 
-  CheckCircle, 
-  XCircle, 
+import React from "react";
+import {
+  Package,
+  Clock,
+  CheckCircle,
+  XCircle,
   Truck,
   AlertCircle,
   DollarSign,
   ShoppingCart,
   Home,
-  Send
-} from 'lucide-react';
-import { useApp } from '@/contexts/AppContext'; // ✅ for t()
+  Send,
+} from "lucide-react";
+import { useApp } from "@/contexts/AppContext"; // ✅ for t()
 
 export interface OrderWithDetails {
   id: string;
@@ -47,33 +47,45 @@ export interface OrderWithDetails {
   }>;
 }
 
-export const getOrderPhase = (order: OrderWithDetails): 'orders' | 'storage' | 'shipping' => {
-  if (order.tracking_number || order.status === 'shipped') return 'shipping';
-  const allProductsReceived = order.order_items?.every(
-    item => item.product_request.status === 'received'
-  ) ?? false;
-  const hasShippingQuote = order.quotes?.some(q => q.type === 'shipping') ?? false;
-  if (allProductsReceived || hasShippingQuote || order.status === 'awaiting_shipping_payment') {
-    return 'storage';
+export const getOrderPhase = (
+  order: OrderWithDetails
+): "orders" | "storage" | "shipping" => {
+  if (order.tracking_number || order.status === "shipped") return "shipping";
+  const allProductsReceived =
+    order.order_items?.every(
+      (item) => item.product_request.status === "received"
+    ) ?? false;
+  const hasShippingQuote =
+    order.quotes?.some((q) => q.type === "shipping") ?? false;
+  if (
+    allProductsReceived ||
+    hasShippingQuote ||
+    order.status === "awaiting_shipping_payment"
+  ) {
+    return "storage";
   }
-  return 'orders';
+  return "orders";
 };
 
 export const getOrderStatus = (order: OrderWithDetails): string => {
-  if (order.is_rejected) return 'rejected';
-  if (order.tracking_number) return 'shipped';
+  if (order.is_rejected) return "rejected";
+  if (order.tracking_number) return "shipped";
 
-  const shippingQuote = order.quotes?.find(q => q.type === 'shipping');
-  if (shippingQuote) return shippingQuote.status === 'paid' ? 'shipping_paid' : 'shipping_quoted';
+  const shippingQuote = order.quotes?.find((q) => q.type === "shipping");
+  if (shippingQuote)
+    return shippingQuote.status === "paid"
+      ? "shipping_paid"
+      : "shipping_quoted";
 
-  const productStatuses = order.order_items?.map(item => item.product_request.status) ?? [];
-  if (productStatuses.every(s => s === 'received')) return 'received';
-  if (productStatuses.some(s => s === 'purchased')) return 'purchased';
+  const productStatuses =
+    order.order_items?.map((item) => item.product_request.status) ?? [];
+  if (productStatuses.every((s) => s === "received")) return "received";
+  if (productStatuses.some((s) => s === "purchased")) return "purchased";
 
-  const productQuote = order.quotes?.find(q => q.type === 'product');
-  if (productQuote) return productQuote.status === 'paid' ? 'paid' : 'quoted';
+  const productQuote = order.quotes?.find((q) => q.type === "product");
+  if (productQuote) return productQuote.status === "paid" ? "paid" : "quoted";
 
-  return 'requested';
+  return "requested";
 };
 
 /** ✅ Use inside a component so we can access t() */
@@ -81,19 +93,19 @@ export const useOrderStatusLabel = () => {
   const { t } = useApp();
   return (status: string): string => {
     const labels: Record<string, string> = {
-      requested: t('statusRequested'),
-      quoted: t('statusAwaitingPayment'),
-      paid: t('statusPaid'),
-      some_purchased: t('statusSomePurchased'),
-      all_purchased: t('statusAllPurchased'),
-      in_transit: t('statusInTransit'),
-      all_received: t('statusAllAtWarehouse'),
-      purchased: t('statusAllPurchased'),
-      received: t('statusAllAtWarehouse'),
-      shipping_quoted: t('shippingQuoteSent'),
-      shipping_paid: t('shippingPaid'),
-      shipped: t('statusShipped'),
-      rejected: t('statusRejected'),
+      requested: t("statusRequested"),
+      quoted: t("statusAwaitingPayment"),
+      paid: t("statusPaid"),
+      some_purchased: t("statusSomePurchased"),
+      all_purchased: t("statusAllPurchased"),
+      in_transit: t("statusInTransit"),
+      all_received: t("statusAllAtWarehouse"),
+      purchased: t("statusAllPurchased"),
+      received: t("statusAllAtWarehouse"),
+      shipping_quoted: t("shippingQuoteSent"),
+      shipping_paid: t("shippingPaid"),
+      shipped: t("statusShipped"),
+      rejected: t("statusRejected"),
     };
     return labels[status] || status;
   };
@@ -101,21 +113,21 @@ export const useOrderStatusLabel = () => {
 
 export const getStatusColor = (status: string): string => {
   const colors: Record<string, string> = {
-    requested: 'bg-blue-100 text-blue-800',
-    quoted: 'bg-yellow-100 text-yellow-800',
-    paid: 'bg-green-100 text-green-800',
-    some_purchased: 'bg-purple-100 text-purple-800',
-    all_purchased: 'bg-green-100 text-green-800',
-    in_transit: 'bg-blue-100 text-blue-800',
-    all_received: 'bg-indigo-100 text-indigo-800',
-    purchased: 'bg-purple-100 text-purple-800',
-    received: 'bg-indigo-100 text-indigo-800',
-    shipping_quoted: 'bg-orange-100 text-orange-800',
-    shipping_paid: 'bg-teal-100 text-teal-800',
-    shipped: 'bg-gray-100 text-gray-800',
-    rejected: 'bg-red-100 text-red-800',
+    requested: "bg-blue-100 text-blue-800",
+    quoted: "bg-yellow-100 text-yellow-800",
+    paid: "bg-green-100 text-green-800",
+    some_purchased: "bg-purple-100 text-purple-800",
+    all_purchased: "bg-green-100 text-green-800",
+    in_transit: "bg-blue-100 text-blue-800",
+    all_received: "bg-indigo-100 text-indigo-800",
+    purchased: "bg-purple-100 text-purple-800",
+    received: "bg-indigo-100 text-indigo-800",
+    shipping_quoted: "bg-orange-100 text-orange-800",
+    shipping_paid: "bg-teal-100 text-teal-800",
+    shipped: "bg-gray-100 text-gray-800",
+    rejected: "bg-blue-100 text-blue-800",
   };
-  return colors[status] || 'bg-gray-100 text-gray-800';
+  return colors[status] || "bg-gray-100 text-gray-800";
 };
 
 export const getStatusIcon = (status: string) => {
@@ -132,7 +144,7 @@ export const getStatusIcon = (status: string) => {
     shipping_quoted: <Send className="h-4 w-4 text-orange-600" />,
     shipping_paid: <CheckCircle className="h-4 w-4 text-teal-600" />,
     shipped: <Truck className="h-4 w-4 text-gray-600" />,
-    rejected: <XCircle className="h-4 w-4 text-red-600" />,
+    rejected: <XCircle className="h-4 w-4 text-blue-600" />,
   };
   return icons[status] || <Package className="h-4 w-4 text-gray-600" />;
 };
@@ -141,11 +153,11 @@ export const getStatusIcon = (status: string) => {
 export const useProductStatusSteps = () => {
   const { t } = useApp();
   return [
-    { label: t('statusRequested'), status: 'upcoming' as const },
-    { label: t('statusPaid'), status: 'upcoming' as const },
-    { label: t('statusAllPurchased'), status: 'upcoming' as const },
-    { label: t('statusInTransit'), status: 'upcoming' as const },
-    { label: t('statusAllAtWarehouse'), status: 'upcoming' as const },
+    { label: t("statusRequested"), status: "upcoming" as const },
+    { label: t("statusPaid"), status: "upcoming" as const },
+    { label: t("statusAllPurchased"), status: "upcoming" as const },
+    { label: t("statusInTransit"), status: "upcoming" as const },
+    { label: t("statusAllAtWarehouse"), status: "upcoming" as const },
   ];
 };
 
@@ -153,11 +165,11 @@ export const useProductStatusSteps = () => {
 export const useShippingStatusSteps = () => {
   const { t } = useApp();
   return [
-    { label: t('statusAllAtWarehouse'), status: 'completed' as const },
-    { label: t('shippingQuoteSent'), status: 'upcoming' as const },
-    { label: t('shippingPaid'), status: 'upcoming' as const },
-    { label: t('statusShipped'), status: 'upcoming' as const },
-    { label: t('statusDelivered'), status: 'upcoming' as const },
+    { label: t("statusAllAtWarehouse"), status: "completed" as const },
+    { label: t("shippingQuoteSent"), status: "upcoming" as const },
+    { label: t("shippingPaid"), status: "upcoming" as const },
+    { label: t("statusShipped"), status: "upcoming" as const },
+    { label: t("statusDelivered"), status: "upcoming" as const },
   ];
 };
 
@@ -179,9 +191,9 @@ export const updateStatusSteps = (steps: any[], currentStatus: string) => {
     ...step,
     status:
       index < currentIndex
-        ? 'completed'
+        ? "completed"
         : index === currentIndex
-        ? 'current'
-        : 'upcoming',
+          ? "current"
+          : "upcoming",
   }));
 };

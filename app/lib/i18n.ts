@@ -16,7 +16,7 @@ export const translations = {
     contact: "Contact",
     information: "Information",
     headerParagraph:
-      "Buy from any <span class='text-red-600'>japanese</span> store!",
+      "Buy from any <span class='text-blue-600'>japanese</span> store!",
 
     // Home Page
     heroSlide1Title: "From Japan to Your Home Anyday",
@@ -667,18 +667,6 @@ export const translations = {
     japaneseAddressuserCodeNote: "*This is your Aiyu Japan personal code",
     japaneseAddresstoggleJapanese: "Japanese",
     japaneseAddresstoggleRomaji: "Romaji",
-
-    japaneseAddresslabelsname: "Name",
-    japaneseAddresslabelsprefectureCity: "Prefecture, City",
-    japaneseAddresslabelsstreet: "Street",
-    japaneseAddresslabelsbuilding: "Building",
-    japaneseAddresslabelspostalCode: "Postal Code",
-    japaneseAddresslabelsphone: "Phone number",
-
-    japaneseAddressexplanation:
-      "This is your Japanese address! Every item received at our warehouse is charged 500 yen (~$3 USD), with up to 30 days of free storage.",
-
-    japaneseAddresswarningsTitle: "⚠️ Warnings:",
     japaneseAddresswarnings0:
       "Please make sure to copy everything correctly — we are not responsible for packages that are incorrectly addressed or delivered.",
     japaneseAddresswarnings1:
@@ -900,6 +888,191 @@ export const translations = {
     newsBlog2Title: "New 2",
     newsBlog3Title: "New 3",
     newsBlog4Title: "New 4",
+
+    // Store Guide New User Page
+    // Hero Section
+    storeGuideHeroTitle: "First Time Guide",
+    storeGuideHeroSubtitle:
+      "Everything you need to know to start buying authentic Japanese products with Aiyu Japan",
+
+    // Tab Navigation
+    tabWhatIs: "What is AIYU JAPAN?",
+    tabHowItWorks: "How does AIYU JAPAN work?",
+    tabFees: "Fees and costs",
+    tabCommission: "Commission Service",
+    tabMarkets: "Popular Markets",
+    tabRestrictions: "Item Restrictions",
+
+    // What Is Section
+    whatIsTitle: "What is Aiyu Japan?",
+    whatIsDescription1:
+      "Aiyu Japan is an international shopping and shipping service based in Japan 🌏. We help customers worldwide purchase authentic Japanese products — from figures and clothing to collectibles and anime goods — easily and safely.",
+    whatIsDescription2:
+      "Unlike other proxy services that add hidden fees or extra charges after purchasing, Aiyu Japan offers one single transparent fee that already includes:",
+    whatIsFeature1: "Unlimited storage",
+    whatIsFeature2: "No extra charges for weight or days",
+    whatIsFeature3: "Personalized support throughout the process",
+    whatIsDescription3:
+      "With Aiyu Japan, shopping from Japan is simple, reliable, and free of surprises.",
+    whatIsBenefit1Title: "Authentic Products",
+    whatIsBenefit1Desc: "Directly from Japan",
+    whatIsBenefit2Title: "Safe Shopping",
+    whatIsBenefit2Desc: "We protect your data",
+    whatIsBenefit3Title: "Global Community",
+    whatIsBenefit3Desc: "Thousands of users",
+    whatIsBenefit4Title: "Worldwide Shipping",
+    whatIsBenefit4Desc: "To your doorstep",
+    whatIsVideoTitle: "AIYU JAPAN - Introduction to our proxy service",
+
+    // How It Works Section
+    howItWorksTitle: "How does it work?",
+    howItWorksSubtitle:
+      "The process is simple and transparent. Here is the step-by-step of how our service works:",
+    howItWorksStep1Title: "Find your item",
+    howItWorksStep1Desc:
+      "Search on your favorite Japanese stores or use our Store Guide to discover official shops. Once you find what you want, simply copy the product link and paste it in our request form.",
+    howItWorksStep2Title: "Create your purchase request",
+    howItWorksStep2Desc:
+      "Enter the product link and details — our team will verify everything and confirm availability. Once confirmed, we'll send you a payment link. After you complete payment, we'll buy the item for you directly from the seller.",
+    howItWorksStep3Title: "Receive and store your items",
+    howItWorksStep3Desc:
+      "All items arrive at our Aiyu Japan warehouse in Osaka, where we safely store them. Storage is unlimited and free, so you can collect multiple items before shipping them together.",
+    howItWorksStep4Title: "Packing your order",
+    howItWorksStep4Desc:
+      "When you're ready, request shipping. Our team will carefully pack and protect your items using secure materials to ensure they arrive in perfect condition.",
+    howItWorksStep5Title: "International shipping",
+    howItWorksStep5Desc:
+      "Choose your preferred shipping method — Japan Post, DHL, Yamato, or FedEx — and we'll send your package anywhere in the world. You'll receive your tracking number and updates until delivery.",
+    howItWorksCTA: "Start shopping now",
+
+    // Fees Section
+    feesTitle: "Fees & Costs",
+    feesSubtitle:
+      "Total transparency in our pricing. No hidden fees, no surprises.",
+    feeServiceTitle: "Service Fee",
+    feeServicePrice: "¥500 + 10%",
+    feeServiceDesc:
+      "Per item + 10% of total purchase. This includes unlimited storage, full customer support, and purchase handling.",
+    feeServiceNote: "One transparent fee",
+    feeStorageTitle: "Storage Fee",
+    feeStoragePrice: "Free",
+    feeStorageDesc:
+      "Storage is unlimited and free. You can collect multiple items before shipping them together without any extra cost.",
+    feeStorageNote: "Unlimited time",
+    feeShippingTitle: "International Shipping",
+    feeShippingPrice: "Variable",
+    feeShippingDesc:
+      "Choose your preferred shipping method — Japan Post, DHL, Yamato, or FedEx. We'll send your package anywhere in the world.",
+    feeShippingNote: "Calculated by weight/destination",
+    feesShippingOptionsTitle: "International Shipping Options",
+    feesMethodHeader: "Method",
+    feesTimeHeader: "Delivery Time",
+    feesTrackingHeader: "Tracking",
+    feesPriceHeader: "Price",
+    feesOptionSurface: "Surface Mail",
+    feesOptionAirmail: "Airmail",
+    feesOptionEMS: "EMS",
+    feesOptionDHL: "DHL/FedEx",
+    feesTimeMonths: "2-3 months",
+    feesTimeWeeks: "2-3 weeks",
+    feesTimeDays3_7: "3-7 days",
+    feesTimeDays2_5: "2-5 days",
+    feesTrackingLimited: "Limited",
+    feesTrackingBasic: "Basic",
+    feesTrackingFull: "Full",
+    feesPriceCheapest: "Cheapest",
+    feesPriceEconomy: "Economy",
+    feesPriceStandard: "Standard",
+    feesPricePremium: "Premium",
+    feesConsolidationTitle: "Save money by consolidating packages",
+    feesConsolidationDesc:
+      "You can wait to accumulate multiple items in our warehouse and request to ship them together in a single package. This significantly reduces international shipping costs.",
+
+    // Commission Section
+    commissionTitle: "Commission Service",
+    commissionSubtitle:
+      "Can't find what you're looking for? Our team can help you find and buy hard-to-locate products.",
+    commissionStep1Title: "Contact us",
+    commissionStep1Desc:
+      "If you can't find the product you're looking for or need special help, send us a commission request with the item details.",
+    commissionStep2Title: "We search for you",
+    commissionStep2Desc:
+      "Our team will search for the product in Japanese stores, auctions, and markets. We'll provide you with available options and prices.",
+    commissionStep3Title: "We buy the item",
+    commissionStep3Desc:
+      "Once you approve the option, we proceed to buy the item on your behalf following your specifications.",
+    commissionStep4Title: "Normal process",
+    commissionStep4Desc:
+      "The item follows the standard AIYU JAPAN process: it arrives at our warehouse, we inspect it, and then ship it to your address.",
+    commissionWhenToUseTitle: "When to use commission service?",
+    commissionUse1: "Discontinued or vintage products",
+    commissionUse2: "Items from physical stores in Japan",
+    commissionUse3: "Search for specific or rare items",
+    commissionUse4: "Purchases requiring negotiation",
+    commissionFeesTitle: "Commission Fees",
+    commissionBaseFee: "Base fee",
+    commissionPerRequest: "Per search request",
+    commissionFeeNote:
+      "This fee covers our team's time and effort to search and contact sellers. AIYU JAPAN's standard service fees also apply to the final purchase.",
+    commissionCTA: "Request commission service",
+
+    // Popular Markets Section
+    marketsTitle: "Popular Markets",
+    marketsSubtitle:
+      "Access the best online stores and markets in Japan. We buy on your behalf from any of these platforms.",
+    marketsCategoryFigures: "Figures",
+    marketsCategorySecondHand: "Second Hand",
+    marketsCategoryCollectors: "Collectors",
+    marketsCategoryOfficial: "Official Store",
+    marketsCategoryAnime: "Anime Goods",
+    marketsCategoryMarketplace: "Marketplace",
+    marketsCategoryAuctions: "Auctions",
+    marketsCategoryRetail: "Retail",
+    marketsMainCategory: "Category:",
+    marketsExplore: "Explore",
+    marketsNotFoundTitle: "Can't find the store you're looking for?",
+    marketsNotFoundDesc:
+      "These are just some of the most popular markets. We can buy from practically any Japanese online store. If you have doubts about whether we can buy from a specific store, contact us.",
+    marketsContactSupport: "Contact Support",
+
+    // Restrictions Section
+    restrictionsTitle: "Item Restrictions",
+    restrictionsSubtitle:
+      "For everyone's safety and compliance with international laws, some items cannot be purchased or shipped.",
+    restrictionsProhibitedTitle: "Prohibited Items",
+    restrictionsProhibitedDesc: "We cannot buy or ship these items",
+    restrictionsProhibited1: "Liquids, perfumes, oils, alcohol",
+    restrictionsProhibited2: "Batteries or items containing lithium",
+    restrictionsProhibited3: "Aerosols or flammable materials",
+    restrictionsProhibited4: "Dangerous or restricted goods",
+    restrictionsProhibited5: "Weapons, replicas, and ammunition",
+    restrictionsProhibited6: "Illegal drugs and controlled substances",
+    restrictionsProhibited7: "Counterfeit or pirated products",
+    restrictionsProhibited8: "Pornographic material",
+    restrictionsRestrictedTitle: "Restricted Items",
+    restrictionsRestrictedDesc: "These items have special limitations",
+    restrictionsRestricted1Cat: "Lithium Batteries",
+    restrictionsRestricted1Desc: "Only by surface or sea mail, not by air",
+    restrictionsRestricted2Cat: "Liquids and Aerosols",
+    restrictionsRestricted2Desc: "Quantity and shipping type restrictions",
+    restrictionsRestricted3Cat: "Food and Beverages",
+    restrictionsRestricted3Desc:
+      "Require special permits depending on destination country",
+    restrictionsRestricted4Cat: "High Value Items",
+    restrictionsRestricted4Desc:
+      "May require additional insurance and declaration",
+    restrictionsNotesTitle: "Important Notes",
+    restrictionsNote1: "Import regulations vary by destination country",
+    restrictionsNote2:
+      "Some items may be allowed in Japan but prohibited in your country",
+    restrictionsNote3:
+      "You are responsible for knowing your country's import laws",
+    restrictionsNote4: "Items confiscated by customs are non-refundable",
+    restrictionsNote5: "We may refuse to buy any item at our discretion",
+    restrictionsDoubtsTitle: "Have doubts about a specific item?",
+    restrictionsDoubtsDesc:
+      "If you are not sure if we can buy or ship a specific item, do not hesitate to contact us before placing your order. Our support team will be happy to help you.",
+    restrictionsViewFAQ: "View Full FAQ",
   },
   es: {
     // Navigation
@@ -916,7 +1089,7 @@ export const translations = {
     contact: "Contacto",
     information: "Información",
     headerParagraph:
-      "¡Compra en cualquier tienda <span class='text-red-600'>japonesa</span>!",
+      "¡Compra en cualquier tienda <span class='text-blue-600'>japonesa</span>!",
 
     // Home Page
     heroSlide1Title: "Desde Japón a Tu Casa Cualquier Día",
@@ -1538,17 +1711,6 @@ export const translations = {
     items: "Artículos:",
     unnamedProduct: "Producto sin nombre",
     issuePrefix: "Problema:",
-    addressName: "Nombre:",
-    addressPhone: "Teléfono:",
-    address: "Dirección:",
-    addressNotes: "Notas:",
-    cityState: "Ciudad / Estado:",
-    postalCode: "Código postal:",
-    country: "País:",
-    shippingDataLoadError: "Error al cargar datos de envío",
-    selectStatus: "Selecciona un filtro de estado",
-    processing: "Procesando",
-    inTransit: "En tránsito",
     delivered: "Entregado",
     trackPackageButton: "Rastrear paquete",
     requestedOn: "Solicitado el",
@@ -1592,17 +1754,6 @@ export const translations = {
     japaneseAddresstoggleJapanese: "Japonés",
     japaneseAddresstoggleRomaji: "Rōmaji",
 
-    japaneseAddresslabelsname: "Nombre",
-    japaneseAddresslabelsprefectureCity: "Prefectura, Ciudad",
-    japaneseAddresslabelsstreet: "Calle",
-    japaneseAddresslabelsbuilding: "Edificio",
-    japaneseAddresslabelspostalCode: "Código postal",
-    japaneseAddresslabelsphone: "Número de teléfono",
-
-    japaneseAddressexplanation:
-      "¡Esta es tu dirección japonesa! Cada ítem recibido tiene un cargo de 500 yenes (~$3 USD) e incluye hasta 30 días de almacenamiento gratuito.",
-
-    japaneseAddresswarningsTitle: "⚠️ Advertencias:",
     japaneseAddresswarnings0:
       "Por favor, asegúrate de copiar toda la dirección correctamente. No nos hacemos responsables por paquetes mal dirigidos o entregados de forma incorrecta.",
     japaneseAddresswarnings1:
@@ -1823,6 +1974,196 @@ export const translations = {
     newsBlog2Title: "New 2",
     newsBlog3Title: "New 3",
     newsBlog4Title: "New 4",
+
+    // Store Guide New User Page
+    // Hero Section
+    storeGuideHeroTitle: "Guía para Primerizos",
+    storeGuideHeroSubtitle:
+      "Todo lo que necesitas saber para empezar a comprar productos japoneses auténticos con Aiyu Japan",
+
+    // Tab Navigation
+    tabWhatIs: "¿Qué es AIYU JAPAN?",
+    tabHowItWorks: "¿Cómo funciona AIYU JAPAN?",
+    tabFees: "Tarifas y costos",
+    tabCommission: "Servicio de Comisión",
+    tabMarkets: "Mercados Populares",
+    tabRestrictions: "Restricciones de Artículos",
+
+    // What Is Section
+    whatIsTitle: "¿Qué es Aiyu Japan?",
+    whatIsDescription1:
+      "Aiyu Japan es un servicio internacional de compras y envíos con sede en Japón 🌏. Ayudamos a clientes de todo el mundo a comprar productos japoneses auténticos —desde figuras y ropa hasta coleccionables y artículos de anime— de forma fácil y segura.",
+    whatIsDescription2:
+      "A diferencia de otros servicios proxy que añaden tarifas ocultas o cargos extra después de la compra, Aiyu Japan ofrece una única tarifa transparente que ya incluye:",
+    whatIsFeature1: "Almacenamiento ilimitado",
+    whatIsFeature2: "Sin cargos extra por peso o días",
+    whatIsFeature3: "Soporte personalizado durante todo el proceso",
+    whatIsDescription3:
+      "Con Aiyu Japan, comprar desde Japón es simple, confiable y libre de sorpresas.",
+    whatIsBenefit1Title: "Productos Auténticos",
+    whatIsBenefit1Desc: "Directamente desde Japón",
+    whatIsBenefit2Title: "Compra Segura",
+    whatIsBenefit2Desc: "Protegemos tus datos",
+    whatIsBenefit3Title: "Comunidad Global",
+    whatIsBenefit3Desc: "Miles de usuarios",
+    whatIsBenefit4Title: "Envío Mundial",
+    whatIsBenefit4Desc: "Hasta tu puerta",
+    whatIsVideoTitle: "AIYU JAPAN - Introducción a nuestro servicio proxy",
+
+    // How It Works Section
+    howItWorksTitle: "¿Cómo funciona?",
+    howItWorksSubtitle:
+      "El proceso es simple y transparente. Aquí te explicamos paso a paso cómo funciona nuestro servicio:",
+    howItWorksStep1Title: "Encuentra tu artículo",
+    howItWorksStep1Desc:
+      "Busca en tus tiendas japonesas favoritas o usa nuestra Guía de Tiendas para descubrir tiendas oficiales. Una vez que encuentres lo que quieres, simplemente copia el enlace del producto y pégalo en nuestro formulario de solicitud.",
+    howItWorksStep2Title: "Crea tu solicitud de compra",
+    howItWorksStep2Desc:
+      "Introduce el enlace del producto y los detalles — nuestro equipo verificará todo y confirmará la disponibilidad. Una vez confirmado, te enviaremos un enlace de pago. Después de completar el pago, compraremos el artículo por ti directamente al vendedor.",
+    howItWorksStep3Title: "Recibe y almacena tus artículos",
+    howItWorksStep3Desc:
+      "Todos los artículos llegan a nuestro almacén de Aiyu Japan en Osaka, donde los almacenamos de forma segura. El almacenamiento es ilimitado y gratuito, por lo que puedes acumular varios artículos antes de enviarlos juntos.",
+    howItWorksStep4Title: "Empaquetando tu pedido",
+    howItWorksStep4Desc:
+      "Cuando estés listo, solicita el envío. Nuestro equipo empaquetará y protegerá cuidadosamente tus artículos utilizando materiales seguros para asegurar que lleguen en perfectas condiciones.",
+    howItWorksStep5Title: "Envío internacional",
+    howItWorksStep5Desc:
+      "Elige tu método de envío preferido — Japan Post, DHL, Yamato o FedEx — y enviaremos tu paquete a cualquier parte del mundo. Recibirás tu número de seguimiento y actualizaciones hasta la entrega.",
+    howItWorksCTA: "Empieza a comprar ahora",
+
+    // Fees Section
+    feesTitle: "Tarifas y Costos",
+    feesSubtitle:
+      "Transparencia total en nuestros precios. Sin tarifas ocultas, sin sorpresas.",
+    feeServiceTitle: "Tarifa de Servicio",
+    feeServicePrice: "¥500 + 10%",
+    feeServiceDesc:
+      "Por artículo + 10% del total de la compra. Esto incluye almacenamiento ilimitado, soporte completo al cliente y gestión de compras.",
+    feeServiceNote: "Una tarifa transparente",
+    feeStorageTitle: "Tarifa de Almacenamiento",
+    feeStoragePrice: "Gratis",
+    feeStorageDesc:
+      "El almacenamiento es ilimitado y gratuito. Puedes acumular varios artículos antes de enviarlos juntos sin ningún costo adicional.",
+    feeStorageNote: "Tiempo ilimitado",
+    feeShippingTitle: "Envío Internacional",
+    feeShippingPrice: "Variable",
+    feeShippingDesc:
+      "Elige tu método de envío preferido — Japan Post, DHL, Yamato o FedEx. Enviaremos tu paquete a cualquier parte del mundo.",
+    feeShippingNote: "Calculado por peso/destino",
+    feesShippingOptionsTitle: "Opciones de Envío Internacional",
+    feesMethodHeader: "Método",
+    feesTimeHeader: "Tiempo de Entrega",
+    feesTrackingHeader: "Seguimiento",
+    feesPriceHeader: "Precio",
+    feesOptionSurface: "Correo Superficie",
+    feesOptionAirmail: "Correo Aéreo",
+    feesOptionEMS: "EMS",
+    feesOptionDHL: "DHL/FedEx",
+    feesTimeMonths: "2-3 meses",
+    feesTimeWeeks: "2-3 semanas",
+    feesTimeDays3_7: "3-7 días",
+    feesTimeDays2_5: "2-5 días",
+    feesTrackingLimited: "Limitado",
+    feesTrackingBasic: "Básico",
+    feesTrackingFull: "Completo",
+    feesPriceCheapest: "Más Barato",
+    feesPriceEconomy: "Económico",
+    feesPriceStandard: "Estándar",
+    feesPricePremium: "Premium",
+    feesConsolidationTitle: "Ahorra dinero consolidando paquetes",
+    feesConsolidationDesc:
+      "Puedes esperar a acumular varios artículos en nuestro almacén y solicitar enviarlos juntos en un solo paquete. Esto reduce significativamente los costos de envío internacional.",
+
+    // Commission Section
+    commissionTitle: "Servicio de Comisión",
+    commissionSubtitle:
+      "¿No encuentras lo que buscas? Nuestro equipo puede ayudarte a encontrar y comprar productos difíciles de localizar.",
+    commissionStep1Title: "Contáctanos",
+    commissionStep1Desc:
+      "Si no encuentras el producto que buscas o necesitas ayuda especial, envíanos una solicitud de comisión con los detalles del artículo.",
+    commissionStep2Title: "Nosotros buscamos por ti",
+    commissionStep2Desc:
+      "Nuestro equipo buscará el producto en tiendas japonesas, subastas y mercados. Te proporcionaremos las opciones disponibles y los precios.",
+    commissionStep3Title: "Compramos el artículo",
+    commissionStep3Desc:
+      "Una vez que apruebes la opción, procederemos a comprar el artículo en tu nombre siguiendo tus especificaciones.",
+    commissionStep4Title: "Proceso normal",
+    commissionStep4Desc:
+      "El artículo sigue el proceso estándar de AIYU JAPAN: llega a nuestro almacén, lo inspeccionamos y luego lo enviamos a tu dirección.",
+    commissionWhenToUseTitle: "¿Cuándo usar el servicio de comisión?",
+    commissionUse1: "Productos descontinuados o vintage",
+    commissionUse2: "Artículos de tiendas físicas en Japón",
+    commissionUse3: "Búsqueda de artículos específicos o raros",
+    commissionUse4: "Compras que requieren negociación",
+    commissionFeesTitle: "Tarifas de Comisión",
+    commissionBaseFee: "Tarifa base",
+    commissionPerRequest: "Por solicitud de búsqueda",
+    commissionFeeNote:
+      "Esta tarifa cubre el tiempo y esfuerzo de nuestro equipo para buscar y contactar vendedores. Las tarifas de servicio estándar de AIYU JAPAN también se aplican a la compra final.",
+    commissionCTA: "Solicitar servicio de comisión",
+
+    // Popular Markets Section
+    marketsTitle: "Mercados Populares",
+    marketsSubtitle:
+      "Accede a las mejores tiendas y mercados online de Japón. Compramos en tu nombre desde cualquiera de estas plataformas.",
+    marketsCategoryFigures: "Figuras",
+    marketsCategorySecondHand: "Segunda Mano",
+    marketsCategoryCollectors: "Coleccionistas",
+    marketsCategoryOfficial: "Tienda Oficial",
+    marketsCategoryAnime: "Artículos de Anime",
+    marketsCategoryMarketplace: "Mercado",
+    marketsCategoryAuctions: "Subastas",
+    marketsCategoryRetail: "Minorista",
+    marketsMainCategory: "Categoría:",
+    marketsExplore: "Explorar",
+    marketsNotFoundTitle: "¿No encuentras la tienda que buscas?",
+    marketsNotFoundDesc:
+      "Estos son solo algunos de los mercados más populares. Podemos comprar en prácticamente cualquier tienda online japonesa. Si tienes dudas sobre si podemos comprar en una tienda específica, contáctanos.",
+    marketsContactSupport: "Contactar Soporte",
+
+    // Restrictions Section
+    restrictionsTitle: "Restricciones de Artículos",
+    restrictionsSubtitle:
+      "Para la seguridad de todos y el cumplimiento de las leyes internacionales, algunos artículos no pueden ser comprados o enviados.",
+    restrictionsProhibitedTitle: "Artículos Prohibidos",
+    restrictionsProhibitedDesc: "No podemos comprar ni enviar estos artículos",
+    restrictionsProhibited1: "Líquidos, perfumes, aceites, alcohol",
+    restrictionsProhibited2: "Baterías o artículos que contengan litio",
+    restrictionsProhibited3: "Aerosoles o materiales inflamables",
+    restrictionsProhibited4: "Mercancías peligrosas o restringidas",
+    restrictionsProhibited5: "Armas, réplicas y municiones",
+    restrictionsProhibited6: "Drogas ilegales y sustancias controladas",
+    restrictionsProhibited7: "Productos falsificados o pirateados",
+    restrictionsProhibited8: "Material pornográfico",
+    restrictionsRestrictedTitle: "Artículos Restringidos",
+    restrictionsRestrictedDesc:
+      "Estos artículos tienen limitaciones especiales",
+    restrictionsRestricted1Cat: "Baterías de Litio",
+    restrictionsRestricted1Desc:
+      "Solo por correo de superficie o marítimo, no por aire",
+    restrictionsRestricted2Cat: "Líquidos y Aerosoles",
+    restrictionsRestricted2Desc: "Restricciones de cantidad y tipo de envío",
+    restrictionsRestricted3Cat: "Alimentos y Bebidas",
+    restrictionsRestricted3Desc:
+      "Requieren permisos especiales según el país de destino",
+    restrictionsRestricted4Cat: "Artículos de Alto Valor",
+    restrictionsRestricted4Desc:
+      "Pueden requerir seguro y declaración adicionales",
+    restrictionsNotesTitle: "Notas Importantes",
+    restrictionsNote1:
+      "Las regulaciones de importación varían según el país de destino",
+    restrictionsNote2:
+      "Algunos artículos pueden estar permitidos en Japón pero prohibidos en tu país",
+    restrictionsNote3:
+      "Eres responsable de conocer las leyes de importación de tu país",
+    restrictionsNote4:
+      "Los artículos confiscados por la aduana no son reembolsables",
+    restrictionsNote5:
+      "Podemos negarnos a comprar cualquier artículo a nuestra discreción",
+    restrictionsDoubtsTitle: "¿Tienes dudas sobre un artículo específico?",
+    restrictionsDoubtsDesc:
+      "Si no estás seguro de si podemos comprar o enviar un artículo específico, no dudes en contactarnos antes de realizar tu pedido. Nuestro equipo de soporte estará encantado de ayudarte.",
+    restrictionsViewFAQ: "Ver Preguntas Frecuentes Completas",
   },
 };
 

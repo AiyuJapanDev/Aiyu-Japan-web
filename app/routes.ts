@@ -1,4 +1,10 @@
-import { type RouteConfig, index, route } from "@react-router/dev/routes";
+import {
+  type RouteConfig,
+  index,
+  layout,
+  prefix,
+  route,
+} from "@react-router/dev/routes";
 
 export default [
   index("routes/Home.tsx"),
@@ -8,7 +14,17 @@ export default [
   route("auth/reset-password", "routes/ResetPassword.tsx"),
   route("email-verification", "routes/EmailVerification.tsx"),
   route("calculator", "routes/Calculator.tsx"),
-  route("store-guide", "routes/StoreGuide.tsx"),
+
+  /* Store Guide Routes */
+  route("store-guide", "./components/Layout/StoreGuideLayout.tsx", [
+    route("what-is", "./routes/WhatIsSection.tsx"),
+    route("how-it-works", "./routes/HowItWorksSection.tsx"),
+    route("fees", "./routes/FeesSection.tsx"),
+    route("commission", "./routes/CommissionSection.tsx"),
+    route("popular-markets", "./routes/PopularMarketsSection.tsx"),
+    route("restrictions", "./routes/RestrictionsSection.tsx"),
+  ]),
+
   route("dashboard", "routes/Dashboard.tsx"),
   route("user-dashboard", "routes/UserDashboard.tsx"),
   route("admin-dashboard", "routes/AdminDashboard.tsx"),

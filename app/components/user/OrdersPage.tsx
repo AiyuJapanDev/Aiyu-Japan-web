@@ -3,14 +3,29 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import { StatusFlow } from "@/components/ui/status-flow";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useNavigate, useSearchParams } from "react-router";
 import { toast } from "sonner";
 import { useApp } from "@/contexts/AppContext";
-import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+  TooltipProvider,
+} from "@/components/ui/tooltip";
 import {
   ChevronDown,
   ChevronUp,
@@ -32,7 +47,6 @@ import {
   AlertCircle,
   Filter,
 } from "lucide-react";
-
 
 interface OrderWithDetails {
   id: string;
@@ -106,7 +120,7 @@ export const OrdersPage = () => {
 
   // Handle deep linking to specific order
   useEffect(() => {
-    const orderId = searchParams.get('orderId');
+    const orderId = searchParams.get("orderId");
     if (orderId && orders.length > 0) {
       // Open the order
       setOpenOrders(new Set([orderId]));
@@ -114,7 +128,7 @@ export const OrdersPage = () => {
       setTimeout(() => {
         const element = document.getElementById(`order-${orderId}`);
         if (element) {
-          element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          element.scrollIntoView({ behavior: "smooth", block: "center" });
         }
       }, 100);
     }
@@ -136,7 +150,7 @@ export const OrdersPage = () => {
           order_items (
             product_request:product_requests (*)
           )
-        `,
+        `
         )
         .eq("user_id", user.id)
         .order("created_at", { ascending: false });
@@ -146,7 +160,8 @@ export const OrdersPage = () => {
       // Show all orders that don't have shipping quotes
       const filteredOrders =
         data?.filter((order) => {
-          const hasShippingQuote = order.quotes?.some((q: any) => q.type === "shipping") ?? false;
+          const hasShippingQuote =
+            order.quotes?.some((q: any) => q.type === "shipping") ?? false;
           return !hasShippingQuote;
         }) || [];
 
@@ -170,14 +185,19 @@ export const OrdersPage = () => {
   };
 
   const getPurchaseProgress = (order: OrderWithDetails) => {
-    const statuses = order.order_items?.map((item) => item.product_request.status) ?? [];
+    const statuses =
+      order.order_items?.map((item) => item.product_request.status) ?? [];
     const purchasedCount = statuses.filter((s) => s === "purchased").length;
     const receivedCount = statuses.filter((s) => s === "received").length;
     const totalCount = statuses.length;
 
     return {
-      somePurchased: purchasedCount > 0 && purchasedCount < totalCount && receivedCount === 0,
-      allPurchased: purchasedCount === totalCount && totalCount > 0 && receivedCount === 0,
+      somePurchased:
+        purchasedCount > 0 &&
+        purchasedCount < totalCount &&
+        receivedCount === 0,
+      allPurchased:
+        purchasedCount === totalCount && totalCount > 0 && receivedCount === 0,
       someReceived: receivedCount > 0 && receivedCount < totalCount,
       allReceived: receivedCount === totalCount && totalCount > 0,
       purchasedCount,
@@ -189,7 +209,8 @@ export const OrdersPage = () => {
   const getOrderStatus = (order: OrderWithDetails): string => {
     if (order.is_rejected) return "rejected";
 
-    const productStatuses = order.order_items?.map((item) => item.product_request.status) ?? [];
+    const productStatuses =
+      order.order_items?.map((item) => item.product_request.status) ?? [];
     const progress = getPurchaseProgress(order);
 
     // Check if all items are at warehouse
@@ -198,7 +219,10 @@ export const OrdersPage = () => {
     }
 
     // Check if some items are purchased and some at warehouse (in transit)
-    if (progress.allPurchased || (progress.purchasedCount > 0 && progress.receivedCount > 0)) {
+    if (
+      progress.allPurchased ||
+      (progress.purchasedCount > 0 && progress.receivedCount > 0)
+    ) {
       return "in_transit";
     }
 
@@ -219,17 +243,39 @@ export const OrdersPage = () => {
 
     // Determine dynamic labels for purchase and transit steps
     const purchaseLabel =
-  progress.allPurchased || status === "in_transit" || status === "all_received"
-    ? t("statusStepItemsPurchased")
-    : t("statusStepItemsBeingPurchased");
+      progress.allPurchased ||
+      status === "in_transit" ||
+      status === "all_received"
+        ? t("statusStepItemsPurchased")
+        : t("statusStepItemsBeingPurchased");
 
-const steps = [
-  { label: t("statusStepRequestSubmitted"), status: "upcoming", icon: <Clock className="h-4 w-4" /> },
-  { label: t("statusStepPaymentConfirmed"), status: "upcoming", icon: <CheckCircle className="h-4 w-4" /> },
-  { label: purchaseLabel, status: "upcoming", icon: <ShoppingCart className="h-4 w-4" /> },
-  { label: t("statusStepItemsOnTheWay"), status: "upcoming", icon: <Truck className="h-4 w-4" /> },
-  { label: t("statusStepAllAtWarehouse"), status: "upcoming", icon: <Home className="h-4 w-4" /> },
-];
+    const steps = [
+      {
+        label: t("statusStepRequestSubmitted"),
+        status: "upcoming",
+        icon: <Clock className="h-4 w-4" />,
+      },
+      {
+        label: t("statusStepPaymentConfirmed"),
+        status: "upcoming",
+        icon: <CheckCircle className="h-4 w-4" />,
+      },
+      {
+        label: purchaseLabel,
+        status: "upcoming",
+        icon: <ShoppingCart className="h-4 w-4" />,
+      },
+      {
+        label: t("statusStepItemsOnTheWay"),
+        status: "upcoming",
+        icon: <Truck className="h-4 w-4" />,
+      },
+      {
+        label: t("statusStepAllAtWarehouse"),
+        status: "upcoming",
+        icon: <Home className="h-4 w-4" />,
+      },
+    ];
 
     const statusMap: Record<string, number> = {
       requested: 0,
@@ -245,8 +291,16 @@ const steps = [
     const currentIndex = statusMap[status] ?? -1;
     if (status === "rejected") {
       return [
-        { label: t("statusStepRequestSubmitted"), status: "completed" as StepStatus, icon: <Clock className="h-4 w-4" /> },
-        { label:  t("statusRejected"), status: "rejected" as StepStatus, icon: <XCircle className="h-4 w-4" /> },
+        {
+          label: t("statusStepRequestSubmitted"),
+          status: "completed" as StepStatus,
+          icon: <Clock className="h-4 w-4" />,
+        },
+        {
+          label: t("statusRejected"),
+          status: "rejected" as StepStatus,
+          icon: <XCircle className="h-4 w-4" />,
+        },
       ];
     }
 
@@ -259,7 +313,15 @@ const steps = [
         if (["requested", "quoted"].includes(status)) {
           return { ...step, status: "current" as StepStatus }; // Highlight for quoted/requested
         }
-        if (["paid", "some_purchased", "all_purchased", "in_transit", "all_received"].includes(status)) {
+        if (
+          [
+            "paid",
+            "some_purchased",
+            "all_purchased",
+            "in_transit",
+            "all_received",
+          ].includes(status)
+        ) {
           return { ...step, status: "completed" as StepStatus }; // ✅ mark completed once paid or later
         }
       }
@@ -269,7 +331,14 @@ const steps = [
         if (status === "paid") {
           return { ...step, status: "current" as StepStatus }; // 🟢 highlight when paid
         }
-        if (["some_purchased", "all_purchased", "in_transit", "all_received"].includes(status)) {
+        if (
+          [
+            "some_purchased",
+            "all_purchased",
+            "in_transit",
+            "all_received",
+          ].includes(status)
+        ) {
           return { ...step, status: "completed" as StepStatus }; // ✅ mark completed after purchase
         }
       }
@@ -293,13 +362,11 @@ const steps = [
 
       return { ...step, status: "upcoming" as StepStatus };
     });
-
   };
 
   const getStatusColor = (status: string): string => {
     const colors: Record<string, string> = {
-
-      requested: "bg-capybara-yellow text-red-500",
+      requested: "bg-capybara-yellow text-blue-500",
       quoted: "bg-yellow-100 text-yellow-800",
       paid: "bg-green-100 text-green-800",
       some_purchased: "bg-purple-100 text-purple-800",
@@ -307,7 +374,7 @@ const steps = [
       in_transit: "bg-blue-100 text-blue-800",
       all_received: "bg-indigo-100 text-indigo-800",
       purchased: "bg-purple-100 text-purple-800",
-      rejected: "bg-red-100 text-red-800",
+      rejected: "bg-blue-100 text-blue-800",
     };
     return colors[status] || "bg-gray-100 text-gray-800";
   };
@@ -384,7 +451,7 @@ const steps = [
         icon = <Truck className="h-3 w-3 mr-1" />;
         break;
       case "rejected":
-        badgeClasses = "bg-red-100 text-red-800 border-red-300";
+        badgeClasses = "bg-blue-100 text-blue-800 border-blue-300";
         icon = <XCircle className="h-3 w-3 mr-1" />;
         break;
       default:
@@ -393,7 +460,10 @@ const steps = [
     }
 
     return (
-      <Badge variant="outline" className={`text-xs flex items-center gap-1 ${badgeClasses}`}>
+      <Badge
+        variant="outline"
+        className={`text-xs flex items-center gap-1 ${badgeClasses}`}
+      >
         {icon}
         {statusDisplay}
       </Badge>
@@ -405,7 +475,9 @@ const steps = [
   };
 
   const handleGoToStorage = () => {
-    const dashboardPath = window.location.pathname.includes("admin") ? "/admin-dashboard" : "/user-dashboard";
+    const dashboardPath = window.location.pathname.includes("admin")
+      ? "/admin-dashboard"
+      : "/user-dashboard";
     navigate(`${dashboardPath}?tab=storage`);
   };
 
@@ -417,21 +489,23 @@ const steps = [
     setRefreshing(true);
     try {
       await fetchOrders();
-      toast.success(t('ordersUpdatedSuccess'));
+      toast.success(t("ordersUpdatedSuccess"));
     } catch (error) {
-      toast.error(t('ordersUpdateError'));
+      toast.error(t("ordersUpdateError"));
     } finally {
       setRefreshing(false);
     }
   };
 
   if (loading) {
-    return <div className="flex justify-center p-8">{t('loadingOrders')}</div>;
+    return <div className="flex justify-center p-8">{t("loadingOrders")}</div>;
   }
 
   // Filter orders by status and rejected
   let filteredOrders =
-    statusFilter === "all" ? orders : orders.filter((order) => getOrderStatus(order) === statusFilter);
+    statusFilter === "all"
+      ? orders
+      : orders.filter((order) => getOrderStatus(order) === statusFilter);
 
   // Hide rejected orders if checkbox is checked
   if (hideRejected) {
@@ -449,8 +523,10 @@ const steps = [
       <Card>
         <CardContent className="p-8 text-center">
           <Package className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-          <p className="text-muted-foreground">{t('noActiveOrders')}</p>
-          <p className="text-sm text-muted-foreground mt-2">{t('noActiveOrdersDescription')}</p>
+          <p className="text-muted-foreground">{t("noActiveOrders")}</p>
+          <p className="text-sm text-muted-foreground mt-2">
+            {t("noActiveOrdersDescription")}
+          </p>
         </CardContent>
       </Card>
     );
@@ -460,7 +536,7 @@ const steps = [
     <TooltipProvider delayDuration={0}>
       <div className="space-y-4">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-2xl font-bold">{t('currentOrders')}</h2>
+          <h2 className="text-2xl font-bold">{t("currentOrders")}</h2>
         </div>
 
         {/* Filter Toggle Button */}
@@ -470,8 +546,12 @@ const steps = [
           className="mb-4 gap-2"
         >
           <Filter className="h-4 w-4" />
-          {t('filterOrders')}
-          {isFilterOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+          {t("filterOrders")}
+          {isFilterOpen ? (
+            <ChevronUp className="h-4 w-4" />
+          ) : (
+            <ChevronDown className="h-4 w-4" />
+          )}
         </Button>
 
         {/* Collapsible Filters */}
@@ -479,100 +559,130 @@ const steps = [
           <CollapsibleContent className="overflow-hidden data-[state=open]:animate-collapsible-down data-[state=closed]:animate-collapsible-up">
             <Card className="bg-muted/30 mb-4">
               <CardContent className="p-4">
-            <div
-              className="
+                <div
+                  className="
         flex flex-wrap items-center justify-between gap-3
         md:justify-start
       "
-            >
-              {/* --- Status + Show per page side by side --- */}
-              <div className="flex flex-wrap items-center gap-3">
-                {/* Status Filter */}
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium">{t('statusFilter')}</span>
-                  <Select value={statusFilter} onValueChange={setStatusFilter}>
-                    <SelectTrigger className="w-[190px]">
-                      <SelectValue placeholder={t('allStatuses')} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">{t('allStatuses')}</SelectItem>
-                      <SelectItem value="requested">{t('statusRequested')}</SelectItem>
-                      <SelectItem value="quoted">{t('statusAwaitingPayment')}</SelectItem>
-                      <SelectItem value="paid">{t('statusPaid')}</SelectItem>
-                      <SelectItem value="some_purchased">{t('statusSomePurchased')}</SelectItem>
-                      <SelectItem value="all_purchased">{t('statusAllPurchased')}</SelectItem>
-                      <SelectItem value="in_transit">{t('statusInTransit')}</SelectItem>
-                      <SelectItem value="all_received">{t('statusAllAtWarehouse')}</SelectItem>
-                      <SelectItem value="rejected">{t('statusRejected')}</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {/* Show Per Page */}
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium">{t('showPerPage')}</span>
-                  <Select
-                    value={itemsPerPage.toString()}
-                    onValueChange={(val) => setItemsPerPage(Number(val))}
-                  >
-                    <SelectTrigger className="w-[90px]">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="5">5</SelectItem>
-                      <SelectItem value="10">10</SelectItem>
-                      <SelectItem value="25">25</SelectItem>
-                      <SelectItem value="50">50</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <span className="text-sm text-muted-foreground">{t('perPage')}</span>
-                </div>
-              </div>
-
-              {/* --- Right side controls --- */}
-              <div className="flex flex-wrap items-center gap-3">
-                {/* Hide Rejected */}
-                <div className="flex items-center gap-2">
-                  <Checkbox
-                    id="hide-rejected"
-                    checked={hideRejected}
-                    onCheckedChange={(checked) => setHideRejected(checked === true)}
-                  />
-                  <label
-                    htmlFor="hide-rejected"
-                    className="text-sm font-medium cursor-pointer whitespace-nowrap"
-                  >
-                    {t('hideRejected')}
-                  </label>
-                </div>
-
-                {/* Refresh Button */}
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleRefresh}
-                  disabled={refreshing}
-                  className="gap-2"
                 >
-                  <RefreshCw className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`} />
-                  {refreshing ? t('refreshing') : t('update')}
-                </Button>
-              </div>
-            </div>
+                  {/* --- Status + Show per page side by side --- */}
+                  <div className="flex flex-wrap items-center gap-3">
+                    {/* Status Filter */}
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-medium">
+                        {t("statusFilter")}
+                      </span>
+                      <Select
+                        value={statusFilter}
+                        onValueChange={setStatusFilter}
+                      >
+                        <SelectTrigger className="w-[190px]">
+                          <SelectValue placeholder={t("allStatuses")} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">
+                            {t("allStatuses")}
+                          </SelectItem>
+                          <SelectItem value="requested">
+                            {t("statusRequested")}
+                          </SelectItem>
+                          <SelectItem value="quoted">
+                            {t("statusAwaitingPayment")}
+                          </SelectItem>
+                          <SelectItem value="paid">
+                            {t("statusPaid")}
+                          </SelectItem>
+                          <SelectItem value="some_purchased">
+                            {t("statusSomePurchased")}
+                          </SelectItem>
+                          <SelectItem value="all_purchased">
+                            {t("statusAllPurchased")}
+                          </SelectItem>
+                          <SelectItem value="in_transit">
+                            {t("statusInTransit")}
+                          </SelectItem>
+                          <SelectItem value="all_received">
+                            {t("statusAllAtWarehouse")}
+                          </SelectItem>
+                          <SelectItem value="rejected">
+                            {t("statusRejected")}
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
 
-            {/* Showing count text */}
-            {filteredOrders.length > 0 && (
-              <div className="mt-4 text-sm text-muted-foreground">
-                {t('showingOrders')} {startIndex + 1}-{Math.min(endIndex, filteredOrders.length)} {t('ofOrders')}{" "}
-                {filteredOrders.length} {t('ordersText')}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+                    {/* Show Per Page */}
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-medium">
+                        {t("showPerPage")}
+                      </span>
+                      <Select
+                        value={itemsPerPage.toString()}
+                        onValueChange={(val) => setItemsPerPage(Number(val))}
+                      >
+                        <SelectTrigger className="w-[90px]">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="5">5</SelectItem>
+                          <SelectItem value="10">10</SelectItem>
+                          <SelectItem value="25">25</SelectItem>
+                          <SelectItem value="50">50</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <span className="text-sm text-muted-foreground">
+                        {t("perPage")}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* --- Right side controls --- */}
+                  <div className="flex flex-wrap items-center gap-3">
+                    {/* Hide Rejected */}
+                    <div className="flex items-center gap-2">
+                      <Checkbox
+                        id="hide-rejected"
+                        checked={hideRejected}
+                        onCheckedChange={(checked) =>
+                          setHideRejected(checked === true)
+                        }
+                      />
+                      <label
+                        htmlFor="hide-rejected"
+                        className="text-sm font-medium cursor-pointer whitespace-nowrap"
+                      >
+                        {t("hideRejected")}
+                      </label>
+                    </div>
+
+                    {/* Refresh Button */}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleRefresh}
+                      disabled={refreshing}
+                      className="gap-2"
+                    >
+                      <RefreshCw
+                        className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`}
+                      />
+                      {refreshing ? t("refreshing") : t("update")}
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Showing count text */}
+                {filteredOrders.length > 0 && (
+                  <div className="mt-4 text-sm text-muted-foreground">
+                    {t("showingOrders")} {startIndex + 1}-
+                    {Math.min(endIndex, filteredOrders.length)} {t("ofOrders")}{" "}
+                    {filteredOrders.length} {t("ordersText")}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           </CollapsibleContent>
         </Collapsible>
-
-
 
         {paginatedOrders.map((order) => {
           const status = getOrderStatus(order);
@@ -595,11 +705,8 @@ const steps = [
           const statusText =
             statusTextMap[status] ||
             (status
-              ? status
-                .replace(/_/g, " ")
-                .replace(/^\w/, (c) => c.toUpperCase())
+              ? status.replace(/_/g, " ").replace(/^\w/, (c) => c.toUpperCase())
               : "");
-
 
           return (
             <Collapsible key={order.id} open={isOpen}>
@@ -610,7 +717,10 @@ const steps = [
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-4">
-                      <CardTitle className="text-lg">{t('orderNumber')}{order.order_personal_id || order.id.slice(0, 8)}</CardTitle>
+                      <CardTitle className="text-lg">
+                        {t("orderNumber")}
+                        {order.order_personal_id || order.id.slice(0, 8)}
+                      </CardTitle>
 
                       <Tooltip>
                         <span className="cursor-default">
@@ -624,20 +734,29 @@ const steps = [
                               </span>
                             </span>
                           </TooltipTrigger>
-                          <TooltipContent side="right" alignOffset={40} className="right-80 z-60 text-grey-700 border border-capybara-orange shadow-lg">
+                          <TooltipContent
+                            side="right"
+                            alignOffset={40}
+                            className="right-80 z-60 text-grey-700 border border-capybara-orange shadow-lg"
+                          >
                             <p>{getStatusTooltip(status)}</p>
                           </TooltipContent>
                         </span>
                       </Tooltip>
                     </div>
                     <CollapsibleTrigger asChild>
-                      <Button variant="ghost" size="sm" onClick={() => toggleOrder(order.id)}>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => toggleOrder(order.id)}
+                      >
                         {isOpen ? <ChevronUp /> : <ChevronDown />}
                       </Button>
                     </CollapsibleTrigger>
                   </div>
                   <p className="text-sm text-muted-foreground mt-1">
-                    {t('createdOn')} {new Date(order.created_at).toLocaleDateString()}
+                    {t("createdOn")}{" "}
+                    {new Date(order.created_at).toLocaleDateString()}
                   </p>
                 </CardHeader>
 
@@ -646,28 +765,33 @@ const steps = [
                     <StatusFlow steps={statusSteps} />
 
                     {/* Delivery time message */}
-                    {["some_purchased", "all_purchased", "in_transit"].includes(status) && (
+                    {["some_purchased", "all_purchased", "in_transit"].includes(
+                      status
+                    ) && (
                       <div className="mt-3 mb-4 p-3 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-lg">
                         <p className="text-sm text-blue-800 dark:text-blue-200">
-                          ℹ️ {t('normalDeliveryInfo')}
+                          ℹ️ {t("normalDeliveryInfo")}
                         </p>
                       </div>
                     )}
                     {["paid"].includes(status) && (
                       <div className="mt-3 mb-4 p-3 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-lg">
                         <p className="text-sm text-blue-800 dark:text-blue-200">
-                          ℹ️ {t('paymentReceivedInfo')}
+                          ℹ️ {t("paymentReceivedInfo")}
                         </p>
                       </div>
                     )}
                     {order.is_rejected && (
-                      <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                         <div className="flex items-start gap-2">
-                          <AlertTriangle className="h-5 w-5 text-red-600 mt-0.5" />
+                          <AlertTriangle className="h-5 w-5 text-blue-600 mt-0.5" />
                           <div className="flex-1">
-                            <p className="font-medium text-red-900">{t('orderRejected')}</p>
-                            <p className="text-sm text-red-700 mt-1">
-                              {order.rejection_details?.rejection_reason || order.rejection_reason}
+                            <p className="font-medium text-blue-900">
+                              {t("orderRejected")}
+                            </p>
+                            <p className="text-sm text-blue-700 mt-1">
+                              {order.rejection_details?.rejection_reason ||
+                                order.rejection_reason}
                             </p>
                             <Button
                               variant="outline"
@@ -676,7 +800,7 @@ const steps = [
                               onClick={() => handleEditOrder(order.id)}
                             >
                               <Edit className="h-4 w-4 mr-2" />
-                              {t('editOrder')}
+                              {t("editOrder")}
                             </Button>
                           </div>
                         </div>
@@ -684,159 +808,198 @@ const steps = [
                     )}
 
                     <div className="space-y-3">
-                      <h4 className="font-medium text-sm">{t('productsInOrder')}:</h4>
+                      <h4 className="font-medium text-sm">
+                        {t("productsInOrder")}:
+                      </h4>
                       {order.rejection_details
                         ? // Rejected orders: render from rejection_details snapshot
-                        order.rejection_details.product_issues?.map((issue: any, index: number) => (
-                          <div
-                            key={issue.product_id}
-                            className="flex items-start justify-between p-3 bg-secondary rounded-lg"
-                          >
-                            <div className="flex-1">
-                              <div className="flex items-center gap-2">
-                                <p className="font-medium text-sm">{index + 1}) {issue.item_name || "Unnamed Product"}</p>
-                              </div>
-                              <a
-                                href={issue.product_url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-xs text-primary hover:underline truncate block max-w-md"
+                          order.rejection_details.product_issues?.map(
+                            (issue: any, index: number) => (
+                              <div
+                                key={issue.product_id}
+                                className="flex items-start justify-between p-3 bg-secondary rounded-lg"
                               >
-                                {issue.product_url}
-                              </a>
-                              <div className="flex items-center gap-4 mt-1">
-                                <span className="text-xs text-muted-foreground">Qty: {issue.quantity || 1}</span>
+                                <div className="flex-1">
+                                  <div className="flex items-center gap-2">
+                                    <p className="font-medium text-sm">
+                                      {index + 1}){" "}
+                                      {issue.item_name || "Unnamed Product"}
+                                    </p>
+                                  </div>
+                                  <a
+                                    href={issue.product_url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-xs text-primary hover:underline truncate block max-w-md"
+                                  >
+                                    {issue.product_url}
+                                  </a>
+                                  <div className="flex items-center gap-4 mt-1">
+                                    <span className="text-xs text-muted-foreground">
+                                      Qty: {issue.quantity || 1}
+                                    </span>
+                                  </div>
+                                  {issue.has_issue &&
+                                    issue.issue_description && (
+                                      <div className="flex items-center gap-1 mt-2 bg-yellow-50 border border-yellow-200 rounded p-2">
+                                        <AlertCircle className="h-3 w-3 text-yellow-600 flex-shrink-0" />
+                                        <span className="text-xs text-yellow-700">
+                                          {t("issuePrefix")}{" "}
+                                          {issue.issue_description}
+                                        </span>
+                                      </div>
+                                    )}
+                                </div>
                               </div>
-                              {issue.has_issue && issue.issue_description && (
-                                <div className="flex items-center gap-1 mt-2 bg-yellow-50 border border-yellow-200 rounded p-2">
-                                  <AlertCircle className="h-3 w-3 text-yellow-600 flex-shrink-0" />
-                                  <span className="text-xs text-yellow-700">{t('issuePrefix')} {issue.issue_description}</span>
+                            )
+                          )
+                        : // Active orders: render from order_items
+                          // Active orders: render from order_items
+                          order.order_items?.map((item, index: number) => (
+                            <div
+                              key={item.product_request.id}
+                              className="flex flex-wrap items-start justify-between p-3 bg-secondary rounded-lg overflow-hidden"
+                            >
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <p className="font-medium text-sm truncate">
+                                    {index + 1}){" "}
+                                    {item.product_request.item_name ||
+                                      "Unnamed Product"}
+                                  </p>
+                                  {item.product_request.status ===
+                                    "received" && (
+                                    <Badge
+                                      variant="secondary"
+                                      className="text-xs bg-indigo-100 text-indigo-800 border-indigo-200"
+                                    >
+                                      <Home className="h-3 w-3 mr-1" />
+                                      In Storage
+                                    </Badge>
+                                  )}
+                                </div>
+
+                                {/* ✅ Fixed product link area */}
+                                <div className="max-w-[280px] truncate">
+                                  <a
+                                    href={item.product_request.product_url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-flex items-center gap-1 text-blue-600 hover:underline text-xs"
+                                    title={item.product_request.product_url}
+                                  >
+                                    <Link className="h-3 w-3 flex-shrink-0" />
+                                    <span className="truncate">
+                                      {item.product_request.product_url}
+                                    </span>
+                                  </a>
+                                </div>
+
+                                <div className="flex items-center gap-4 mt-1 flex-wrap text-xs text-muted-foreground">
+                                  <span>
+                                    Qty: {item.product_request.quantity || 1}
+                                  </span>
+                                  {item.product_request.notes && (
+                                    <span>
+                                      Note: {item.product_request.notes}
+                                    </span>
+                                  )}
+                                </div>
+
+                                {item.product_request.has_purchase_issue &&
+                                  item.product_request
+                                    .purchase_issue_description && (
+                                    <div className="flex items-center gap-1 mt-2 bg-yellow-50 border border-yellow-200 rounded p-2">
+                                      <AlertCircle className="h-3 w-3 text-yellow-600 flex-shrink-0" />
+                                      <span className="text-xs text-yellow-700">
+                                        Issue:{" "}
+                                        {
+                                          item.product_request
+                                            .purchase_issue_description
+                                        }
+                                      </span>
+                                    </div>
+                                  )}
+                              </div>
+
+                              {/* ✅ Prevent badge from expanding the card */}
+                              {!order.is_rejected && (
+                                <div className="flex-shrink-0 ml-3 self-start">
+                                  {getProductStatusBadge(
+                                    item.product_request.status
+                                  )}
                                 </div>
                               )}
                             </div>
-                          </div>
-                        ))
-                        // Active orders: render from order_items
-                        : // Active orders: render from order_items
-                        order.order_items?.map((item, index: number) => (
-                          <div
-                            key={item.product_request.id}
-                            className="flex flex-wrap items-start justify-between p-3 bg-secondary rounded-lg overflow-hidden"
-                          >
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-2 flex-wrap">
-                                <p className="font-medium text-sm truncate">
-                                  {index + 1}) {item.product_request.item_name || "Unnamed Product"}
-                                </p>
-                                {item.product_request.status === "received" && (
-                                  <Badge
-                                    variant="secondary"
-                                    className="text-xs bg-indigo-100 text-indigo-800 border-indigo-200"
-                                  >
-                                    <Home className="h-3 w-3 mr-1" />
-                                    In Storage
-                                  </Badge>
-                                )}
-                              </div>
-
-                              {/* ✅ Fixed product link area */}
-                              <div className="max-w-[280px] truncate">
-                                <a
-                                  href={item.product_request.product_url}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="inline-flex items-center gap-1 text-blue-600 hover:underline text-xs"
-                                  title={item.product_request.product_url}
-                                >
-                                  <Link className="h-3 w-3 flex-shrink-0" />
-                                  <span className="truncate">{item.product_request.product_url}</span>
-                                </a>
-                              </div>
-
-                              <div className="flex items-center gap-4 mt-1 flex-wrap text-xs text-muted-foreground">
-                                <span>Qty: {item.product_request.quantity || 1}</span>
-                                {item.product_request.notes && (
-                                  <span>Note: {item.product_request.notes}</span>
-                                )}
-                              </div>
-
-                              {item.product_request.has_purchase_issue &&
-                                item.product_request.purchase_issue_description && (
-                                  <div className="flex items-center gap-1 mt-2 bg-yellow-50 border border-yellow-200 rounded p-2">
-                                    <AlertCircle className="h-3 w-3 text-yellow-600 flex-shrink-0" />
-                                    <span className="text-xs text-yellow-700">
-                                      Issue: {item.product_request.purchase_issue_description}
-                                    </span>
-                                  </div>
-                                )}
-                            </div>
-
-                            {/* ✅ Prevent badge from expanding the card */}
-                            {!order.is_rejected && (
-                              <div className="flex-shrink-0 ml-3 self-start">
-                                {getProductStatusBadge(item.product_request.status)}
-                              </div>
-                            )}
-                          </div>
-                        ))
-                      }
-
+                          ))}
                     </div>
 
                     {(status === "all_received" ||
                       (status === "in_transit" &&
-                        order.order_items?.some((item) => item.product_request.status === "received"))) && (
-                        <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-4">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                              <Home className="h-5 w-5 text-indigo-600" />
-                              <div>
-                                <p className="font-medium text-indigo-900">
-                                  {status === "all_received" ? "All items at warehouse" : "Items on the way to warehouse"}
-                                </p>
-                                <p className="text-sm text-indigo-700">
-                                  {status === "all_received"
-                                    ? "View and manage your items in storage"
-                                    : order.order_items?.some((item) => item.product_request.status === "received")
-                                      ? "Some items may already be available in storage"
-                                      : "Items will be available in storage once received"}
-                                </p>
-                              </div>
+                        order.order_items?.some(
+                          (item) => item.product_request.status === "received"
+                        ))) && (
+                      <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-4">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <Home className="h-5 w-5 text-indigo-600" />
+                            <div>
+                              <p className="font-medium text-indigo-900">
+                                {status === "all_received"
+                                  ? "All items at warehouse"
+                                  : "Items on the way to warehouse"}
+                              </p>
+                              <p className="text-sm text-indigo-700">
+                                {status === "all_received"
+                                  ? "View and manage your items in storage"
+                                  : order.order_items?.some(
+                                        (item) =>
+                                          item.product_request.status ===
+                                          "received"
+                                      )
+                                    ? "Some items may already be available in storage"
+                                    : "Items will be available in storage once received"}
+                              </p>
                             </div>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={handleGoToStorage}
-                              className="border-indigo-300 text-indigo-700 hover:bg-indigo-100"
-                            >
-                              {t('goToStorage')}
-                            </Button>
                           </div>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={handleGoToStorage}
+                            className="border-indigo-300 text-indigo-700 hover:bg-indigo-100"
+                          >
+                            {t("goToStorage")}
+                          </Button>
                         </div>
-                      )}
+                      </div>
+                    )}
 
                     {productQuote && productQuote.status !== "paid" && (
                       <div className="bg-primary/5 rounded-lg p-4">
                         <div className="flex items-center justify-between">
                           <div>
-                            <p className="font-medium mb-2">{t('quoteIssued')}</p>
+                            <p className="font-medium mb-2">
+                              {t("quoteIssued")}
+                            </p>
 
                             <div className="flex items-start text-xs text-muted-foreground max-w-s text-left pt-1">
                               <AlertTriangle className="h-3 w-3 mr-2 text-yellow-500 flex-shrink-0 mt-0.5" />
                               <p className="text-xs text-muted-foreground">
-                                {t('paymentConfirmationNotice1')}
+                                {t("paymentConfirmationNotice1")}
                                 <br />
-                                {t('paymentConfirmationNotice2')}
+                                {t("paymentConfirmationNotice2")}
                               </p>
                             </div>
                           </div>
 
                           <div className="flex items-end gap-2">
                             <Button
-                              onClick={() => handlePayment(productQuote.quote_url)}
+                              onClick={() =>
+                                handlePayment(productQuote.quote_url)
+                              }
                               className="bg-primary hover:bg-primary/90"
                             >
-                              {t('payNow')}
+                              {t("payNow")}
                             </Button>
                           </div>
                         </div>
@@ -857,34 +1020,40 @@ const steps = [
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+                  onClick={() =>
+                    setCurrentPage((prev) => Math.max(1, prev - 1))
+                  }
                   disabled={currentPage === 1}
                 >
                   <ChevronLeft className="h-4 w-4 mr-1" />
-                  {t('previous')}
+                  {t("previous")}
                 </Button>
 
                 <div className="flex items-center gap-2">
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                    <Button
-                      key={page}
-                      variant={currentPage === page ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => setCurrentPage(page)}
-                      className="min-w-[40px]"
-                    >
-                      {page}
-                    </Button>
-                  ))}
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                    (page) => (
+                      <Button
+                        key={page}
+                        variant={currentPage === page ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setCurrentPage(page)}
+                        className="min-w-[40px]"
+                      >
+                        {page}
+                      </Button>
+                    )
+                  )}
                 </div>
 
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+                  onClick={() =>
+                    setCurrentPage((prev) => Math.min(totalPages, prev + 1))
+                  }
                   disabled={currentPage === totalPages}
                 >
-                  {t('next')}
+                  {t("next")}
                   <ChevronRight className="h-4 w-4 ml-1" />
                 </Button>
               </div>

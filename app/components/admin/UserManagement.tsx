@@ -1,12 +1,11 @@
-
-import React, { useState } from 'react';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent } from '@/components/ui/card';
-import { Search, Eye, Globe } from 'lucide-react';
-import { UserRole, UserWithRole } from '@/types/user';
-import { useIsMobile } from '@/hooks/use-mobile';
+import React, { useState } from "react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
+import { Search, Eye, Globe } from "lucide-react";
+import { UserRole, UserWithRole } from "@/types/user";
+import { useIsMobile } from "@/hooks/use-mobile";
 import {
   Table,
   TableBody,
@@ -14,8 +13,8 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
-import { UserInfoDialog } from './UserInfoDialog';
+} from "@/components/ui/table";
+import { UserInfoDialog } from "./UserInfoDialog";
 
 interface UserManagementProps {
   users: UserWithRole[];
@@ -28,9 +27,9 @@ const UserManagement: React.FC<UserManagementProps> = ({
   users,
   usersLoading,
   refetchUsers,
-  handleRoleChange
+  handleRoleChange,
 }) => {
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const [selectedUser, setSelectedUser] = useState<UserWithRole | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const isMobile = useIsMobile();
@@ -41,17 +40,22 @@ const UserManagement: React.FC<UserManagementProps> = ({
   };
 
   const filteredUsers = users.filter((user) => {
-    const matchesSearch = user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    const matchesSearch =
+      user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.full_name.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesSearch;
   });
 
   const getRoleColor = (role: UserRole) => {
     switch (role) {
-      case 'admin': return 'bg-red-100 text-red-800';
-      case 'moderator': return 'bg-yellow-100 text-yellow-800';
-      case 'user': return 'bg-blue-100 text-blue-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case "admin":
+        return "bg-blue-100 text-blue-800";
+      case "moderator":
+        return "bg-yellow-100 text-yellow-800";
+      case "user":
+        return "bg-blue-100 text-blue-800";
+      default:
+        return "bg-gray-100 text-gray-800";
     }
   };
 
@@ -69,8 +73,12 @@ const UserManagement: React.FC<UserManagementProps> = ({
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-          <Button onClick={() => refetchUsers()} disabled={usersLoading} className="flex-shrink-0">
-            {usersLoading ? 'Loading...' : 'Refresh'}
+          <Button
+            onClick={() => refetchUsers()}
+            disabled={usersLoading}
+            className="flex-shrink-0"
+          >
+            {usersLoading ? "Loading..." : "Refresh"}
           </Button>
         </div>
       </div>
@@ -84,19 +92,23 @@ const UserManagement: React.FC<UserManagementProps> = ({
                   <div>
                     <p className="font-medium">{user.full_name}</p>
                     {user.user_personal_id && (
-                      <span className="text-xs text-muted-foreground">#{user.user_personal_id}</span>
+                      <span className="text-xs text-muted-foreground">
+                        #{user.user_personal_id}
+                      </span>
                     )}
                   </div>
                   <Badge className={getRoleColor(user.role)}>
                     {user.role.toUpperCase()}
                   </Badge>
                 </div>
-                
+
                 <div className="space-y-1 text-sm">
-                  <p className="text-muted-foreground break-all">{user.email}</p>
+                  <p className="text-muted-foreground break-all">
+                    {user.email}
+                  </p>
                   <div className="flex items-center gap-2">
                     <Globe className="h-4 w-4 text-muted-foreground" />
-                    <span>{user.country || 'N/A'}</span>
+                    <span>{user.country || "N/A"}</span>
                   </div>
                   <p className="text-muted-foreground">
                     Joined: {new Date(user.created_at).toLocaleDateString()}
@@ -136,14 +148,16 @@ const UserManagement: React.FC<UserManagementProps> = ({
                       <TableCell className="font-medium">
                         {user.full_name}
                         {user.user_personal_id && (
-                          <span className="text-xs text-muted-foreground ml-2">#{user.user_personal_id}</span>
+                          <span className="text-xs text-muted-foreground ml-2">
+                            #{user.user_personal_id}
+                          </span>
                         )}
                         <Badge className={`${getRoleColor(user.role)} ml-2`}>
                           {user.role.toUpperCase()}
                         </Badge>
                       </TableCell>
                       <TableCell className="break-all">{user.email}</TableCell>
-                      <TableCell>{user.country || 'N/A'}</TableCell>
+                      <TableCell>{user.country || "N/A"}</TableCell>
                       <TableCell>
                         {new Date(user.created_at).toLocaleDateString()}
                       </TableCell>

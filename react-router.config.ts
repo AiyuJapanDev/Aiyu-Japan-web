@@ -54,11 +54,20 @@ export default {
     "/auth/reset-password",
     "/email-verification",
     "/calculator",
-    "/store-guide",
+    /* Store Guide Routes */
+    "/store-guide/what-is",
+    "/store-guide/how-it-works",
+    "/store-guide/fees",
+    "/store-guide/commission",
+    "/store-guide/popular-markets",
+    "/store-guide/restrictions",
+    /* Dashboard Routes */
     "/dashboard",
     "/user-dashboard",
     "/admin-dashboard",
+    /* Contact Routes */
     "/contact",
+    /* Terms and Privacy Routes */
     "/terms-of-service",
     "/privacy-policy",
     ...paginatedBlogRoutes,
