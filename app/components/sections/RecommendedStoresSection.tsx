@@ -1,6 +1,11 @@
 import { useApp } from "@/contexts/AppContext";
+import { StoreMarket } from "@/types/strapi-stores";
 
-export default function RecommendedStoresSection() {
+export default function RecommendedStoresSection({
+  storeMarkets,
+}: {
+  storeMarkets: StoreMarket[];
+}) {
   const { t } = useApp();
   const shops = [
     {
@@ -75,7 +80,7 @@ export default function RecommendedStoresSection() {
         </p>
       </div>
       <div className="grid grid-cols-4 sm:grid-cols-8 gap-2 [&_div]:h-[50px] [&_div]:sm:h-[80px] [&_div]:bg-white [&_div]:border [&_div]:border-[#DFE0E2] [&_div]:rounded-xl [&_div]:flex [&_div]:items-center [&_div]:justify-center">
-        {shops.map((shop) => (
+        {storeMarkets.map((shop) => (
           <div key={shop.id} className="overflow-hidden">
             <a
               href=""
@@ -83,7 +88,10 @@ export default function RecommendedStoresSection() {
               rel="noopener noreferrer"
               aria-label="Weverse"
             >
-              <img className="object-cover " src={shop.image} />
+              <img
+                className="object-cover"
+                src={`${import.meta.env.VITE_STRAPI_URL}${shop.logo.url}`}
+              />
             </a>
           </div>
         ))}

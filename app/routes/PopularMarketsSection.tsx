@@ -10,7 +10,7 @@ import {
 import { useApp } from "@/contexts/AppContext";
 import { getStoreCategories, getStoreMarkets } from "@/lib/strapi";
 import { StoreCategory, StoreMarket } from "@/types/strapi-stores";
-import { ExternalLink, Search, ShoppingBag } from "lucide-react";
+import { ExternalLink } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router";
 

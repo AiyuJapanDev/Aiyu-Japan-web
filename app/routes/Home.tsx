@@ -1,9 +1,8 @@
+import { Route } from ".react-router/types/app/routes/+types/Home";
 import ChatAssistant from "@/components/ChatAssistant";
-import CTASection from "@/components/sections/CTASection";
 import FeaturedBlog from "@/components/sections/FeaturedBlog";
 import FeaturedNews from "@/components/sections/FeaturedNews";
 import HeroSection from "@/components/sections/HeroSection";
-import HowItWorks from "@/components/sections/HowItWorksSection";
 import RecommendedStoresSection from "@/components/sections/RecommendedStoresSection";
 import ServiceFeatures from "@/components/sections/ServiceFeatures";
 import SimpleHowItWorks from "@/components/sections/SimpleHowItWorks";
@@ -17,16 +16,14 @@ import {
 import { Card, CardContent } from "@/components/ui/card";
 import { useApp } from "@/contexts/AppContext";
 import { useIntersectionObserver } from "@/hooks/useIntersectionObserver";
+import {
+  getAllNewsPosts,
+  getFeaturedBlogArticles,
+  getHomeComponents,
+  getStoreMarkets,
+} from "@/lib/strapi";
 import React, { useEffect } from "react";
 import { useLoaderData } from "react-router";
-import {
-  getHomeComponents,
-  getFeaturedBlogArticles,
-  getNewsPosts,
-  getAllNewsPosts,
-} from "@/lib/strapi";
-import { HomePageData } from "@/types/home";
-import { Article } from "@/types/blog";
 
 export async function loader() {
   const [
@@ -36,6 +33,7 @@ export async function loader() {
     featuredArticlesEs,
     newsPostsEn,
     newsPostsEs,
+    storeMarkets,
   ] = await Promise.all([
     getHomeComponents("en"),
     getHomeComponents("es"),
@@ -43,6 +41,7 @@ export async function loader() {
     getFeaturedBlogArticles("es"),
     getAllNewsPosts("en"),
     getAllNewsPosts("es"),
+    getStoreMarkets("en"),
   ]);
 
   return {
@@ -50,11 +49,13 @@ export async function loader() {
       home: homeDataEn,
       featured: featuredArticlesEn,
       news: newsPostsEn,
+      storeMarkets: storeMarkets,
     },
     es: {
       home: homeDataEs,
       featured: featuredArticlesEs,
       news: newsPostsEs,
+      storeMarkets: storeMarkets,
     },
   };
 }
@@ -83,9 +84,10 @@ const AnimatedSection = ({
   );
 };
 
-const Home = () => {
+const Home = ({ loaderData }: Route.ComponentProps) => {
   const { t, language } = useApp();
-  const data = useLoaderData<typeof loader>();
+  const data = loaderData as Awaited<ReturnType<typeof loader>>;
+
   const currentData = data[language as keyof typeof data] || data.en;
 
   useEffect(() => {
@@ -118,7 +120,7 @@ const Home = () => {
       </AnimatedSection>
 
       <AnimatedSection delay={400}>
-        <RecommendedStoresSection />
+        <RecommendedStoresSection storeMarkets={currentData.storeMarkets} />
       </AnimatedSection>
 
       <AnimatedSection delay={500}>
