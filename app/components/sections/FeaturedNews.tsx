@@ -1,32 +1,12 @@
 "use client";
 
 import { useApp } from "@/contexts/AppContext";
-import { getArticleNews } from "@/lib/strapi";
-import { Article } from "@/types/blog";
+import { New } from "@/types/strapi-news";
 import { Clock, MoveRight, Newspaper } from "lucide-react";
-import { useEffect, useState } from "react";
 import { Link } from "react-router";
 
-const FeaturedNews = () => {
+const FeaturedNews = ({ newsPosts }: { newsPosts: New[] }) => {
   const { t, language } = useApp();
-
-  // Sample blog entries
-  const [newsData, setNewsData] = useState<Article[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    setLoading(true);
-    getArticleNews({ language })
-      .then((data) => {
-        setNewsData(data);
-      })
-      .catch((error) => {
-        console.error("Error fetching news:", error);
-      })
-      .finally(() => {
-        setLoading(false);
-      });
-  }, [language]);
 
   return (
     <section className="py-10 px-4">
@@ -36,7 +16,7 @@ const FeaturedNews = () => {
             <Newspaper size={16} />
             <p>{t("featNewsTitle")}</p>
           </div>
-          <Link to={"/"}>
+          <Link to={`/news/${language}`}>
             <span className="inline-flex gap-2 items-center">
               {t("featNewsAll")}
               <MoveRight size={16} />
@@ -44,13 +24,11 @@ const FeaturedNews = () => {
           </Link>
         </div>
 
-        {loading && <p>Loading...</p>}
+        {newsPosts.length === 0 && <p>No news available.</p>}
 
-        {!loading && newsData.length === 0 && <p>No news available.</p>}
-
-        {!loading && newsData.length > 0 && (
+        {newsPosts.length > 0 && (
           <div className="space-y-2">
-            {newsData.map((entry) => (
+            {newsPosts.map((entry) => (
               <Link
                 key={entry.id}
                 to={`/blog/${language}/${entry.slug}`}

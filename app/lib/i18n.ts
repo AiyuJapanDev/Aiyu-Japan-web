@@ -12,6 +12,7 @@ export const translations = {
     dashboard: "Dashboard",
     login: "Login",
     register: "Register",
+    blog: "Blog",
     contact: "Contact",
     information: "Information",
     headerParagraph:
@@ -883,6 +884,15 @@ export const translations = {
     blog3Title: "Aiyu Japan Staff Introduction",
     blog4Title: "Where to buy with Aiyu Japan?",
 
+    // Blog Page
+    blogTitle: "Our <span class='text-blue-400'>Journal</span>",
+    blogSubtitle:
+      "Discover the latest news, guides, and stories from the Aiyu Japan team.",
+    featuredArticles: "Featured Articles",
+    allArticles: "All Articles",
+    readMore: "Read More",
+    noArticlesFound: "No articles found.",
+
     //News Blog
     featNewsTitle: "News & Anouncements",
     featNewsAll: "View All",
@@ -902,6 +912,7 @@ export const translations = {
     dashboard: "Panel principal",
     login: "Iniciar Sesión",
     register: "Registrarse",
+    blog: "Blog",
     contact: "Contacto",
     information: "Información",
     headerParagraph:
@@ -1596,6 +1607,15 @@ export const translations = {
       "Por favor, asegúrate de copiar toda la dirección correctamente. No nos hacemos responsables por paquetes mal dirigidos o entregados de forma incorrecta.",
     japaneseAddresswarnings1:
       "Este servicio de dirección japonesa es diferente al servicio de compras de Aiyu Japan. No incluye beneficios como fotografías del producto, consolidación o reempaquetado.",
+
+    // Blog Page
+    blogTitle: "Nuestro <span class='text-blue-400'>Diario</span>",
+    blogSubtitle:
+      "Descubre las últimas noticias, guías e historias del equipo de Aiyu Japan.",
+    featuredArticles: "Artículos Destacados",
+    allArticles: "Todos los Artículos",
+    readMore: "Leer Más",
+    noArticlesFound: "No se encontraron artículos.",
     japaneseAddresswarnings2:
       "Los paquetes serán reenviados exactamente en el estado en el que sean recibidos.",
 

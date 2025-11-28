@@ -2,7 +2,7 @@ import React from "react";
 import { useApp } from "@/contexts/AppContext";
 import { useAuth } from "@/contexts/useAuth";
 import { Button } from "@/components/ui/button";
-import { Link, useLocation } from "react-router";
+import { Link, NavLink, useLocation } from "react-router";
 import {
   Globe,
   Menu,
@@ -31,6 +31,7 @@ import {
 } from "../ui/select";
 import MyAccountMenu from "../ui/custom/MyAccountMenu";
 import LogOutBtn from "../ui/custom/LogOutBtn";
+import AiyuLogoSmall from "/aiyu_logo_small.png";
 
 const Header = () => {
   const { language, setLanguage, t } = useApp();
@@ -101,7 +102,7 @@ const Header = () => {
               className="flex items-center space-x-3 hover-bounce transition-all duration-300 flex-shrink-0"
             >
               <img
-                src="/aiyu_logo_small.png"
+                src={AiyuLogoSmall}
                 alt="Capybara Logo"
                 className="h-16 sm:h-16"
               />
@@ -191,6 +192,16 @@ const Header = () => {
                 >
                   {t("calculator")}
                 </Link>
+                <NavLink
+                  to={"/blog/" + language}
+                  className={` px-4 py-2 text-sm font-semibold transition-all duration-300 story-link ${
+                    location.pathname === "/blog/" + language
+                      ? "text-capybara-orange"
+                      : "text-gray-700 hover:text-capybara-orange"
+                  }`}
+                >
+                  {t("blog")}
+                </NavLink>
                 <Link
                   to="/contact"
                   className={`px-4 py-2 text-sm font-semibold transition-all duration-300 ${

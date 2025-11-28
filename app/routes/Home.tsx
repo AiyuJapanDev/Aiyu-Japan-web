@@ -18,6 +18,46 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useApp } from "@/contexts/AppContext";
 import { useIntersectionObserver } from "@/hooks/useIntersectionObserver";
 import React, { useEffect } from "react";
+import { useLoaderData } from "react-router";
+import {
+  getHomeComponents,
+  getFeaturedBlogArticles,
+  getNewsPosts,
+  getAllNewsPosts,
+} from "@/lib/strapi";
+import { HomePageData } from "@/types/home";
+import { Article } from "@/types/blog";
+
+export async function loader() {
+  const [
+    homeDataEn,
+    homeDataEs,
+    featuredArticlesEn,
+    featuredArticlesEs,
+    newsPostsEn,
+    newsPostsEs,
+  ] = await Promise.all([
+    getHomeComponents("en"),
+    getHomeComponents("es"),
+    getFeaturedBlogArticles("en"),
+    getFeaturedBlogArticles("es"),
+    getAllNewsPosts("en"),
+    getAllNewsPosts("es"),
+  ]);
+
+  return {
+    en: {
+      home: homeDataEn,
+      featured: featuredArticlesEn,
+      news: newsPostsEn,
+    },
+    es: {
+      home: homeDataEs,
+      featured: featuredArticlesEs,
+      news: newsPostsEs,
+    },
+  };
+}
 
 const AnimatedSection = ({
   children,
@@ -44,24 +84,29 @@ const AnimatedSection = ({
 };
 
 const Home = () => {
-  const { t } = useApp();
+  const { t, language } = useApp();
+  const data = useLoaderData<typeof loader>();
+  const currentData = data[language as keyof typeof data] || data.en;
 
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
 
   return (
-    <div className="min-h-screen bg-[url(tile_background.png)] bg-repeat">
+    <div className="min-h-screen bg-[url('/tile_background.png')] bg-repeat">
       <div className="animate-fade-in">
         <HeroSection />
       </div>
 
       <AnimatedSection delay={100}>
-        <FeaturedBlog />
+        <FeaturedBlog
+          homeData={currentData.home}
+          featuredArticles={currentData.featured}
+        />
       </AnimatedSection>
 
       <AnimatedSection delay={200}>
-        <FeaturedNews />
+        <FeaturedNews newsPosts={currentData.news} />
       </AnimatedSection>
 
       <AnimatedSection delay={300}>

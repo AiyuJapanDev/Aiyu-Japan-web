@@ -28,3 +28,6 @@ dist-ssr
 
 # Build files
 build/
+
+# Package lock
+package-lock.json
