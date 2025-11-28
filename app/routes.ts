@@ -15,6 +15,12 @@ export default [
   route("contact", "routes/Contact.tsx"),
   route("terms-of-service", "routes/TermsOfService.tsx"),
   route("privacy-policy", "routes/PrivacyPolicy.tsx"),
-  route("/:lang/blog", "routes/Blog.tsx"),
-  route("/:lang/blog/:blogSlug", "routes/ArticlePage.tsx"),
+  /* Blog Routes */
+  route("blog/:lang/page/:page", "routes/Blog.tsx", { id: "blog-paginated" }),
+  route("blog/:lang/:articleSlug", "routes/ArticlePage.tsx"),
+  route("blog/:lang", "routes/Blog.tsx", { id: "blog-index" }),
+  /* News Routes */
+  route("news/:lang/page/:page", "routes/News.tsx", { id: "news-paginated" }),
+  route("news/:lang/:newsSlug", "routes/NewsPage.tsx"),
+  route("news/:lang", "routes/News.tsx", { id: "news-index" }),
 ] satisfies RouteConfig;
