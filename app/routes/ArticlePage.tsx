@@ -14,7 +14,7 @@ import { Link } from "react-router";
 import { ArrowLeft, Calendar, Clock, Quote } from "lucide-react";
 
 export async function loader({ params }: Route.LoaderArgs) {
-  const article = await getBlogArticle(params.blogSlug, params.lang);
+  const article = await getBlogArticle(params.articleSlug, params.lang);
   if (!article) {
     throw new Response("Not Found", { status: 404 });
   }

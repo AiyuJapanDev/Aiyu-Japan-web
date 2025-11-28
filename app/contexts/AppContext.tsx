@@ -1,27 +1,43 @@
-
-import React, { createContext, useContext, useState, ReactNode } from 'react';
-import { Language, translations, TranslationKey } from '@/lib/i18n';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  ReactNode,
+  useEffect,
+} from "react";
+import { Language, translations, TranslationKey } from "@/lib/i18n";
+import { useNavigate, Navigate, redirectDocument } from "react-router";
 
 interface AppContextType {
   language: Language;
   setLanguage: (lang: Language) => void;
-  currency: 'JPY' | 'USD' | 'EUR';
-  setCurrency: (curr: 'JPY' | 'USD' | 'EUR') => void;
+  currency: "JPY" | "USD" | "EUR";
+  setCurrency: (curr: "JPY" | "USD" | "EUR") => void;
   t: (key: TranslationKey) => string;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider = ({ children }: { children: ReactNode }) => {
-  const [language, setLanguage] = useState<Language>('en');
-  const [currency, setCurrency] = useState<'JPY' | 'USD' | 'EUR'>('JPY');
+  const [language, setLanguage] = useState<Language>("en");
+  const [currency, setCurrency] = useState<"JPY" | "USD" | "EUR">("JPY");
+
+  const navigate = useNavigate();
 
   const t = (key: TranslationKey): string => {
     return translations[language][key] || key;
   };
 
+  useEffect(() => {
+    if (window.location.pathname.includes("/blog")) {
+      navigate("/blog/" + language);
+    }
+  }, [language]);
+
   return (
-    <AppContext.Provider value={{ language, setLanguage, currency, setCurrency, t }}>
+    <AppContext.Provider
+      value={{ language, setLanguage, currency, setCurrency, t }}
+    >
       {children}
     </AppContext.Provider>
   );
@@ -30,7 +46,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
 export const useApp = () => {
   const context = useContext(AppContext);
   if (!context) {
-    throw new Error('useApp must be used within AppProvider');
+    throw new Error("useApp must be used within AppProvider");
   }
   return context;
 };
