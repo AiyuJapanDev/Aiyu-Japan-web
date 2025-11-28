@@ -114,3 +114,5 @@ export const CommissionSection = () => {
     </section>
   );
 };
+
+export default CommissionSection;

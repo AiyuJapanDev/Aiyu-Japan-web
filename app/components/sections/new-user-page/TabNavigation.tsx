@@ -1,23 +1,16 @@
 import { useApp } from "@/contexts/AppContext";
+import { NavLink } from "react-router";
 
-interface TabNavigationProps {
-  activeTab: number;
-  setActiveTab: (index: number) => void;
-}
-
-export const TabNavigation = ({
-  activeTab,
-  setActiveTab,
-}: TabNavigationProps) => {
+export const TabNavigation = () => {
   const { t } = useApp();
 
   const tabs = [
-    t("tabWhatIs"),
-    t("tabHowItWorks"),
-    t("tabFees"),
-    t("tabCommission"),
-    t("tabMarkets"),
-    t("tabRestrictions"),
+    { label: t("tabWhatIs"), value: "what-is" },
+    { label: t("tabHowItWorks"), value: "how-it-works" },
+    { label: t("tabFees"), value: "fees" },
+    { label: t("tabCommission"), value: "commission" },
+    { label: t("tabMarkets"), value: "popular-markets" },
+    { label: t("tabRestrictions"), value: "restrictions" },
   ];
 
   return (
@@ -25,20 +18,19 @@ export const TabNavigation = ({
       <div className="container mx-auto overflow-x-auto px-4">
         <div className="flex min-w-max space-x-8">
           {tabs.map((tab, index) => (
-            <button
+            <NavLink
+              to={`${tab.value}`}
               key={index}
-              onClick={() => setActiveTab(index)}
-              className={`relative py-4 text-sm font-medium transition-colors ${
-                activeTab === index
-                  ? "text-blue-600"
-                  : "text-gray-500 hover:text-gray-900"
-              }`}
+              className={({ isActive, isPending }) => {
+                const active = "text-blue-600";
+                const inactive = "text-gray-500 hover:text-gray-900";
+                return `relative py-4 text-sm font-medium transition-colors ${
+                  isActive ? active : inactive
+                }`;
+              }}
             >
-              {tab}
-              {activeTab === index && (
-                <div className="absolute bottom-0 left-0 h-0.5 w-full bg-blue-600" />
-              )}
-            </button>
+              {tab.label}
+            </NavLink>
           ))}
         </div>
       </div>

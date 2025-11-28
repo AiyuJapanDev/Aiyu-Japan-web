@@ -3,7 +3,7 @@ import "dotenv/config";
 import { Article } from "@/types/blog";
 import { HomePageData } from "@/types/home";
 import { New } from "@/types/strapi-news";
-import { StoreCategory } from "@/types/strapi-stores";
+import { StoreCategory, StoreMarket } from "@/types/strapi-stores";
 
 const STRAPI_URL =
   import.meta.env?.VITE_STRAPI_URL ||
@@ -193,6 +193,14 @@ const getNewPost = async (slug: string): Promise<New | undefined> => {
 };
 
 /* Recommended Stores */
+
+const getStoreMarkets = async (locale: string = "*") => {
+  const data = await strapiFetchAPI<StrapiResponse<StoreMarket[]>>(
+    `/api/recommended-stores?sort=sortOrder&locale=${locale}&populate=*`
+  );
+  return data.data;
+};
+
 const getStoreCategories = async (locale: string = "*") => {
   const data = await strapiFetchAPI<StrapiResponse<StoreCategory[]>>(
     `/api/store-categories?locale=${locale}`
@@ -212,5 +220,6 @@ export {
   getAllNewsPosts,
   getNewPost,
   getStoreCategories,
+  getStoreMarkets,
   StrapiError,
 };

@@ -153,3 +153,5 @@ export const RestrictionsSection = () => {
     </section>
   );
 };
+
+export default RestrictionsSection;

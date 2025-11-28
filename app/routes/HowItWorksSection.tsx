@@ -1,5 +1,10 @@
 import { useApp } from "@/contexts/AppContext";
 import { ArrowRight, Package, Plane, Search, ShoppingCart } from "lucide-react";
+import { Route } from ".react-router/types/app/routes/+types/HowItWorksSection";
+
+export async function loader({ params }: Route.LoaderArgs) {
+  return null;
+}
 
 export const HowItWorksSection = () => {
   const { t } = useApp();
@@ -96,3 +101,5 @@ export const HowItWorksSection = () => {
     </section>
   );
 };
+
+export default HowItWorksSection;

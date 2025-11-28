@@ -1,3 +1,4 @@
+import { Route } from ".react-router/types/app/routes/+types/WhatIsSection";
 import { useApp } from "@/contexts/AppContext";
 import {
   CheckCircle,
@@ -7,8 +8,13 @@ import {
   ShoppingBag,
 } from "lucide-react";
 
-export const WhatIsSection = () => {
+export async function loader({ params }: Route.LoaderArgs) {
+  return null;
+}
+
+export const WhatIsSection = ({ loaderData }: Route.ComponentProps) => {
   const { t } = useApp();
+  const data = loaderData;
 
   const benefits = [
     {
@@ -107,3 +113,5 @@ export const WhatIsSection = () => {
     </section>
   );
 };
+
+export default WhatIsSection;

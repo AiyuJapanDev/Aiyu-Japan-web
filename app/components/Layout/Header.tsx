@@ -173,7 +173,7 @@ const Header = () => {
                 </Link>
 
                 <Link
-                  to="/store-guide"
+                  to="/store-guide/what-is"
                   className={`px-4 py-2 text-sm font-semibold transition-all duration-300 ${
                     location.pathname === "/store-guide"
                       ? "text-capybara-orange"
