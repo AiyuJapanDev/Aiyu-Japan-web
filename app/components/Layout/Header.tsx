@@ -221,7 +221,7 @@ const Header = () => {
                 <div className="flex items-center space-x-2">
                   <div className="flex items-center space-x-2">
                     {isAdmin && (
-                      <div className="flex items-center space-x-1 bg-red-100 text-red-800 px-2 py-1 rounded-full text-xs">
+                      <div className="flex items-center space-x-1 bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs">
                         <Crown className="w-3 h-3" />
                         <span>Admin</span>
                       </div>
@@ -262,7 +262,7 @@ const Header = () => {
 
                   <div className="hidden md:flex items-center gap-2">
                     {isAdmin && (
-                      <div className="flex items-center space-x-1 bg-red-100 text-red-800 px-2 py-1 rounded-full text-xs">
+                      <div className="flex items-center space-x-1 bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs">
                         <Crown className="w-3 h-3" />
                         <span>Admin</span>
                       </div>
