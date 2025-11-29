@@ -104,11 +104,12 @@ export const PopularMarketsSection = ({ loaderData }: Route.ComponentProps) => {
             {t("marketsMainCategory")}
           </p>
           <div className="flex flex-wrap gap-2">
-            {market.store_categories.map((category) => (
-              <span className="rounded-md bg-gray-50 px-2 py-1 text-xs font-medium text-gray-600 ring-1 ring-inset ring-gray-500/10">
-                {category.name_en}
-              </span>
-            ))}
+            {market.store_categories.length > 1 &&
+              market.store_categories.map((category) => (
+                <span className="rounded-md bg-gray-50 px-2 py-1 text-xs font-medium text-gray-600 ring-1 ring-inset ring-gray-500/10">
+                  {category.name_en}
+                </span>
+              ))}
           </div>
         </div>
       </div>
