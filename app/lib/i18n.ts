@@ -882,6 +882,13 @@ export const translations = {
     noArticlesFound: "No articles found.",
 
     //News Blog
+    newsBlogTitle: "News & Announcements",
+    newsBlogSubtitle: "Discover the latest news from Aiyu Japan.",
+    newsBlogFeaturedNews: "Featured News",
+    newsBlogAllNews: "All News",
+    newsBlogReadMore: "Read More",
+    newsBlogNoNewsFound: "No news found.",
+
     featNewsTitle: "News & Anouncements",
     featNewsAll: "View All",
     newsBlog1Title: "New 1",
@@ -1075,6 +1082,18 @@ export const translations = {
     restrictionsViewFAQ: "View Full FAQ",
   },
   es: {
+    address: "Dirección:",
+    addressNotes: "Notas:",
+    cityState: "Ciudad / Estado:",
+    postalCode: "Código Postal:",
+    country: "País:",
+    addressName: "Nombre:",
+    addressPhone: "Teléfono:",
+    processing: "Procesando",
+    inTransit: "En Tránsito",
+    shippingDataLoadError: "Error al cargar datos de envío",
+    selectStatus: "Seleccionar estado",
+
     // Navigation
     newUser: "¿Eres Nuevo Usuario?",
     home: "Inicio",
@@ -1760,16 +1779,24 @@ export const translations = {
       "Este servicio de dirección japonesa es diferente al servicio de compras de Aiyu Japan. No incluye beneficios como fotografías del producto, consolidación o reempaquetado.",
 
     // Blog Page
-    blogTitle: "Nuestro <span class='text-blue-400'>Diario</span>",
+    blogTitle: "Nuestro <span class='text-blue-400'>Blog</span>",
     blogSubtitle:
-      "Descubre las últimas noticias, guías e historias del equipo de Aiyu Japan.",
+      "Descubre las últimas guías e historias del equipo de Aiyu Japan.",
     featuredArticles: "Artículos Destacados",
     allArticles: "Todos los Artículos",
     readMore: "Leer Más",
     noArticlesFound: "No se encontraron artículos.",
+
+    //News Blog
+    newsBlogTitle: "Noticias y Anuncios",
+    newsBlogSubtitle: "Descubre las últimas noticias y anuncios.",
+    newsBlogFeaturedNews: "Noticias Destacadas",
+    newsBlogAllNews: "Todas las Noticias",
+    newsBlogReadMore: "Leer Más",
+    newsBlogNoNewsFound: "No se encontraron noticias.",
+
     japaneseAddresswarnings2:
       "Los paquetes serán reenviados exactamente en el estado en el que sean recibidos.",
-
     japaneseAddresstoastCopied: "¡Copiado!",
 
     japaneseAddressrulesTitle: "⚠️ Servicio de Dirección en Japón — Importante",
