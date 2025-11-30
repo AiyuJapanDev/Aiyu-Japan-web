@@ -95,7 +95,7 @@ const Header = () => {
   return (
     <>
       <header
-        className={`bg-white/95 backdrop-blur-sm border-b-2 border-capybara-orange/20 sticky top-0 z-50 transition-transform duration-300 ${
+        className={`pb-2 bg-white/95 backdrop-blur-sm border-b-2 border-capybara-orange/20 sticky top-0 z-50 transition-transform duration-300 ${
           isVisible ? "translate-y-0" : "-translate-y-full"
         }`}
       >
@@ -104,7 +104,7 @@ const Header = () => {
             <p className="animate-bounce font-bold">{t("newUser")}</p>
           </div>
         )}
-        <nav className="max-w-7xl mx-auto  sm:px-6 lg:px-8">
+        <nav className="px-2 pt-2 max-w-7xl mx-auto  sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-14">
             {/* Logo */}
             <Link to="/">
