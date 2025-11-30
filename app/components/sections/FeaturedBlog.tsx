@@ -14,7 +14,7 @@ const FeaturedBlog: React.FC<FeaturedBlogProps> = ({
   featuredArticles,
 }) => {
   return (
-    <section className="w-full max-w-7xl mx-auto py-4 space-y-4">
+    <section className="w-full max-w-7xl mx-auto py-4 space-y-4 px-4">
       <Carousel data={homeData} />
       <FeaturedBlogSlider articles={featuredArticles} />
     </section>

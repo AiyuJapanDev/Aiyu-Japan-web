@@ -36,7 +36,7 @@ const FeaturedBlogSlider: React.FC<FeaturedBlogSliderProps> = ({
   }
 
   return (
-    <section className="max-w-6xl mx-auto px-4 xl:px-0 rounded-lg overflow-clip">
+    <section className="max-w-6xl mx-auto xl:px-0 rounded-lg overflow-clip">
       <Carousel
         opts={{
           loop: true,
@@ -90,11 +90,11 @@ const FeaturedBlogSlider: React.FC<FeaturedBlogSliderProps> = ({
             return (
               <CarouselItem
                 key={`${blog.id}-${index}`}
-                className="pl-4 basis-1/3 mb-6"
+                className="pl-4 basis-1/2 md:basis-1/3 lg:basis-1/4 mb-6"
               >
                 <Link
                   to={`/blog/${language}/${slug}`}
-                  className=" block w-full aspect-video rounded-xl overflow-clip shadow-lg transition-transform hover:scale-105 hover:shadow-lg relative group"
+                  className="block w-full aspect-video rounded-xl overflow-clip shadow-lg transition-transform hover:scale-105 hover:shadow-lg relative group"
                   draggable={false}
                 >
                   {imageUrl && (

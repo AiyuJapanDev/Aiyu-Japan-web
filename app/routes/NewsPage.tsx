@@ -5,7 +5,7 @@ import { ArrowLeft } from "lucide-react";
 import { New } from "@/types/strapi-news";
 
 export async function loader({ params }: Route.LoaderArgs) {
-  const news = await getNewPost(params.newsSlug);
+  const news = await getNewPost(params.newsSlug, params.lang);
   if (!news) {
     throw new Response("Not Found", { status: 404 });
   }

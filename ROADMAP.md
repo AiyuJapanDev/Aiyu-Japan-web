@@ -388,6 +388,64 @@ My Account ▼
 
 ---
 
+## 🟣 FASE 5: FINAL POLISH - Ajustes Finales (2-3 días)
+
+_Detalles finales y corrección de errores antes del lanzamiento_
+
+### 5.1 Mejoras en Navegación (Header)
+
+**Prioridad:** 🔴 CRÍTICA
+**Tiempo estimado:** 3-4 horas
+**Impacto:** Alto - Usabilidad general
+
+**Tareas:**
+
+- [ ] **Hide on scroll:** Ocultar barra de navegación al hacer scroll down, mostrar al hacer scroll up.
+- [ ] **Mobile Navigation:**
+  - Corregir links faltantes.
+  - Asegurar acceso al Dashboard.
+  - Resolver conflicto con navegación de Store Guide (sticky on top).
+- [ ] **Header Sizing:** Hacer el header del home más pequeño y consistente en todas las vistas.
+- [ ] **Logo:** Agregar el nuevo logo de Aiyu Japan.
+
+### 5.2 Correcciones en Homepage
+
+**Prioridad:** 🟡 ALTA
+**Tiempo estimado:** 2-3 horas
+**Impacto:** Alto - Primera impresión
+
+**Tareas:**
+
+- [ ] **Carousel:** Ajustar altura máxima en dispositivos móviles (max-height).
+- [ ] **Recommended Sites:** Asegurar que los clicks lleven a la página real del sitio recomendado.
+- [ ] **News Entries:** Corregir links en homepage (actualmente llevan al blog en lugar de noticias).
+
+### 5.3 Funcionalidad de Noticias y Blog
+
+**Prioridad:** 🟡 ALTA
+**Tiempo estimado:** 4-5 horas
+**Impacto:** Medio - Contenido dinámico
+
+**Tareas:**
+
+- [ ] **News Page:**
+  - Copiar lógica de i18n del Blog.
+  - Agregar acceso a "News" en la barra de navegación.
+- [ ] **Blog:** Corregir problema de contenido no visible.
+
+### 5.4 Manejo de Errores y Rutas
+
+**Prioridad:** 🟢 MEDIA
+**Tiempo estimado:** 2-3 horas
+**Impacto:** Medio - Experiencia de usuario en bordes
+
+**Tareas:**
+
+- [ ] **Login Banner:** Corregir redirección que lleva a 404.
+- [ ] **Error Pages:** Diseñar e implementar páginas 404 y 500 personalizadas y agradables.
+
+---
+
 ### 4.2 Integrar Strapi con Frontend
 
 **Prioridad:** 🔵 BAJA  
@@ -441,8 +499,9 @@ export async function loader({ params }: Route.LoaderArgs) {
 | Fase 2: Alta    | 3-5 días     | 🟡 ALTA    |
 | Fase 3: Media   | 1-2 semanas  | 🟢 MEDIA   |
 | Fase 4: Baja    | 2-3 semanas  | 🔵 BAJA    |
+| Fase 5: Final   | 2-3 días     | 🟣 AJUSTES |
 
-**Total estimado:** 4-6 semanas para completar todo el roadmap
+**Total estimado:** 5-7 semanas para completar todo el roadmap
 
 ---
 
@@ -471,6 +530,13 @@ export async function loader({ params }: Route.LoaderArgs) {
 
 - ✅ Configurar Strapi
 - ✅ Integrar Strapi con Frontend
+
+### Sprint 5 (Semana 7): Final Polish
+
+- ✅ Mejoras en Navegación y Header
+- ✅ Correcciones en Homepage y Carousel
+- ✅ Funcionalidad de Noticias y Blog
+- ✅ Páginas de Error y Rutas
 
 ---
 

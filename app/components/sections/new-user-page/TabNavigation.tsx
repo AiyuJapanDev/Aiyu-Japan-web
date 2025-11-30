@@ -14,7 +14,7 @@ export const TabNavigation = () => {
   ];
 
   return (
-    <div className="sticky top-0 z-50 border-b border-gray-200 bg-white/80 backdrop-blur-md">
+    <div className="sticky top-0 z-10 border-b border-gray-200 bg-white/80 backdrop-blur-md">
       <div className="container mx-auto overflow-x-auto px-4">
         <div className="flex min-w-max space-x-8">
           {tabs.map((tab, index) => (

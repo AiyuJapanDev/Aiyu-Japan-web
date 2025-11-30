@@ -32,6 +32,9 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     if (window.location.pathname.includes("/blog")) {
       navigate("/blog/" + language);
     }
+    if (window.location.pathname.includes("/news")) {
+      navigate("/news/" + language);
+    }
   }, [language]);
 
   return (

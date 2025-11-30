@@ -98,7 +98,7 @@ const getBlogArticle = async (
   language: string
 ): Promise<Article | undefined> => {
   const data = await strapiFetchAPI<StrapiResponse<Article[]>>(
-    `/api/articles?locale=${language}&filters[slug][$eq]=${slug}`
+    `/api/articles?locale=${language}&filters[slug][$eq]=${slug}&populate=*`
   );
 
   return data.data[0];
@@ -182,9 +182,12 @@ const getAllNewsPosts = async (locale: string = "*"): Promise<New[]> => {
   return data.data;
 };
 
-const getNewPost = async (slug: string): Promise<New | undefined> => {
+const getNewPost = async (
+  slug: string,
+  language: string = "*"
+): Promise<New | undefined> => {
   const article = await strapiFetchAPI<StrapiResponse<New[]>>(
-    `/api/news?locale=*&filters[slug][$eq]=${slug}&populate=*`
+    `/api/news?locale=${language}&filters[slug][$eq]=${slug}&populate=*`
   ).then((res) => {
     return res.data[0];
   });

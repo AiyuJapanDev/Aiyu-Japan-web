@@ -83,7 +83,7 @@ export default function RecommendedStoresSection({
         {storeMarkets.map((shop) => (
           <div key={shop.id} className="overflow-hidden">
             <a
-              href=""
+              href={shop.link}
               target="_blank"
               rel="noopener noreferrer"
               aria-label="Weverse"

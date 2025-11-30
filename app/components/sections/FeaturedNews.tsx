@@ -31,7 +31,7 @@ const FeaturedNews = ({ newsPosts }: { newsPosts: New[] }) => {
             {newsPosts.map((entry) => (
               <Link
                 key={entry.id}
-                to={`/blog/${language}/${entry.slug}`}
+                to={`/news/${language}/${entry.slug}`}
                 className="flex flex-col transition-transform transform hover:translate-x-1"
               >
                 <span className="text-black inline-flex gap-2 items-center">

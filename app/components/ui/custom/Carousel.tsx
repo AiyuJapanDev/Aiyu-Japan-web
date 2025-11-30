@@ -41,7 +41,7 @@ const FeaturedBannerCarousel: React.FC<FeaturedBannerCarouselProps> = ({
   }
 
   return (
-    <div className="w-full max-w-6xl mx-auto rounded-xl overflow-hidden shadow-xl">
+    <div className="relative w-full max-w-6xl mx-auto rounded-xl overflow-hidden shadow-xl">
       <Carousel
         opts={{
           align: "start",
@@ -54,7 +54,7 @@ const FeaturedBannerCarousel: React.FC<FeaturedBannerCarouselProps> = ({
         ]}
         className="w-full"
       >
-        <CarouselContent>
+        <CarouselContent className="ml-0">
           {carouselData.map((banner, index) => {
             const imageUrl = `${import.meta.env.VITE_STRAPI_URL}${
               banner.cover?.url
@@ -89,11 +89,11 @@ const FeaturedBannerCarousel: React.FC<FeaturedBannerCarouselProps> = ({
               "(max-width: 640px) 100vw, (max-width: 1024px) 750px, 1000px";
 
             return (
-              <CarouselItem key={`${banner.id}-${index}`}>
+              <CarouselItem key={`${banner.id}-${index}`} className="pl-0">
                 <div className="relative flex-shrink-0 w-full">
                   <Link
                     to={`/blog/${language}/${slug}` || "#"}
-                    className="relative block w-full h-full transition-transform hover:scale-105 max-h-[324px] overflow-clip"
+                    className="relative block w-full transition-transform hover:scale-105 overflow-hidden"
                     draggable={false}
                   >
                     <img
@@ -101,9 +101,9 @@ const FeaturedBannerCarousel: React.FC<FeaturedBannerCarouselProps> = ({
                       srcSet={srcset}
                       sizes={sizes}
                       alt={banner.cover?.alternativeText || "Banner image"}
-                      width={banner.cover?.width}
-                      height={banner.cover?.height}
                       className="w-full h-auto object-cover select-none"
+                      height={banner.cover?.height}
+                      width={banner.cover?.width}
                       draggable={false}
                       loading={index === 0 ? "eager" : "lazy"}
                     />

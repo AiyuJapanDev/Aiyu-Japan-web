@@ -3,24 +3,8 @@ import { useApp } from "@/contexts/AppContext";
 import { useAuth } from "@/contexts/useAuth";
 import { Button } from "@/components/ui/button";
 import { Link, NavLink, useLocation } from "react-router";
-import {
-  Globe,
-  Menu,
-  X,
-  LogOut,
-  Crown,
-  ChevronDown,
-  Bell,
-  Calculator,
-  CloudCog,
-} from "lucide-react";
+import { Globe, Menu, X, Bell, Calculator, Crown } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { useNotifications } from "@/hooks/useNotifications";
 import {
   Select,
@@ -31,25 +15,44 @@ import {
 } from "../ui/select";
 import MyAccountMenu from "../ui/custom/MyAccountMenu";
 import LogOutBtn from "../ui/custom/LogOutBtn";
-import AiyuLogoSmall from "/aiyu_logo_small.png";
+import Logo from "/aiyu-japan-logo-typography.png";
 
 const Header = () => {
   const { language, setLanguage, t } = useApp();
-  const { user, signOut, isAdmin, userRole, profile } = useAuth();
+  const { user, isAdmin, profile } = useAuth();
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { unreadCount } = useNotifications();
   const mobileMenuRef = useRef<HTMLDivElement>(null);
-
-  // Utility for display name
-  const displayName = profile?.full_name?.trim()
-    ? profile?.full_name
-    : (user?.email ?? "");
+  const [isVisible, setIsVisible] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
 
   // Scroll to top when location changes
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, [location.pathname]);
+
+  // Hide on scroll logic
+  useEffect(() => {
+    const controlNavbar = () => {
+      if (typeof window !== "undefined") {
+        if (window.scrollY > lastScrollY && window.scrollY > 200) {
+          // if scroll down hide the navbar
+          setIsVisible(false);
+        } else {
+          // if scroll up show the navbar
+          setIsVisible(true);
+        }
+        setLastScrollY(window.scrollY);
+      }
+    };
+
+    window.addEventListener("scroll", controlNavbar);
+
+    return () => {
+      window.removeEventListener("scroll", controlNavbar);
+    };
+  }, [lastScrollY]);
 
   // Close mobile menu when clicking outside
   useEffect(() => {
@@ -88,135 +91,107 @@ const Header = () => {
 
   return (
     <>
-      <header className="bg-white/95 backdrop-blur-sm border-b-2 border-capybara-orange/20 sticky top-0 z-50 transition-all duration-300">
+      <header
+        className={`bg-white/95 backdrop-blur-sm border-b-2 border-capybara-orange/20 sticky top-0 z-50 transition-transform duration-300 ${
+          isVisible ? "translate-y-0" : "-translate-y-full"
+        }`}
+      >
         {!user && (
-          <div className="h-12 w-full bg-capybara-blue flex justify-center items-center ">
+          <div className="h-10 w-full bg-capybara-blue flex justify-center items-center text-sm">
             <p className="animate-bounce font-bold">{t("newUser")}</p>
           </div>
         )}
         <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
+          <div className="flex justify-between items-center h-14">
             {/* Logo */}
             <Link
               to="/"
               className="flex items-center space-x-3 hover-bounce transition-all duration-300 flex-shrink-0"
             >
-              <img
-                src={AiyuLogoSmall}
-                alt="Capybara Logo"
-                className="h-16 sm:h-16"
-              />
-              {isMobileMenuOpen && (
-                <span className="font-paytone text-3xl text-[#3b434d] ">
-                  Aiyu Japan
-                </span>
-              )}
+              <img src={Logo} alt="Aiyu Japan Logo" className="h-12 w-auto" />
             </Link>
 
             {/* Centered Desktop Navigation */}
-            <div className="hidden md:flex items-center justify-center flex-1">
-              <div className="flex items-center space-x-2">
-                {/* Information Dropdown */}
-                {/*                 <DropdownMenu>
-                  <DropdownMenuTrigger className="px-4 py-2 text-sm font-semibold transition-all duration-300 text-gray-700 hover:text-capybara-orange flex items-center space-x-1">
-                    <span>{t("information")}</span>
-                    <ChevronDown className="w-4 h-4" />
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent className="bg-white border border-capybara-orange/20 shadow-lg rounded-lg">
-                    <DropdownMenuItem asChild>
-                      <Link
-                        to="/services"
-                        className={`px-4 py-2 text-sm font-semibold transition-all duration-300 ${
-                          location.pathname === "/services"
-                            ? "text-capybara-orange"
-                            : "text-gray-700 hover:text-capybara-orange"
-                        }`}
-                      >
-                        {t("services")}
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link
-                        to="/store-guide"
-                        className={`px-4 py-2 text-sm font-semibold transition-all duration-300 ${
-                          location.pathname === "/store-guide"
-                            ? "text-capybara-orange"
-                            : "text-gray-700 hover:text-capybara-orange"
-                        }`}
-                      >
-                        {t("storeGuide")}
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link
-                        to="/contact"
-                        className={`px-4 py-2 text-sm font-semibold transition-all duration-300 ${
-                          location.pathname === "/contact"
-                            ? "text-capybara-orange"
-                            : "text-gray-700 hover:text-capybara-orange"
-                        }`}
-                      >
-                        {t("contact")}
-                      </Link>
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu> */}
-                <Link
+            <div className="hidden lg:flex items-center justify-center flex-1">
+              <div className="flex items-center space-x-1">
+                <NavLink
                   to="/services"
-                  className={`px-4 py-2 text-sm font-semibold transition-all duration-300 ${
-                    location.pathname === "/services"
-                      ? "text-capybara-orange"
-                      : "text-gray-700 hover:text-capybara-orange"
-                  }`}
+                  className={({ isActive }) =>
+                    `px-3 py-2 text-sm font-semibold transition-all duration-300 ${
+                      isActive
+                        ? "text-capybara-orange"
+                        : "text-gray-700 hover:text-capybara-orange"
+                    }`
+                  }
                 >
                   {t("services")}
-                </Link>
+                </NavLink>
 
-                <Link
+                <NavLink
                   to="/store-guide/what-is"
-                  className={`px-4 py-2 text-sm font-semibold transition-all duration-300 ${
-                    location.pathname === "/store-guide"
-                      ? "text-capybara-orange"
-                      : "text-gray-700 hover:text-capybara-orange"
-                  }`}
+                  className={({ isActive }) =>
+                    `px-3 py-2 text-sm font-semibold transition-all duration-300 ${
+                      isActive
+                        ? "text-capybara-orange"
+                        : "text-gray-700 hover:text-capybara-orange"
+                    }`
+                  }
                 >
                   {t("storeGuide")}
-                </Link>
-                <Link
+                </NavLink>
+                <NavLink
                   to="/calculator"
-                  className={` px-4 py-2 text-sm font-semibold transition-all duration-300 story-link ${
-                    location.pathname === "/calculator"
-                      ? "text-capybara-orange"
-                      : "text-gray-700 hover:text-capybara-orange"
-                  }`}
+                  className={({ isActive }) =>
+                    `px-3 py-2 text-sm font-semibold transition-all duration-300 story-link ${
+                      isActive
+                        ? "text-capybara-orange"
+                        : "text-gray-700 hover:text-capybara-orange"
+                    }`
+                  }
                 >
                   {t("calculator")}
-                </Link>
+                </NavLink>
                 <NavLink
                   to={"/blog/" + language}
-                  className={` px-4 py-2 text-sm font-semibold transition-all duration-300 story-link ${
-                    location.pathname === "/blog/" + language
-                      ? "text-capybara-orange"
-                      : "text-gray-700 hover:text-capybara-orange"
-                  }`}
+                  className={({ isActive }) =>
+                    `px-3 py-2 text-sm font-semibold transition-all duration-300 story-link ${
+                      isActive
+                        ? "text-capybara-orange"
+                        : "text-gray-700 hover:text-capybara-orange"
+                    }`
+                  }
                 >
                   {t("blog")}
                 </NavLink>
-                <Link
+                <NavLink
+                  to={`/news/${language}`}
+                  className={({ isActive }) =>
+                    `px-3 py-2 text-sm font-semibold transition-all duration-300 ${
+                      isActive
+                        ? "text-capybara-orange"
+                        : "text-gray-700 hover:text-capybara-orange"
+                    }`
+                  }
+                >
+                  News
+                </NavLink>
+                <NavLink
                   to="/contact"
-                  className={`px-4 py-2 text-sm font-semibold transition-all duration-300 ${
-                    location.pathname === "/contact"
-                      ? "text-capybara-orange"
-                      : "text-gray-700 hover:text-capybara-orange"
-                  }`}
+                  className={({ isActive }) =>
+                    `px-3 py-2 text-sm font-semibold transition-all duration-300 ${
+                      isActive
+                        ? "text-capybara-orange"
+                        : "text-gray-700 hover:text-capybara-orange"
+                    }`
+                  }
                 >
                   {t("contact")}
-                </Link>
+                </NavLink>
               </div>
             </div>
 
             {/* Auth Actions - Desktop */}
-            <div className="hidden md:flex items-center space-x-2">
+            <div className="hidden lg:flex items-center space-x-2">
               {user ? (
                 <div className="flex items-center space-x-2">
                   <div className="flex items-center space-x-2">
@@ -260,14 +235,7 @@ const Header = () => {
                     </Link>
                   </div>
 
-                  <div className="hidden md:flex items-center gap-2">
-                    {isAdmin && (
-                      <div className="flex items-center space-x-1 bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs">
-                        <Crown className="w-3 h-3" />
-                        <span>Admin</span>
-                      </div>
-                    )}
-
+                  <div className="hidden lg:flex items-center gap-2">
                     <MyAccountMenu />
                   </div>
                 </div>
@@ -281,7 +249,7 @@ const Header = () => {
             </div>
 
             {/* Easy Access Action Icons */}
-            <div className="md:hidden flex items-center space-x-1">
+            <div className="lg:hidden flex items-center space-x-1">
               {/* Calculator icon */}
               <Link to="/calculator">
                 <Button
@@ -335,8 +303,8 @@ const Header = () => {
           </div>
 
           {/* Mobile auth actions */}
-          <div className="flex flex-col md:hidden justify-center items-center space-y-2 pb-2">
-            <div className="flex md:hidden justify-center items-center mx-auto">
+          <div className="flex flex-col lg:hidden justify-center items-center space-y-2 pb-2">
+            <div className="flex lg:hidden justify-center items-center mx-auto">
               {!user && (
                 <div className="flex gap-2 justify-center items-center flex-wrap">
                   <Link to="/auth" reloadDocument>
@@ -356,60 +324,98 @@ const Header = () => {
 
           {/* Mobile Navigation */}
           {isMobileMenuOpen && (
-            <div className="md:hidden animate-fade-in" ref={mobileMenuRef}>
+            <div className="lg:hidden animate-fade-in" ref={mobileMenuRef}>
               <div className="px-2 pt-2 pb-2 space-y-2 sm:px-3 bg-white/95 border-t-2 border-capybara-orange/20 rounded-b-3xl min-h-screen">
                 {/* Information Section Title */}
                 <div className="px-4 py-2 text-base font-bold text-gray-500">
                   {t("information")}
                 </div>
 
-                <Link
+                <NavLink
                   to="/services"
-                  className={`block px-4 py-3 rounded-full text-base transition-all duration-300 ml-4 ${
-                    location.pathname === "/services"
-                      ? "text-white bg-capybara-orange"
-                      : "text-gray-700 hover:text-capybara-orange hover:bg-capybara-cream"
-                  }`}
+                  className={({ isActive }) =>
+                    `block px-4 py-3 rounded-full text-base transition-all duration-300 ml-4 ${
+                      isActive
+                        ? "text-white bg-capybara-orange"
+                        : "text-gray-700 hover:text-capybara-orange hover:bg-capybara-cream"
+                    }`
+                  }
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   {t("services")}
-                </Link>
+                </NavLink>
 
-                <Link
-                  to="/store-guide"
-                  className={`block px-4 py-3 rounded-full text-base transition-all duration-300 ml-4 ${
-                    location.pathname === "/store-guide"
-                      ? "text-white bg-capybara-orange"
-                      : "text-gray-700 hover:text-capybara-orange hover:bg-capybara-cream"
-                  }`}
+                <NavLink
+                  to="/store-guide/what-is"
+                  className={({ isActive }) =>
+                    `block px-4 py-3 rounded-full text-base transition-all duration-300 ml-4 ${
+                      isActive
+                        ? "text-white bg-capybara-orange"
+                        : "text-gray-700 hover:text-capybara-orange hover:bg-capybara-cream"
+                    }`
+                  }
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   {t("storeGuide")}
-                </Link>
+                </NavLink>
 
-                <Link
+                <NavLink
+                  to={`"/news"`}
+                  className={({ isActive }) =>
+                    `block px-4 py-3 rounded-full text-base transition-all duration-300 ml-4 ${
+                      isActive
+                        ? "text-white bg-capybara-orange"
+                        : "text-gray-700 hover:text-capybara-orange hover:bg-capybara-cream"
+                    }`
+                  }
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  News
+                </NavLink>
+
+                <NavLink
                   to="/contact"
-                  className={`block px-4 py-3 rounded-full text-base transition-all duration-300 ml-4 ${
-                    location.pathname === "/contact"
-                      ? "text-white bg-capybara-orange"
-                      : "text-gray-700 hover:text-capybara-orange hover:bg-capybara-cream"
-                  }`}
+                  className={({ isActive }) =>
+                    `block px-4 py-3 rounded-full text-base transition-all duration-300 ml-4 ${
+                      isActive
+                        ? "text-white bg-capybara-orange"
+                        : "text-gray-700 hover:text-capybara-orange hover:bg-capybara-cream"
+                    }`
+                  }
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   {t("contact")}
-                </Link>
+                </NavLink>
 
-                <Link
+                <NavLink
                   to="/calculator"
-                  className={`block px-4 py-3 rounded-full text-base font-semibold transition-all duration-300 ${
-                    location.pathname === "/calculator"
-                      ? "text-white bg-capybara-orange"
-                      : "text-gray-700 hover:text-capybara-orange hover:bg-capybara-cream"
-                  }`}
+                  className={({ isActive }) =>
+                    `block px-4 py-3 rounded-full text-base font-semibold transition-all duration-300 ${
+                      isActive
+                        ? "text-white bg-capybara-orange"
+                        : "text-gray-700 hover:text-capybara-orange hover:bg-capybara-cream"
+                    }`
+                  }
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   {t("calculator")}
-                </Link>
+                </NavLink>
+
+                {user && (
+                  <NavLink
+                    to={isAdmin ? "/admin-dashboard" : "/user-dashboard"}
+                    className={({ isActive }) =>
+                      `block px-4 py-3 rounded-full text-base font-semibold transition-all duration-300 ${
+                        isActive
+                          ? "text-white bg-capybara-orange"
+                          : "text-gray-700 hover:text-capybara-orange hover:bg-capybara-cream"
+                      }`
+                    }
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Dashboard
+                  </NavLink>
+                )}
 
                 {/* language selector & logout button */}
                 <div className="relative flex items-center justify-center gap-2 px-1 py-3 border-b-2 border-capybara-orange/20">
@@ -433,7 +439,7 @@ const Header = () => {
           )}
           <p
             className="font-bold text-center"
-            dangerouslySetInnerHTML={{ __html: t("headerParagraph") }} //uses dangerouslySetInnerHTML to render custom html element in translation
+            dangerouslySetInnerHTML={{ __html: t("headerParagraph") }}
           ></p>
         </nav>
       </header>
