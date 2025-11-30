@@ -2,6 +2,11 @@ import { intlFormat } from "date-fns";
 export const supportedLocales = ["en", "es"];
 export const translations = {
   en: {
+    backToBlogs: "Back to Blogs",
+    backToNews: "Back to News",
+    noContent: "No content available",
+    minRead: "min read",
+
     // Navigation
     newUser: "Are you new to Aiyu Japan?",
     home: "Home",
@@ -1082,6 +1087,11 @@ export const translations = {
     restrictionsViewFAQ: "View Full FAQ",
   },
   es: {
+    backToBlogs: "Volver a Blogs",
+    backToNews: "Volver a Noticias",
+    noContent: "No hay contenido disponible",
+    minRead: "mins. de lectura",
+
     address: "Dirección:",
     addressNotes: "Notas:",
     cityState: "Ciudad / Estado:",

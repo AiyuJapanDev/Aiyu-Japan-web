@@ -3,6 +3,7 @@ import { getNewPost } from "@/lib/strapi";
 import { Link } from "react-router";
 import { ArrowLeft } from "lucide-react";
 import { New } from "@/types/strapi-news";
+import { useApp } from "@/contexts/AppContext";
 
 export async function loader({ params }: Route.LoaderArgs) {
   const news = await getNewPost(params.newsSlug, params.lang);
@@ -12,20 +13,16 @@ export async function loader({ params }: Route.LoaderArgs) {
   return news;
 }
 
-export default function ArticlePage({ loaderData }: Route.ComponentProps) {
+export default function NewsPage({ loaderData }: Route.ComponentProps) {
   if (!loaderData) return null;
 
-  const { title, locale, date, image, content } = loaderData as New;
+  const { title, image, content } = loaderData as New;
+
+  const { language, t } = useApp();
 
   const imageUrl = image?.url
     ? `${import.meta.env.VITE_STRAPI_URL}${image.url}`
     : null;
-
-  const formattedDate = new Date(date).toLocaleDateString(locale || "en-US", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
 
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
@@ -44,11 +41,11 @@ export default function ArticlePage({ loaderData }: Route.ComponentProps) {
 
         <div className="absolute inset-0 flex flex-col justify-end px-4 sm:px-6 lg:px-8 pb-16 max-w-7xl mx-auto w-full">
           <Link
-            to="/"
+            to={`/news/${language}`}
             className="inline-flex items-center text-white/80 hover:text-white mb-6 transition-colors w-fit"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Home
+            {t("backToNews")}
           </Link>
 
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4 max-w-4xl leading-tight">
@@ -65,21 +62,7 @@ export default function ArticlePage({ loaderData }: Route.ComponentProps) {
               {content}
             </p>
           )}
-
-          {/* Render blocks */}
-          {/* {blocks && blocks.length > 0 ? (
-            <div className="space-y-6">
-              {blocks.map((block, index) => (
-                <BlockRenderer
-                  key={`${block.__component}-${block.id}-${index}`}
-                  block={block}
-                />
-              ))}
-            </div>
-          ) : (
-            <p className="text-gray-500 italic">No content available.</p>
-          )} */}
-          <p className="text-gray-500 italic">No content available.</p>
+          <p className="text-gray-500 italic">{t("noContent")}</p>
         </div>
       </article>
     </div>

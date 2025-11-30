@@ -175,9 +175,9 @@ My Account ▼
 
 **Verificación:**
 
-- [ ] Nueva tab "Japan Address" visible
-- [ ] Funcionalidad movida correctamente
-- [ ] "Account" solo muestra info personal
+- [✅] Nueva tab "Japan Address" visible
+- [✅] Funcionalidad movida correctamente
+- [✅] "Account" solo muestra info personal
 
 ---
 
@@ -229,9 +229,9 @@ My Account ▼
 
 **Verificación:**
 
-- [ ] Orden consistente con Shopping Guide
-- [ ] Layout de izquierda a derecha
-- [ ] Responsive en mobile
+- [✅] Orden consistente con Shopping Guide
+- [✅] Layout de izquierda a derecha
+- [✅] Responsive en mobile
 
 ---
 
@@ -256,11 +256,11 @@ My Account ▼
 
 **Verificación:**
 
-- [ ] Nueva sección Store Guide implementada
-- [ ] Recommended Store Cards actualizados con nuevo diseño
-- [ ] Datos de tiendas correctamente mostrados
-- [ ] Responsive en mobile y desktop
-- [ ] Consistencia visual con el resto de la aplicación
+- [✅] Nueva sección Store Guide implementada
+- [✅] Recommended Store Cards actualizados con nuevo diseño
+- [✅] Datos de tiendas correctamente mostrados
+- [✅] Responsive en mobile y desktop
+- [✅] Consistencia visual con el resto de la aplicación
 
 ---
 
@@ -286,10 +286,10 @@ My Account ▼
 
 **Verificación:**
 
-- [ ] Grid responsive
-- [ ] Filtros funcionan
-- [ ] Links externos funcionan
-- [ ] Información completa de tiendas
+- [✅] Grid responsive
+- [✅] Filtros funcionan
+- [✅] Links externos funcionan
+- [✅] Información completa de tiendas
 
 ---
 
@@ -311,9 +311,9 @@ My Account ▼
 
 **Verificación:**
 
-- [ ] Layout limpio y organizado
-- [ ] Contenido relevante
-- [ ] Responsive
+- [✅] Layout limpio y organizado
+- [✅] Contenido relevante
+- [✅] Responsive
 
 ---
 
@@ -348,10 +348,10 @@ My Account ▼
 
 **Verificación:**
 
-- [ ] Selector de idioma funciona
-- [ ] Traducciones completas
-- [ ] Persistencia de idioma seleccionado
-- [ ] Cambio de idioma en tiempo real
+- [✅] Selector de idioma funciona
+- [✅] Traducciones completas
+- [✅] Persistencia de idioma seleccionado
+- [✅] Cambio de idioma en tiempo real
 
 ---
 
@@ -382,9 +382,9 @@ My Account ▼
 **Verificación:**
 
 - [✅] Strapi instalado y corriendo
-- [ ] Collection Types creados
-- [ ] API accesible
-- [ ] Deploy en producción
+- [✅] Collection Types creados
+- [✅] API accesible
+- [✅] Deploy en producción
 
 ---
 
@@ -400,13 +400,14 @@ _Detalles finales y corrección de errores antes del lanzamiento_
 
 **Tareas:**
 
-- [ ] **Hide on scroll:** Ocultar barra de navegación al hacer scroll down, mostrar al hacer scroll up.
-- [ ] **Mobile Navigation:**
+- [✅] **Hide on scroll:** Ocultar barra de navegación al hacer scroll down, mostrar al hacer scroll up.
+- [✅] **Mobile Navigation:**
   - Corregir links faltantes.
   - Asegurar acceso al Dashboard.
   - Resolver conflicto con navegación de Store Guide (sticky on top).
-- [ ] **Header Sizing:** Hacer el header del home más pequeño y consistente en todas las vistas.
-- [ ] **Logo:** Agregar el nuevo logo de Aiyu Japan.
+- [✅] **Logo:** Agregar el nuevo logo de Aiyu Japan.
+- [_] **Logo:** Ampliar el padding-bottom del header.
+- [_] **Logo:** Mejorar y expadir la UI de navicion del dashboard en mobile.
 
 ### 5.2 Correcciones en Homepage
 
@@ -416,9 +417,9 @@ _Detalles finales y corrección de errores antes del lanzamiento_
 
 **Tareas:**
 
-- [ ] **Carousel:** Ajustar altura máxima en dispositivos móviles (max-height).
-- [ ] **Recommended Sites:** Asegurar que los clicks lleven a la página real del sitio recomendado.
-- [ ] **News Entries:** Corregir links en homepage (actualmente llevan al blog en lugar de noticias).
+- [✅] **Carousel:** Ajustar altura máxima en dispositivos móviles (max-height).
+- [✅] **Recommended Sites:** Asegurar que los clicks lleven a la página real del sitio recomendado.
+- [✅] **News Entries:** Corregir links en homepage (actualmente llevan al blog en lugar de noticias).
 
 ### 5.3 Funcionalidad de Noticias y Blog
 
@@ -428,10 +429,11 @@ _Detalles finales y corrección de errores antes del lanzamiento_
 
 **Tareas:**
 
-- [ ] **News Page:**
+- [✅] **News Page:**
   - Copiar lógica de i18n del Blog.
   - Agregar acceso a "News" en la barra de navegación.
-- [ ] **Blog:** Corregir problema de contenido no visible.
+- [✅] **Blog:** Corregir problema de contenido no visible.
+- [ ] **Blog:** Cargar adecuadamente los blocks en UI.
 
 ### 5.4 Manejo de Errores y Rutas
 
@@ -441,8 +443,8 @@ _Detalles finales y corrección de errores antes del lanzamiento_
 
 **Tareas:**
 
-- [ ] **Login Banner:** Corregir redirección que lleva a 404.
-- [ ] **Error Pages:** Diseñar e implementar páginas 404 y 500 personalizadas y agradables.
+- [✅] **Login Banner:** Corregir redirección que lleva a 404.
+- [✅] **Error Pages:** Diseñar e implementar páginas 404 y 500 personalizadas y agradables.
 
 ---
 
@@ -483,11 +485,11 @@ export async function loader({ params }: Route.LoaderArgs) {
 
 **Verificación:**
 
-- [ ] Blog posts se cargan desde Strapi
-- [ ] Noticias se cargan desde Strapi
-- [ ] SSR funciona correctamente
-- [ ] Imágenes se muestran
-- [ ] SEO optimizado
+- [✅] Blog posts se cargan desde Strapi
+- [✅] Noticias se cargan desde Strapi
+- [✅] SSR funciona correctamente
+- [✅] Imágenes se muestran
+- [✅] SEO optimizado
 
 ---
 

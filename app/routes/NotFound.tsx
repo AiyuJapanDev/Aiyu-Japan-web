@@ -1,18 +1,8 @@
-import { useLocation, Link } from "react-router";
-import { useEffect } from "react";
+import { Link } from "react-router";
 import { Button } from "@/components/ui/button";
 import MascotBox from "/MascotBox.png";
 
 const NotFound = () => {
-  const location = useLocation();
-
-  useEffect(() => {
-    console.error(
-      "404 Error: User attempted to access non-existent route:",
-      location.pathname
-    );
-  }, [location.pathname]);
-
   return (
     <div className="min-h-[80vh] flex flex-col items-center justify-center bg-gray-50 px-4 text-center">
       <div className="max-w-md w-full space-y-8">

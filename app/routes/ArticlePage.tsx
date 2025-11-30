@@ -12,6 +12,7 @@ import {
 import ReactMarkdown from "react-markdown";
 import { Link } from "react-router";
 import { ArrowLeft, Calendar, Clock, Quote } from "lucide-react";
+import { useApp } from "@/contexts/AppContext";
 
 export async function loader({ params }: Route.LoaderArgs) {
   const article = await getBlogArticle(params.articleSlug, params.lang);
@@ -120,6 +121,7 @@ export default function ArticlePage({ loaderData }: Route.ComponentProps) {
     category,
   } = loaderData as Article;
 
+  const { language, t } = useApp();
   const imageUrl = cover?.url
     ? `${import.meta.env.VITE_STRAPI_URL}${cover.url}`
     : null;
@@ -163,11 +165,11 @@ export default function ArticlePage({ loaderData }: Route.ComponentProps) {
 
         <div className="absolute inset-0 flex flex-col justify-end px-4 sm:px-6 lg:px-8 pb-16 max-w-7xl mx-auto w-full">
           <Link
-            to="/"
+            to={`/blog/${language}`}
             className="inline-flex items-center text-white/80 hover:text-white mb-6 transition-colors w-fit"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Home
+            {t("backToBlogs")}
           </Link>
 
           {category && (
@@ -193,7 +195,7 @@ export default function ArticlePage({ loaderData }: Route.ComponentProps) {
             {readingTime > 0 && (
               <div className="flex items-center">
                 <Clock className="w-4 h-4 mr-2" />
-                {readingTime} min read
+                {readingTime} {t("minRead")}
               </div>
             )}
           </div>
@@ -220,7 +222,7 @@ export default function ArticlePage({ loaderData }: Route.ComponentProps) {
               ))}
             </div>
           ) : (
-            <p className="text-gray-500 italic">No content available.</p>
+            <p className="text-gray-500 italic">{t("noContent")}</p>
           )}
         </div>
       </article>

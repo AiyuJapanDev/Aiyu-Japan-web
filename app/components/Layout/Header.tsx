@@ -28,9 +28,9 @@ const Header = () => {
   const [lastScrollY, setLastScrollY] = useState(0);
 
   // Scroll to top when location changes
-  useEffect(() => {
+  /*   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
-  }, [location.pathname]);
+  }, [location.pathname]); */
 
   // Hide on scroll logic
   useEffect(() => {

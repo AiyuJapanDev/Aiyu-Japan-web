@@ -49,7 +49,8 @@ export default function Blog({ loaderData }: Route.ComponentProps) {
       className={`relative px-6 py-2 group flex flex-row gap-6 h-full items-center bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 ${className}`}
     >
       <div className="absolute w-2 h-full inset-0 bg-capybara-blue" />
-      <div className="relative h-24 overflow-hidden w-16">
+      {/* Image */}
+      <div className="relative h-24 w-24 overflow-hidden rounded-lg">
         {news.image ? (
           <img
             src={`${import.meta.env.VITE_STRAPI_URL}${news.image.url}`}
@@ -182,7 +183,9 @@ export default function Blog({ loaderData }: Route.ComponentProps) {
             </>
           ) : (
             <div className="text-center py-20">
-              <p className="text-gray-500 text-lg">{t("noArticlesFound")}</p>
+              <p className="text-gray-500 text-lg">
+                {t("newsBlogNoNewsFound")}
+              </p>
             </div>
           )}
         </div>
