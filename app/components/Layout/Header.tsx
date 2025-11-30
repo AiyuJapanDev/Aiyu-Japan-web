@@ -14,8 +14,10 @@ import {
   SelectValue,
 } from "../ui/select";
 import MyAccountMenu from "../ui/custom/MyAccountMenu";
+import MobileAccountMenu from "../ui/custom/MobileAccountMenu";
 import LogOutBtn from "../ui/custom/LogOutBtn";
 import Logo from "/aiyu-japan-logo-typography.png";
+import LogoMobile from "/aiyu_logo_small.png";
 
 const Header = () => {
   const { language, setLanguage, t } = useApp();
@@ -39,6 +41,7 @@ const Header = () => {
         if (window.scrollY > lastScrollY && window.scrollY > 200) {
           // if scroll down hide the navbar
           setIsVisible(false);
+          setIsMobileMenuOpen(false);
         } else {
           // if scroll up show the navbar
           setIsVisible(true);
@@ -101,14 +104,20 @@ const Header = () => {
             <p className="animate-bounce font-bold">{t("newUser")}</p>
           </div>
         )}
-        <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <nav className="max-w-7xl mx-auto  sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-14">
             {/* Logo */}
-            <Link
-              to="/"
-              className="flex items-center space-x-3 hover-bounce transition-all duration-300 flex-shrink-0"
-            >
-              <img src={Logo} alt="Aiyu Japan Logo" className="h-12 w-auto" />
+            <Link to="/">
+              <img
+                src={Logo}
+                alt="Aiyu Japan Logo"
+                className="hidden md:block h-12 w-auto"
+              />
+              <img
+                src={LogoMobile}
+                alt="Aiyu Japan Logo"
+                className="md:hidden h-16 w-auto"
+              />
             </Link>
 
             {/* Centered Desktop Navigation */}
@@ -324,17 +333,25 @@ const Header = () => {
 
           {/* Mobile Navigation */}
           {isMobileMenuOpen && (
-            <div className="lg:hidden animate-fade-in" ref={mobileMenuRef}>
-              <div className="px-2 pt-2 pb-2 space-y-2 sm:px-3 bg-white/95 border-t-2 border-capybara-orange/20 rounded-b-3xl min-h-screen">
+            <div
+              className="px-4 lg:hidden animate-fade-in "
+              ref={mobileMenuRef}
+            >
+              <div className="space-y-6 pt-4 pb-2  bg-white/95 border-t-2 border-capybara-orange/20 rounded-b-3xl min-h-screen">
+                {user && (
+                  <div className="flex items-center gap-2 w-full">
+                    <MobileAccountMenu />
+                  </div>
+                )}
                 {/* Information Section Title */}
-                <div className="px-4 py-2 text-base font-bold text-gray-500">
+                <div className=" py-2 text-base font-bold text-gray-500">
                   {t("information")}
                 </div>
 
                 <NavLink
                   to="/services"
                   className={({ isActive }) =>
-                    `block px-4 py-3 rounded-full text-base transition-all duration-300 ml-4 ${
+                    `block   rounded-full text-base transition-all duration-300 ml-4 ${
                       isActive
                         ? "text-white bg-capybara-orange"
                         : "text-gray-700 hover:text-capybara-orange hover:bg-capybara-cream"
@@ -348,7 +365,7 @@ const Header = () => {
                 <NavLink
                   to="/store-guide/what-is"
                   className={({ isActive }) =>
-                    `block px-4 py-3 rounded-full text-base transition-all duration-300 ml-4 ${
+                    `block   rounded-full text-base transition-all duration-300 ml-4 ${
                       isActive
                         ? "text-white bg-capybara-orange"
                         : "text-gray-700 hover:text-capybara-orange hover:bg-capybara-cream"
@@ -362,7 +379,7 @@ const Header = () => {
                 <NavLink
                   to={`"/news"`}
                   className={({ isActive }) =>
-                    `block px-4 py-3 rounded-full text-base transition-all duration-300 ml-4 ${
+                    `block   rounded-full text-base transition-all duration-300 ml-4 ${
                       isActive
                         ? "text-white bg-capybara-orange"
                         : "text-gray-700 hover:text-capybara-orange hover:bg-capybara-cream"
@@ -376,7 +393,7 @@ const Header = () => {
                 <NavLink
                   to="/contact"
                   className={({ isActive }) =>
-                    `block px-4 py-3 rounded-full text-base transition-all duration-300 ml-4 ${
+                    `block   rounded-full text-base transition-all duration-300 ml-4 ${
                       isActive
                         ? "text-white bg-capybara-orange"
                         : "text-gray-700 hover:text-capybara-orange hover:bg-capybara-cream"
@@ -390,7 +407,7 @@ const Header = () => {
                 <NavLink
                   to="/calculator"
                   className={({ isActive }) =>
-                    `block px-4 py-3 rounded-full text-base font-semibold transition-all duration-300 ${
+                    `block   rounded-full text-base font-semibold transition-all duration-300 ${
                       isActive
                         ? "text-white bg-capybara-orange"
                         : "text-gray-700 hover:text-capybara-orange hover:bg-capybara-cream"
@@ -400,22 +417,6 @@ const Header = () => {
                 >
                   {t("calculator")}
                 </NavLink>
-
-                {user && (
-                  <NavLink
-                    to={isAdmin ? "/admin-dashboard" : "/user-dashboard"}
-                    className={({ isActive }) =>
-                      `block px-4 py-3 rounded-full text-base font-semibold transition-all duration-300 ${
-                        isActive
-                          ? "text-white bg-capybara-orange"
-                          : "text-gray-700 hover:text-capybara-orange hover:bg-capybara-cream"
-                      }`
-                    }
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    Dashboard
-                  </NavLink>
-                )}
 
                 {/* language selector & logout button */}
                 <div className="relative flex items-center justify-center gap-2 px-1 py-3 border-b-2 border-capybara-orange/20">
@@ -446,7 +447,7 @@ const Header = () => {
 
       {/* Language Switcher - Bottom Left */}
       <div className="fixed bottom-4 left-3 z-50 hidden md:block mr-1">
-        <div className="flex items-center space-x-2 bg-white rounded-full px-4 py-3 shadow-lg border border-capybara-orange/20">
+        <div className="flex items-center space-x-2 bg-white rounded-full  py-3 shadow-lg border border-capybara-orange/20">
           <Globe className="w-5 h-5 text-capybara-orange" />
           <select
             value={language}
