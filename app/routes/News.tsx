@@ -1,20 +1,12 @@
 import type { Route } from ".react-router/types/app/routes/+types/Blog";
-import type { New } from "@/types/strapi-news";
-import { getNewsPosts } from "@/lib/strapi";
-import { ArrowRight, Calendar, User, Newspaper } from "lucide-react";
-import { Link } from "react-router";
 import { POSTS_PER_PAGE, calculateTotalPages } from "@/lib/pagination";
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-} from "@/components/ui/carousel";
+import { getNewsPosts } from "@/lib/strapi";
+import type { New } from "@/types/strapi-news";
 import { format } from "date-fns";
 import { enUS, es } from "date-fns/locale";
+import { Calendar, Newspaper } from "lucide-react";
+import { Link } from "react-router";
 
-import Autoplay from "embla-carousel-autoplay";
 import { useApp } from "@/contexts/AppContext";
 
 export async function loader({ params }: Route.LoaderArgs) {
@@ -102,10 +94,10 @@ export default function Blog({ loaderData }: Route.ComponentProps) {
         <div className="relative max-w-7xl mx-auto text-center z-10">
           <h1
             className="text-4xl md:text-6xl font-bold mb-6 tracking-tight"
-            dangerouslySetInnerHTML={{ __html: t("blogTitle") }}
+            dangerouslySetInnerHTML={{ __html: t("newsBlogTitle") }}
           />
           <p className="text-xl md:text-2xl text-gray-300 max-w-2xl mx-auto leading-relaxed">
-            {t("blogSubtitle")}
+            {t("newsBlogSubtitle")}
           </p>
         </div>
       </div>
@@ -115,7 +107,7 @@ export default function Blog({ loaderData }: Route.ComponentProps) {
         <div className="mb-8">
           <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
             <span className="bg-gray-900 w-2 h-8 rounded-full inline-block"></span>
-            {t("allArticles")}
+            {t("newsBlogAllNews")}
           </h2>
           {news.length > 0 ? (
             <>
