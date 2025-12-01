@@ -56,29 +56,15 @@ const FeaturedBannerCarousel: React.FC<FeaturedBannerCarouselProps> = ({
       >
         <CarouselContent className="ml-0">
           {carouselData.map((banner, index) => {
-            const imageUrl = `${import.meta.env.VITE_STRAPI_URL}${
-              banner.cover?.url
-            }`;
+            const imageUrl = `${banner.cover?.url}`;
             const slug = getLangSlug(banner, language);
             // Construct srcset
             const formats = banner.cover?.formats;
             const srcset = formats
               ? [
-                  formats.small
-                    ? `${import.meta.env.VITE_STRAPI_URL}${
-                        formats.small.url
-                      } 500w`
-                    : "",
-                  formats.medium
-                    ? `${import.meta.env.VITE_STRAPI_URL}${
-                        formats.medium.url
-                      } 750w`
-                    : "",
-                  formats.large
-                    ? `${import.meta.env.VITE_STRAPI_URL}${
-                        formats.large.url
-                      } 1000w`
-                    : "",
+                  formats.small ? `${formats.small.url} 500w` : "",
+                  formats.medium ? `${formats.medium.url} 750w` : "",
+                  formats.large ? `${formats.large.url} 1000w` : "",
                   `${imageUrl} ${banner.cover?.width}w`, // Original as fallback/highest quality
                 ]
                   .filter(Boolean)

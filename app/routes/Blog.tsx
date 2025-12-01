@@ -65,7 +65,7 @@ export default function Blog({ loaderData }: Route.ComponentProps) {
       <div className="relative h-48 overflow-hidden">
         {post.cover ? (
           <img
-            src={`${import.meta.env.VITE_STRAPI_URL}${post.cover.url}`}
+            src={`${post.cover.url}`}
             alt={post.cover.alternativeText || post.title}
             className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
           />

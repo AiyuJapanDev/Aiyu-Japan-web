@@ -21,9 +21,7 @@ export default function NewsPage({ loaderData }: Route.ComponentProps) {
 
   const { language, t } = useApp();
 
-  const imageUrl = image?.url
-    ? `${import.meta.env.VITE_STRAPI_URL}${image.url}`
-    : null;
+  const imageUrl = image?.url ? `${image.url}` : null;
 
   return (
     <div className="min-h-screen bg-gray-50 pb-20">

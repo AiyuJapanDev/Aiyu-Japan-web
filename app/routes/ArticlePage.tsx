@@ -41,7 +41,7 @@ function QuoteBlockRenderer({ block }: { block: QuoteBlock }) {
 function MediaBlockRenderer({ block }: { block: MediaBlock }) {
   if (!block.file) return null;
 
-  const imageUrl = `${import.meta.env.VITE_STRAPI_URL}${block.file.url}`;
+  const imageUrl = `${block.file.url}`;
 
   return (
     <figure className="my-8">
@@ -65,7 +65,7 @@ function SliderBlockRenderer({ block }: { block: SliderBlock }) {
   return (
     <div className="my-8 grid grid-cols-1 md:grid-cols-2 gap-4">
       {block.files.map((file) => {
-        const imageUrl = `${import.meta.env.VITE_STRAPI_URL}${file.url}`;
+        const imageUrl = `${file.url}`;
         return (
           <figure key={file.id}>
             <img
@@ -115,9 +115,7 @@ export default function ArticlePage({ loaderData }: Route.ComponentProps) {
   } = loaderData as Article;
 
   const { language, t } = useApp();
-  const imageUrl = cover?.url
-    ? `${import.meta.env.VITE_STRAPI_URL}${cover.url}`
-    : null;
+  const imageUrl = cover?.url ? `${cover.url}` : null;
 
   const formattedDate = new Date(publishedAt).toLocaleDateString(
     locale || "en-US",

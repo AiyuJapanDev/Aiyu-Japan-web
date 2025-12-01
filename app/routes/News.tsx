@@ -53,7 +53,7 @@ export default function Blog({ loaderData }: Route.ComponentProps) {
       <div className="relative h-24 w-24 overflow-hidden rounded-lg">
         {news.image ? (
           <img
-            src={`${import.meta.env.VITE_STRAPI_URL}${news.image.url}`}
+            src={`${news.image.url}`}
             alt={news.image.alternativeText || news.title}
             className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
           />

@@ -53,9 +53,7 @@ const FeaturedBlogSlider: React.FC<FeaturedBlogSliderProps> = ({
       >
         <CarouselContent className="-ml-4">
           {displayArticles.map((blog, index) => {
-            const imageUrl = blog.cover?.url
-              ? `${import.meta.env.VITE_STRAPI_URL}${blog.cover.url}`
-              : "";
+            const imageUrl = blog.cover?.url ? `${blog.cover.url}` : "";
 
             const slug = getLangSlug(blog, language);
 
@@ -63,21 +61,9 @@ const FeaturedBlogSlider: React.FC<FeaturedBlogSliderProps> = ({
             const formats = blog.cover?.formats;
             const srcset = formats
               ? [
-                  formats.small
-                    ? `${import.meta.env.VITE_STRAPI_URL}${
-                        formats.small.url
-                      } 500w`
-                    : "",
-                  formats.medium
-                    ? `${import.meta.env.VITE_STRAPI_URL}${
-                        formats.medium.url
-                      } 750w`
-                    : "",
-                  formats.large
-                    ? `${import.meta.env.VITE_STRAPI_URL}${
-                        formats.large.url
-                      } 1000w`
-                    : "",
+                  formats.small ? `${formats.small.url} 500w` : "",
+                  formats.medium ? `${formats.medium.url} 750w` : "",
+                  formats.large ? `${formats.large.url} 1000w` : "",
                   blog.cover?.width ? `${imageUrl} ${blog.cover.width}w` : "", // Original as fallback/highest quality
                 ]
                   .filter(Boolean)

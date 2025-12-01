@@ -88,10 +88,7 @@ export default function RecommendedStoresSection({
               rel="noopener noreferrer"
               aria-label="Weverse"
             >
-              <img
-                className="object-cover"
-                src={`${import.meta.env.VITE_STRAPI_URL}${shop.logo.url}`}
-              />
+              <img className="object-cover" src={`${shop.logo.url}`} />
             </a>
           </div>
         ))}
