@@ -446,8 +446,8 @@ const Header = () => {
       </header>
 
       {/* Language Switcher - Bottom Left */}
-      <div className="fixed bottom-4 left-3 z-50 hidden md:block mr-1">
-        <div className="flex items-center space-x-2 bg-white rounded-full  py-3 shadow-lg border border-capybara-orange/20">
+      <div className="fixed bottom-4 left-3 z-50 hidden md:block mr-1 ">
+        <div className=" px-3 flex items-center space-x-2 bg-white rounded-full  py-3 shadow-lg border border-capybara-orange/20">
           <Globe className="w-5 h-5 text-capybara-orange" />
           <select
             value={language}
