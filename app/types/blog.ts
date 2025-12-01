@@ -1,3 +1,5 @@
+import { type BlocksContent } from "@strapi/blocks-react-renderer";
+
 // --- Image Types ---
 export interface ImageFormat {
   name: string;
@@ -123,7 +125,7 @@ export interface Article {
   cover: StrapiImage | null;
   author?: Author;
   category?: Category;
-  blocks?: ArticleBlock[];
+  content: BlocksContent;
   localizations?: ArticleLocalization[];
 }
 

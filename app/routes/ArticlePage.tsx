@@ -1,18 +1,11 @@
 import { Route } from ".react-router/types/app/routes/+types/ArticlePage";
-
-import { getBlogArticle } from "@/lib/strapi";
-import {
-  ArticleBlock,
-  RichTextBlock,
-  QuoteBlock,
-  MediaBlock,
-  SliderBlock,
-  Article,
-} from "@/types/blog";
-import ReactMarkdown from "react-markdown";
-import { Link } from "react-router";
-import { ArrowLeft, Calendar, Clock, Quote } from "lucide-react";
+import RichTextBlockRenderer from "@/components/ui/custom/RichTextBlockRenderer";
 import { useApp } from "@/contexts/AppContext";
+import { getBlogArticle } from "@/lib/strapi";
+import { Article } from "@/types/blog";
+import { BlocksRenderer } from "@strapi/blocks-react-renderer";
+import { ArrowLeft, Calendar, Clock } from "lucide-react";
+import { Link } from "react-router";
 
 export async function loader({ params }: Route.LoaderArgs) {
   const article = await getBlogArticle(params.articleSlug, params.lang);
@@ -22,7 +15,7 @@ export async function loader({ params }: Route.LoaderArgs) {
   return article;
 }
 
-// Block renderers
+/* // Block renderers
 function RichTextBlockRenderer({ block }: { block: RichTextBlock }) {
   return (
     <div className="prose prose-lg prose-blue max-w-none prose-headings:font-bold prose-a:text-blue-600 hover:prose-a:text-blue-800 prose-img:rounded-xl prose-img:shadow-lg">
@@ -105,7 +98,7 @@ function BlockRenderer({ block }: { block: ArticleBlock }) {
     default:
       return null;
   }
-}
+} */
 
 export default function ArticlePage({ loaderData }: Route.ComponentProps) {
   if (!loaderData) return null;
@@ -113,7 +106,7 @@ export default function ArticlePage({ loaderData }: Route.ComponentProps) {
   const {
     title,
     description,
-    blocks,
+    content,
     cover,
     publishedAt,
     locale,
@@ -136,20 +129,20 @@ export default function ArticlePage({ loaderData }: Route.ComponentProps) {
   );
 
   // Estimate reading time from all rich text blocks
-  const wordCount =
-    blocks
+  /*   const wordCount =
+    content
       ?.filter(
-        (block): block is RichTextBlock =>
+        (block): block is BlocksContent =>
           block.__component === "shared.rich-text"
       )
       .reduce(
         (count, block) => count + (block.body?.split(/\s+/).length || 0),
         0
       ) || 0;
-  const readingTime = Math.ceil(wordCount / 200);
+  const readingTime = Math.ceil(wordCount / 200); */
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
+    <div className="min-h-screen bg-gray-50 pb-20 w-full">
       {/* Hero Section */}
       <div className="relative w-full h-[60vh] min-h-[400px] bg-gray-900 overflow-hidden">
         {imageUrl && (
@@ -192,38 +185,20 @@ export default function ArticlePage({ loaderData }: Route.ComponentProps) {
               <Calendar className="w-4 h-4 mr-2" />
               {formattedDate}
             </div>
-            {readingTime > 0 && (
+            {/*      {readingTime > 0 && (
               <div className="flex items-center">
                 <Clock className="w-4 h-4 mr-2" />
                 {readingTime} {t("minRead")}
               </div>
-            )}
+            )} */}
           </div>
         </div>
       </div>
 
       {/* Content Section */}
       <article className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 -mt-10 relative z-10">
-        <div className="bg-white rounded-xl shadow-xl p-8 md:p-12">
-          {description && (
-            <p className="text-xl text-gray-600 mb-8 font-medium leading-relaxed border-l-4 border-blue-500 pl-4 italic">
-              {description}
-            </p>
-          )}
-
-          {/* Render blocks */}
-          {blocks && blocks.length > 0 ? (
-            <div className="space-y-6">
-              {blocks.map((block, index) => (
-                <BlockRenderer
-                  key={`${block.__component}-${block.id}-${index}`}
-                  block={block}
-                />
-              ))}
-            </div>
-          ) : (
-            <p className="text-gray-500 italic">{t("noContent")}</p>
-          )}
+        <div className="bg-white rounded-xl shadow-xl p-8 md:p-12 prose mx-auto border max-w-none">
+          <RichTextBlockRenderer content={content} />
         </div>
       </article>
     </div>
