@@ -44,6 +44,7 @@
     "@react-router/fs-routes": "^7.9.6",
     "@react-router/node": "^7.9.6",
     "@react-router/serve": "^7.9.6",
+    "@strapi/blocks-react-renderer": "^1.0.2",
     "@supabase/supabase-js": "^2.84.0",
     "@tanstack/react-query": "^5.90.10",
     "autoprefixer": "^10.4.22",
