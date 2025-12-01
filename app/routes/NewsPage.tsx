@@ -4,6 +4,7 @@ import { Link } from "react-router";
 import { ArrowLeft } from "lucide-react";
 import { New } from "@/types/strapi-news";
 import { useApp } from "@/contexts/AppContext";
+import RichTextBlockRenderer from "@/components/ui/custom/RichTextBlockRenderer";
 
 export async function loader({ params }: Route.LoaderArgs) {
   const news = await getNewPost(params.newsSlug, params.lang);
@@ -57,12 +58,7 @@ export default function NewsPage({ loaderData }: Route.ComponentProps) {
       {/* Content Section */}
       <article className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 -mt-10 relative z-10">
         <div className="bg-white rounded-xl shadow-xl p-8 md:p-12">
-          {content && (
-            <p className="text-xl text-gray-600 mb-8 font-medium leading-relaxed border-l-4 border-blue-500 pl-4 italic">
-              {content}
-            </p>
-          )}
-          <p className="text-gray-500 italic">{t("noContent")}</p>
+          <RichTextBlockRenderer content={content} />
         </div>
       </article>
     </div>

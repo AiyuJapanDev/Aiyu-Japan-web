@@ -1,10 +1,11 @@
+import { type BlocksContent } from "@strapi/blocks-react-renderer";
 import { StrapiImage } from "./blog";
 
 export interface New {
   id: number;
   documentId: string;
   title: string;
-  content: string;
+  content: BlocksContent;
   slug: string;
   date: Date;
   createdAt: Date;
