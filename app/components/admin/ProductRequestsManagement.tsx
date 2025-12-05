@@ -20,21 +20,12 @@ import {
   RefreshCw,
   PackageCheck,
   Copy,
+  XCircle,
 } from "lucide-react";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -46,15 +37,19 @@ import {
   DialogTrigger,
   DialogFooter,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { toast as sonnerToast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -63,8 +58,7 @@ import type { Database } from "@/integrations/supabase/types";
 import { StatusFlow } from "@/components/ui/status-flow";
 import { createNotification } from "@/lib/notificationUtils";
 
-type ProductRequestStatus =
-  Database["public"]["Enums"]["product_request_status"];
+type ProductRequestStatus = Database["public"]["Enums"]["product_request_status"];
 
 interface ProductRequestWithIssue extends ProductRequest {
   has_purchase_issue?: boolean;
@@ -72,6 +66,8 @@ interface ProductRequestWithIssue extends ProductRequest {
 }
 
 interface OrderWithDetails extends Order {
+  is_cancelled?: boolean;
+  cancelled_at?: string | null;
   is_rejected?: boolean;
   rejection_reason?: string | null;
   rejection_details?: {
@@ -99,9 +95,7 @@ interface ProductRequestsManagementProps {
   orderId?: string | null;
 }
 
-export function ProductRequestsManagement({
-  orderId,
-}: ProductRequestsManagementProps) {
+export function ProductRequestsManagement({ orderId }: ProductRequestsManagementProps) {
   const [orders, setOrders] = useState<OrderWithDetails[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -110,44 +104,72 @@ export function ProductRequestsManagement({
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [hideRejected, setHideRejected] = useState(false);
+  const [hideCancelled, setHideCancelled] = useState(false);
   const [itemsPerPage, setItemsPerPage] = useState(10);
 
   // Order-level actions
-  const [selectedOrder, setSelectedOrder] = useState<OrderWithDetails | null>(
-    null
-  );
+  const [selectedOrder, setSelectedOrder] = useState<OrderWithDetails | null>(null);
   const [quotePrice, setQuotePrice] = useState("");
   const [quoteInvoiceUrl, setQuoteInvoiceUrl] = useState("");
   const [rejectionReason, setRejectionReason] = useState("");
-  const [productIssues, setProductIssues] = useState<
-    Map<string, { hasIssue: boolean; description: string }>
-  >(new Map());
+  const [productIssues, setProductIssues] = useState<Map<string, { hasIssue: boolean; description: string }>>(
+    new Map(),
+  );
   const [showShippingDialog, setShowShippingDialog] = useState(false);
   const [shippingPrice, setShippingPrice] = useState("");
   const [shippingInvoiceUrl, setShippingInvoiceUrl] = useState("");
   const [showTrackingDialog, setShowTrackingDialog] = useState(false);
   const [trackingNumber, setTrackingNumber] = useState("");
+  const [showCancelDialog, setShowCancelDialog] = useState(false);
+  const [orderToCancel, setOrderToCancel] = useState<OrderWithDetails | null>(null);
+  const [isCancelling, setIsCancelling] = useState(false);
+
+  // Confirm Payment Dialog
+  const [showConfirmPaymentDialog, setShowConfirmPaymentDialog] = useState(false);
+  const [orderForPayment, setOrderForPayment] = useState<OrderWithDetails | null>(null);
+  const [isConfirmingPayment, setIsConfirmingPayment] = useState(false);
+
+  // Mark All Paid as Purchased Dialog
+  const [showMarkPurchasedDialog, setShowMarkPurchasedDialog] = useState(false);
+  const [orderForPurchased, setOrderForPurchased] = useState<OrderWithDetails | null>(null);
+  const [isMarkingPurchased, setIsMarkingPurchased] = useState(false);
+
+  // Mark All Purchased as Received Dialog
+  const [showMarkAllReceivedDialog, setShowMarkAllReceivedDialog] = useState(false);
+  const [orderForAllReceived, setOrderForAllReceived] = useState<OrderWithDetails | null>(null);
+  const [dimensionsForAllReceived, setDimensionsForAllReceived] = useState<Map<string, {weight?: number, width?: number, length?: number, height?: number}>>(new Map());
+  const [isMarkingAllReceived, setIsMarkingAllReceived] = useState(false);
+
+  // Mark Individual as Received Dialog
+  const [showMarkReceivedDialog, setShowMarkReceivedDialog] = useState(false);
+  const [itemForReceived, setItemForReceived] = useState<{id: string, weight?: number, width?: number, length?: number, height?: number} | null>(null);
+  const [isMarkingReceived, setIsMarkingReceived] = useState(false);
+
+  // Mark Individual as Purchased Dialog
+  const [showMarkIndividualPurchasedDialog, setShowMarkIndividualPurchasedDialog] = useState(false);
+  const [itemForPurchased, setItemForPurchased] = useState<{id: string} | null>(null);
+  const [isMarkingIndividualPurchased, setIsMarkingIndividualPurchased] = useState(false);
 
   const { toast } = useToast();
 
   useEffect(() => {
     fetchOrders();
-  }, [hideRejected, itemsPerPage]);
+  }, [hideRejected, hideCancelled, itemsPerPage]);
 
   // Auto-open and scroll to order when orderId is provided
   useEffect(() => {
     if (orderId && orders.length > 0) {
-      setOpenOrders((prev) => new Set(prev).add(orderId));
+      setOpenOrders(prev => new Set(prev).add(orderId));
       setTimeout(() => {
         const element = document.getElementById(`order-${orderId}`);
-        element?.scrollIntoView({ behavior: "smooth", block: "center" });
+        element?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }, 100);
     }
   }, [orderId, orders.length]);
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [statusFilter, itemsPerPage, hideRejected, searchTerm]);
+  }, [statusFilter, itemsPerPage, hideRejected, hideCancelled, searchTerm]);
 
   const fetchOrders = async () => {
     try {
@@ -161,7 +183,7 @@ export function ProductRequestsManagement({
             product_request_id
           ),
           quotes (*)
-        `
+        `,
       );
 
       // Apply hide rejected filter
@@ -169,11 +191,14 @@ export function ProductRequestsManagement({
         ordersQuery = ordersQuery.eq("is_rejected", false);
       }
 
+      // Apply hide cancelled filter
+      if (hideCancelled) {
+        ordersQuery = ordersQuery.eq("is_cancelled", false);
+      }
+
       // Fetch all orders (filtering and pagination will be done client-side)
-      const { data: ordersData, error: ordersError } = await ordersQuery.order(
-        "created_at",
-        { ascending: false }
-      );
+      const { data: ordersData, error: ordersError } = await ordersQuery
+        .order("created_at", { ascending: false });
 
       if (ordersError) throw ordersError;
 
@@ -201,7 +226,7 @@ export function ProductRequestsManagement({
 
       // Fetch user profiles and combine data
       // Get all unique user IDs
-      const userIds = [...new Set((ordersData || []).map((o) => o.user_id))];
+      const userIds = [...new Set((ordersData || []).map(o => o.user_id))];
 
       // Fetch all profiles in one query
       const { data: profiles, error: profilesError } = await supabase
@@ -212,22 +237,15 @@ export function ProductRequestsManagement({
       if (profilesError) throw profilesError;
 
       // Build a quick lookup map
-      const profileMap = new Map((profiles || []).map((p) => [p.id, p]));
+      const profileMap = new Map((profiles || []).map(p => [p.id, p]));
 
       // Combine order data with product requests and profiles
-      const ordersWithDetails = (ordersData || []).map((order) => {
+      const ordersWithDetails = (ordersData || []).map(order => {
         let items: ProductRequestWithIssue[];
 
-        if (
-          order.is_rejected &&
-          order.rejection_details &&
-          typeof order.rejection_details === "object"
-        ) {
+        if (order.is_rejected && order.rejection_details && typeof order.rejection_details === "object") {
           const rejectionDetails = order.rejection_details as any;
-          if (
-            rejectionDetails.product_issues &&
-            Array.isArray(rejectionDetails.product_issues)
-          ) {
+          if (rejectionDetails.product_issues && Array.isArray(rejectionDetails.product_issues)) {
             items = rejectionDetails.product_issues.map((issue: any) => ({
               id: issue.product_id,
               user_id: order.user_id,
@@ -257,19 +275,16 @@ export function ProductRequestsManagement({
         };
       });
 
-      setOrders(
-        ordersWithDetails.map((order) => ({
-          ...order,
-          rejection_details: order.rejection_details as any,
-        }))
-      );
+      setOrders(ordersWithDetails.map(order => ({
+        ...order,
+        rejection_details: order.rejection_details as any,
+      })));
 
-      setOrders(
-        ordersWithDetails.map((order) => ({
-          ...order,
-          rejection_details: order.rejection_details as any,
-        }))
-      );
+
+      setOrders(ordersWithDetails.map((order) => ({
+        ...order,
+        rejection_details: order.rejection_details as any,
+      })));
     } catch (error) {
       console.error("Error fetching orders:", error);
       toast({
@@ -354,6 +369,7 @@ export function ProductRequestsManagement({
       });
     }
   };
+
 
   const rejectOrder = async () => {
     if (!selectedOrder || !rejectionReason.trim()) {
@@ -442,16 +458,42 @@ export function ProductRequestsManagement({
       toast({
         title: "Error",
         description: error.message || "Failed to reject order",
-        variant: "destructive",
-      });
-    }
-  };
+      variant: "destructive",
+    });
+  }
+};
 
-  const updateProductIssue = (
-    productId: string,
-    hasIssue: boolean,
-    description: string
-  ) => {
+const adminCancelOrder = async () => {
+  if (!orderToCancel) return;
+  
+  setIsCancelling(true);
+  try {
+    const { error } = await supabase.rpc('admin_cancel_order', { 
+      p_order_id: orderToCancel.id 
+    });
+    
+    if (error) throw error;
+    
+    toast({
+      title: "Order Cancelled",
+      description: `Order #${orderToCancel.order_personal_id} has been cancelled`,
+    });
+    
+    setShowCancelDialog(false);
+    setOrderToCancel(null);
+    fetchOrders();
+  } catch (error: any) {
+    toast({
+      title: "Error",
+      description: error.message || "Failed to cancel order",
+      variant: "destructive",
+    });
+  } finally {
+    setIsCancelling(false);
+  }
+};
+
+const updateProductIssue = (productId: string, hasIssue: boolean, description: string) => {
     setProductIssues((prev) => {
       const newMap = new Map(prev);
       newMap.set(productId, { hasIssue, description });
@@ -462,9 +504,7 @@ export function ProductRequestsManagement({
   const confirmProductPayment = async (order: OrderWithDetails) => {
     try {
       // Find the sent quote
-      const sentQuote = order.quotes?.find(
-        (q) => q.status === "sent" && q.type === "product"
-      );
+      const sentQuote = order.quotes?.find((q) => q.status === "sent" && q.type === "product");
       if (!sentQuote) {
         toast({
           title: "Error",
@@ -477,9 +517,7 @@ export function ProductRequestsManagement({
       // Update quote status to paid
       const { error: quoteError } = await supabase
         .from("quotes")
-        .update({
-          status: "paid" as Database["public"]["Enums"]["quote_status"],
-        })
+        .update({ status: "paid" as Database["public"]["Enums"]["quote_status"] })
         .eq("id", sentQuote.id);
 
       if (quoteError) throw quoteError;
@@ -517,14 +555,67 @@ export function ProductRequestsManagement({
       });
     }
   };
-  const markProductsAsReceived = async (
-    order: OrderWithDetails,
-    weights: Map<string, number>
-  ) => {
+
+  // Confirm Payment with dialog
+  const handleConfirmPayment = async () => {
+    if (!orderForPayment) return;
+    setIsConfirmingPayment(true);
+    await confirmProductPayment(orderForPayment);
+    setIsConfirmingPayment(false);
+    setShowConfirmPaymentDialog(false);
+    setOrderForPayment(null);
+  };
+
+  // Mark All Paid as Purchased with dialog
+  const handleMarkPurchased = async () => {
+    if (!orderForPurchased) return;
+    setIsMarkingPurchased(true);
+    await markProductsAsPurchased(orderForPurchased);
+    setIsMarkingPurchased(false);
+    setShowMarkPurchasedDialog(false);
+    setOrderForPurchased(null);
+  };
+
+  // Mark All Purchased as Received with dialog
+  const handleMarkAllReceived = async () => {
+    if (!orderForAllReceived) return;
+    setIsMarkingAllReceived(true);
+    await markProductsAsReceived(orderForAllReceived, dimensionsForAllReceived);
+    setIsMarkingAllReceived(false);
+    setShowMarkAllReceivedDialog(false);
+    setOrderForAllReceived(null);
+    setDimensionsForAllReceived(new Map());
+  };
+
+  // Mark Individual as Received with dialog
+  const handleMarkReceived = async () => {
+    if (!itemForReceived) return;
+    setIsMarkingReceived(true);
+    await markIndividualProductAsReceived(
+      itemForReceived.id, 
+      itemForReceived.weight,
+      itemForReceived.width,
+      itemForReceived.length,
+      itemForReceived.height
+    );
+    setIsMarkingReceived(false);
+    setShowMarkReceivedDialog(false);
+    setItemForReceived(null);
+  };
+
+  // Mark Individual as Purchased with dialog
+  const handleMarkIndividualPurchased = async () => {
+    if (!itemForPurchased) return;
+    setIsMarkingIndividualPurchased(true);
+    await markIndividualProductAsPurchased(itemForPurchased.id);
+    setIsMarkingIndividualPurchased(false);
+    setShowMarkIndividualPurchasedDialog(false);
+    setItemForPurchased(null);
+  };
+
+  const markProductsAsReceived = async (order: OrderWithDetails, dimensions: Map<string, {weight?: number, width?: number, length?: number, height?: number}>) => {
     try {
-      const purchasedItems = order.items.filter(
-        (item) => item.status === "purchased"
-      );
+      const purchasedItems = order.items.filter((item) => item.status === "purchased");
       if (purchasedItems.length === 0) {
         toast({
           title: "No Items Found",
@@ -535,31 +626,35 @@ export function ProductRequestsManagement({
 
       // Update each purchased product
       for (const item of purchasedItems) {
-        const weight = weights.get(item.id);
+        const itemDimensions = dimensions.get(item.id);
+        const updateData: any = {
+          status: "received" as ProductRequestStatus,
+          updated_at: new Date().toISOString(),
+        };
+        
+        if (itemDimensions?.weight !== undefined) updateData.weight = itemDimensions.weight;
+        if (itemDimensions?.width !== undefined) updateData.width = itemDimensions.width;
+        if (itemDimensions?.length !== undefined) updateData.length = itemDimensions.length;
+        if (itemDimensions?.height !== undefined) updateData.height = itemDimensions.height;
+        
         await supabase
           .from("product_requests")
-          .update({
-            status: "received" as ProductRequestStatus,
-            updated_at: new Date().toISOString(),
-            ...(weight !== undefined ? { weight } : {}),
-          })
+          .update(updateData)
           .eq("id", item.id);
       }
 
       // After updating all purchased items, check if ALL items in the order are now received
       const { data: allOrderItems } = await supabase
         .from("order_items")
-        .select(
-          `
+        .select(`
           product_request_id,
           product_requests!inner(status)
-        `
-        )
+        `)
         .eq("order_id", order.id);
 
       // Check if every item in the order is now 'received'
-      const allReceived = allOrderItems?.every(
-        (item: any) => item.product_requests.status === "received"
+      const allReceived = allOrderItems?.every((item: any) => 
+        item.product_requests.status === "received"
       );
 
       if (allReceived && allOrderItems && allOrderItems.length > 0) {
@@ -599,22 +694,15 @@ export function ProductRequestsManagement({
         return;
       }
 
-      // Collect invoice IDs from visible inputs
-      const updates = paidProducts.map((item) => {
-        const invoiceInput = document.getElementById(
-          `invoice-${item.id}`
-        ) as HTMLInputElement;
-        const invoiceId = invoiceInput?.value?.trim() || null;
-        return { id: item.id, invoice_id: invoiceId };
-      });
+      // Update all paid products to purchased status
+      const updates = paidProducts.map((item) => ({ id: item.id }));
 
       // Bulk update
-      for (const { id, invoice_id } of updates) {
+      for (const { id } of updates) {
         await supabase
           .from("product_requests")
           .update({
             status: "purchased" as ProductRequestStatus,
-            invoice_id,
             updated_at: new Date().toISOString(),
           })
           .eq("id", id);
@@ -622,7 +710,7 @@ export function ProductRequestsManagement({
 
       toast({
         title: "Products Marked",
-        description: `${updates.length} product(s) marked as purchased with invoice IDs`,
+        description: `${updates.length} product(s) marked as purchased`,
       });
       fetchOrders();
     } catch (error: any) {
@@ -634,19 +722,13 @@ export function ProductRequestsManagement({
     }
   };
 
+
   const markIndividualProductAsPurchased = async (productId: string) => {
     try {
-      // get invoice input
-      const invoiceInput = document.getElementById(
-        `invoice-${productId}`
-      ) as HTMLInputElement;
-      const invoiceId = invoiceInput?.value?.trim() || null;
-
       const { error } = await supabase
         .from("product_requests")
         .update({
           status: "purchased" as ProductRequestStatus,
-          invoice_id: invoiceId,
           updated_at: new Date().toISOString(),
         })
         .eq("id", productId);
@@ -667,38 +749,13 @@ export function ProductRequestsManagement({
     }
   };
 
-  const updateProductInvoiceId = async (
-    productId: string,
-    invoiceId: string
-  ) => {
-    try {
-      const { error } = await supabase
-        .from("product_requests")
-        .update({
-          invoice_id: invoiceId.trim() || null,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", productId);
-
-      if (error) throw error;
-
-      toast({
-        title: "Invoice ID Updated",
-        description: "Product invoice ID has been updated",
-      });
-      fetchOrders();
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to update invoice ID",
-        variant: "destructive",
-      });
-    }
-  };
 
   const markIndividualProductAsReceived = async (
-    productRequestId: string,
-    weight?: number
+    productRequestId: string, 
+    weight?: number,
+    width?: number,
+    length?: number,
+    height?: number
   ) => {
     try {
       const updateData: any = {
@@ -706,14 +763,12 @@ export function ProductRequestsManagement({
         updated_at: new Date().toISOString(),
       };
 
-      if (weight !== undefined) {
-        updateData.weight = weight;
-      }
+      if (weight !== undefined) updateData.weight = weight;
+      if (width !== undefined) updateData.width = width;
+      if (length !== undefined) updateData.length = length;
+      if (height !== undefined) updateData.height = height;
 
-      const { error } = await supabase
-        .from("product_requests")
-        .update(updateData)
-        .eq("id", productRequestId);
+      const { error } = await supabase.from("product_requests").update(updateData).eq("id", productRequestId);
 
       if (error) throw error;
 
@@ -732,14 +787,12 @@ export function ProductRequestsManagement({
             `
             product_request_id,
             product_requests!inner(status)
-          `
+          `,
           )
           .eq("order_id", orderItems.order_id);
 
         // Check if all items are 'received'
-        const allReceived = allOrderItems?.every(
-          (item: any) => item.product_requests.status === "received"
-        );
+        const allReceived = allOrderItems?.every((item: any) => item.product_requests.status === "received");
 
         if (allReceived && allOrderItems && allOrderItems.length > 0) {
           // Get order user_id
@@ -756,7 +809,7 @@ export function ProductRequestsManagement({
               `All your items for Order #${order.order_personal_id} have arrived at our warehouse!`,
               order.order_personal_id,
               null,
-              orderItems.order_id
+              orderItems.order_id,
             );
           }
         }
@@ -775,6 +828,9 @@ export function ProductRequestsManagement({
       });
     }
   };
+
+
+
 
   const createShippingQuote = async (order: OrderWithDetails) => {
     if (!shippingPrice || !shippingInvoiceUrl) return;
@@ -804,10 +860,7 @@ export function ProductRequestsManagement({
       // Update order status
       const { error: orderError } = await supabase
         .from("orders")
-        .update({
-          status:
-            "awaiting_shipping_payment" as Database["public"]["Enums"]["order_status"],
-        })
+        .update({ status: "awaiting_shipping_payment" as Database["public"]["Enums"]["order_status"] })
         .eq("id", order.id);
 
       if (orderError) throw orderError;
@@ -832,15 +885,11 @@ export function ProductRequestsManagement({
   const confirmShippingPayment = async (order: OrderWithDetails) => {
     try {
       // Update shipping quote status to paid
-      const shippingQuote = order.quotes?.find(
-        (q) => q.type === "shipping" && q.status === "sent"
-      );
+      const shippingQuote = order.quotes?.find((q) => q.type === "shipping" && q.status === "sent");
       if (shippingQuote) {
         const { error: quoteError } = await supabase
           .from("quotes")
-          .update({
-            status: "paid" as Database["public"]["Enums"]["quote_status"],
-          })
+          .update({ status: "paid" as Database["public"]["Enums"]["quote_status"] })
           .eq("id", shippingQuote.id);
 
         if (quoteError) throw quoteError;
@@ -913,14 +962,13 @@ export function ProductRequestsManagement({
   };
 
   const getOrderStatus = (order: OrderWithDetails) => {
+    if (order.is_cancelled) return "Cancelled";
     if (order.is_rejected) return "Rejected";
     if (order.status === "shipped") return "Shipped";
 
     // Check product statuses for more accurate status
     const productStatuses = order.items.map((item) => item.status);
-    const allSameStatus = productStatuses.every(
-      (status) => status === productStatuses[0]
-    );
+    const allSameStatus = productStatuses.every((status) => status === productStatuses[0]);
 
     if (allSameStatus && productStatuses[0]) {
       switch (productStatuses[0]) {
@@ -954,8 +1002,7 @@ export function ProductRequestsManagement({
     }
 
     // Fallback to order status
-    if (order.status === "awaiting_shipping_payment")
-      return "Awaiting Shipping Payment";
+    if (order.status === "awaiting_shipping_payment") return "Awaiting Shipping Payment";
     if (order.status === "weighing") return "Weighing";
     if (order.status === "preparing") return "Preparing";
     return "New";
@@ -965,7 +1012,7 @@ export function ProductRequestsManagement({
     switch (status) {
       case "New":
         // Slightly bluish-gray to show "just created"
-        return "bg-capybara-yellow text-blue-500 border-slate-400/20";
+        return "bg-capybara-yellow text-red-500 border-slate-400/20";
 
       case "Quoted":
         return "bg-yellow-500/10 text-yellow-600 border-yellow-500/20";
@@ -997,12 +1044,17 @@ export function ProductRequestsManagement({
         return "bg-cyan-500/10 text-cyan-600 border-cyan-500/20";
 
       case "Rejected":
-        return "bg-blue-500/10 text-blue-600 border-blue-500/20";
+        return "bg-red-500/10 text-red-600 border-red-500/20";
+
+      case "Cancelled":
+        return "bg-gray-500/10 text-gray-600 border-gray-500/20";
 
       default:
         return "bg-gray-500/10 text-gray-600 border-gray-500/20";
     }
   };
+
+
 
   const getStatusSteps = (order: OrderWithDetails) => {
     type StepStatus = "completed" | "current" | "rejected" | "upcoming";
@@ -1011,22 +1063,10 @@ export function ProductRequestsManagement({
 
     // Check purchase and transit progress
     const allPurchased = order.items.every((item) =>
-      [
-        "purchased",
-        "received",
-        "shipping_quoted",
-        "shipping_paid",
-        "shipped",
-      ].includes(item.status)
+      ["purchased", "received", "shipping_quoted", "shipping_paid", "shipped"].includes(item.status),
     );
     const somePurchased = order.items.some((item) =>
-      [
-        "purchased",
-        "received",
-        "shipping_quoted",
-        "shipping_paid",
-        "shipped",
-      ].includes(item.status)
+      ["purchased", "received", "shipping_quoted", "shipping_paid", "shipped"].includes(item.status),
     );
     const hasReceived = order.items.some((item) => item.status === "received");
     const allReceived = order.items.every((item) => item.status === "received");
@@ -1034,39 +1074,23 @@ export function ProductRequestsManagement({
     // Determine dynamic labels for purchase and transit steps
     const purchaseLabel =
       allPurchased ||
-      status === "Partial Processing" ||
-      status === "Weighing" ||
-      status === "Awaiting Shipping Payment" ||
-      allReceived
+        status === "Partial Processing" ||
+        status === "Weighing" ||
+        status === "Awaiting Shipping Payment" ||
+        allReceived
         ? "Items Purchased"
         : "Item(s) being purchased";
 
     const steps = [
-      {
-        label: "Request Submitted",
-        status: "upcoming" as StepStatus,
-        icon: <Clock className="h-4 w-4" />,
-      },
-      {
-        label: "Payment Confirmed",
-        status: "upcoming" as StepStatus,
-        icon: <CheckCircle className="h-4 w-4" />,
-      },
-      {
-        label: purchaseLabel,
-        status: "upcoming" as StepStatus,
-        icon: <ShoppingCart className="h-4 w-4" />,
-      },
+      { label: "Request Submitted", status: "upcoming" as StepStatus, icon: <Clock className="h-4 w-4" /> },
+      { label: "Payment Confirmed", status: "upcoming" as StepStatus, icon: <CheckCircle className="h-4 w-4" /> },
+      { label: purchaseLabel, status: "upcoming" as StepStatus, icon: <ShoppingCart className="h-4 w-4" /> },
       {
         label: "Item(s) on the way to warehouse",
         status: "upcoming" as StepStatus,
         icon: <Truck className="h-4 w-4" />,
       },
-      {
-        label: "All Items at Warehouse",
-        status: "upcoming" as StepStatus,
-        icon: <Home className="h-4 w-4" />,
-      },
+      { label: "All Items at Warehouse", status: "upcoming" as StepStatus, icon: <Home className="h-4 w-4" /> },
     ];
 
     const statusMap: Record<string, number> = {
@@ -1086,15 +1110,14 @@ export function ProductRequestsManagement({
     if (status === "Rejected") {
       return steps.map((step, index) => ({
         ...step,
-        status: (index === currentIndex
-          ? "rejected"
-          : "upcoming") as StepStatus,
+        status: (index === currentIndex ? "rejected" : "upcoming") as StepStatus,
       }));
     }
 
     return steps.map((step, index) => {
       // Request Submitted (index 0) is always completed for any order
       if (index === 0) return { ...step, status: "completed" as StepStatus };
+
 
       if (index === 1) {
         const normalizedStatus = status.toLowerCase();
@@ -1105,11 +1128,7 @@ export function ProductRequestsManagement({
         }
 
         // For paid or later → mark as completed
-        if (
-          ["paid", "purchased", "weighing", "shipped"].includes(
-            normalizedStatus
-          )
-        ) {
+        if (["paid", "purchased", "weighing", "shipped"].includes(normalizedStatus)) {
           return { ...step, status: "completed" as StepStatus };
         }
       }
@@ -1128,12 +1147,10 @@ export function ProductRequestsManagement({
         }
       }
 
+
+
       // Special case: mark all steps as completed when items are at warehouse
-      if (
-        status === "Stored" ||
-        status === "Awaiting Shipping Payment" ||
-        status === "Ready to Ship"
-      ) {
+      if (status === "Stored" || status === "Awaiting Shipping Payment" || status === "Ready to Ship") {
         if (index <= 4) return { ...step, status: "completed" as StepStatus };
       }
 
@@ -1145,14 +1162,11 @@ export function ProductRequestsManagement({
         return { ...step, status: "upcoming" as StepStatus };
       }
 
-      if (index < currentIndex)
-        return { ...step, status: "completed" as StepStatus };
-      if (index === currentIndex)
-        return { ...step, status: "current" as StepStatus };
+      if (index < currentIndex) return { ...step, status: "completed" as StepStatus };
+      if (index === currentIndex) return { ...step, status: "current" as StepStatus };
 
       // Special case: if we're at transit (step 3), mark purchase step (step 2) as completed
-      if (status === "Partial Processing" && index === 2)
-        return { ...step, status: "completed" as StepStatus };
+      if (status === "Partial Processing" && index === 2) return { ...step, status: "completed" as StepStatus };
 
       return { ...step, status: "upcoming" as StepStatus };
     });
@@ -1162,16 +1176,14 @@ export function ProductRequestsManagement({
     return (
       <Card>
         <CardContent className="p-6">
-          <div className="text-center text-muted-foreground">
-            Loading orders...
-          </div>
+          <div className="text-center text-muted-foreground">Loading orders...</div>
         </CardContent>
       </Card>
     );
   }
 
   // Apply search filter
-  let filteredOrders = orders.filter((order) => {
+  let filteredOrders = orders.filter(order => {
     const searchLower = searchTerm.toLowerCase();
     return (
       order.profiles?.full_name?.toLowerCase().includes(searchLower) ||
@@ -1203,7 +1215,8 @@ export function ProductRequestsManagement({
       const path = parsed.pathname + parsed.search + parsed.hash;
 
       // Show only first 40 characters after the domain
-      const shortenedPath = path.length > 40 ? path.slice(0, 40) + "..." : path;
+      const shortenedPath =
+        path.length > 40 ? path.slice(0, 40) + "..." : path;
 
       return `${domain}${shortenedPath}`;
     } catch {
@@ -1217,32 +1230,30 @@ export function ProductRequestsManagement({
       <Card>
         <CardHeader>
           <CardTitle>Order Management</CardTitle>
-          <CardDescription>
-            Manage customer orders and product requests
-          </CardDescription>
+          <CardDescription>Manage customer orders and product requests</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           {/* Filters and Controls */}
           <Card className="bg-muted/30">
             <CardContent className="p-4">
-              <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-                <div className="flex flex-wrap items-center gap-4">
-                  <div className="relative w-full sm:w-auto">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                    <Input
-                      placeholder="Search by customer name, email, customer ID, or order ID..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="pl-10 w-full sm:w-[350px]"
-                    />
-                  </div>
+              <div className="flex flex-col gap-4">
+                {/* Search - always full width on mobile */}
+                <div className="relative w-full">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                  <Input
+                    placeholder="Search by customer name, email, customer ID, or order ID..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10 w-full sm:w-[350px]"
+                  />
+                </div>
+
+                {/* Filters row - wraps on mobile */}
+                <div className="flex flex-wrap items-center gap-3">
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-medium">Status:</span>
-                    <Select
-                      value={statusFilter}
-                      onValueChange={setStatusFilter}
-                    >
-                      <SelectTrigger className="w-[180px]">
+                    <Select value={statusFilter} onValueChange={setStatusFilter}>
+                      <SelectTrigger className="w-[140px] sm:w-[180px]">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -1251,54 +1262,50 @@ export function ProductRequestsManagement({
                         <SelectItem value="quoted">Quoted</SelectItem>
                         <SelectItem value="paid">Paid</SelectItem>
                         <SelectItem value="purchased">Purchased</SelectItem>
-                        <SelectItem value="partially purchased">
-                          Partially Purchased
-                        </SelectItem>
-                        <SelectItem value="partial processing">
-                          Partial Processing
-                        </SelectItem>
+                        <SelectItem value="partially purchased">Partially Purchased</SelectItem>
+                        <SelectItem value="partial processing">Partial Processing</SelectItem>
                         <SelectItem value="weighing">Weighing</SelectItem>
                         <SelectItem value="rejected">Rejected</SelectItem>
+                        <SelectItem value="cancelled">Cancelled</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
 
+                  <Button variant="outline" size="sm" onClick={handleRefresh} disabled={refreshing} className="gap-2">
+                    <RefreshCw className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`} />
+                    {refreshing ? "Refreshing..." : "Update"}
+                  </Button>
+                </div>
+
+                {/* Checkboxes row - separate section for better mobile layout */}
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
                   <div className="flex items-center gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={handleRefresh}
-                      disabled={refreshing}
-                      className="gap-2"
-                    >
-                      <RefreshCw
-                        className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`}
-                      />
-                      {refreshing ? "Refreshing..." : "Update"}
-                    </Button>
                     <Checkbox
                       id="hide-rejected-products"
                       checked={hideRejected}
-                      onCheckedChange={(checked) =>
-                        setHideRejected(checked === true)
-                      }
+                      onCheckedChange={(checked) => setHideRejected(checked === true)}
                     />
-                    <label
-                      htmlFor="hide-rejected-products"
-                      className="text-sm font-medium cursor-pointer"
-                    >
+                    <label htmlFor="hide-rejected-products" className="text-sm font-medium cursor-pointer">
                       Hide rejected
+                    </label>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Checkbox
+                      id="hide-cancelled-products"
+                      checked={hideCancelled}
+                      onCheckedChange={(checked) => setHideCancelled(checked === true)}
+                    />
+                    <label htmlFor="hide-cancelled-products" className="text-sm font-medium cursor-pointer">
+                      Hide cancelled
                     </label>
                   </div>
                 </div>
 
+                {/* Show per page - separate row on mobile */}
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-medium">Show:</span>
-                  <Select
-                    value={itemsPerPage.toString()}
-                    onValueChange={(val) => setItemsPerPage(Number(val))}
-                  >
-                    <SelectTrigger className="w-[100px]">
+                  <Select value={itemsPerPage.toString()} onValueChange={(val) => setItemsPerPage(Number(val))}>
+                    <SelectTrigger className="w-[80px] sm:w-[100px]">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -1308,17 +1315,13 @@ export function ProductRequestsManagement({
                       <SelectItem value="50">50</SelectItem>
                     </SelectContent>
                   </Select>
-                  <span className="text-sm text-muted-foreground">
-                    per page
-                  </span>
+                  <span className="text-sm text-muted-foreground">per page</span>
                 </div>
               </div>
 
               {filteredOrders.length > 0 && (
                 <div className="mt-4 text-sm text-muted-foreground">
-                  Showing {startIndex + 1}-
-                  {Math.min(endIndex, filteredOrders.length)} of{" "}
-                  {filteredOrders.length} orders
+                  Showing {startIndex + 1}-{Math.min(endIndex, filteredOrders.length)} of {filteredOrders.length} orders
                 </div>
               )}
             </CardContent>
@@ -1329,34 +1332,25 @@ export function ProductRequestsManagement({
             <div className="text-center py-8 text-muted-foreground">
               <Package className="h-12 w-12 mx-auto mb-4 opacity-50" />
               <p>No orders found with this filter</p>
-              <p className="text-sm mt-2">
-                Try adjusting your search or filter criteria.
-              </p>
+              <p className="text-sm mt-2">Try adjusting your search or filter criteria.</p>
             </div>
           ) : filteredOrders.length === 0 ? (
-            <p className="text-muted-foreground text-center py-8">
-              No orders found matching your criteria.
-            </p>
+            <p className="text-muted-foreground text-center py-8">No orders found matching your criteria.</p>
           ) : (
             paginatedOrders.map((order) => {
               const isOpen = openOrders.has(order.id);
               const orderStatus = getOrderStatus(order);
 
               return (
-                <Collapsible
-                  key={order.id}
-                  open={isOpen}
-                  onOpenChange={() => toggleOrder(order.id)}
-                >
+                <Collapsible key={order.id} open={isOpen} onOpenChange={() => toggleOrder(order.id)}>
                   <Card id={`order-${order.id}`} className="border">
+
                     <CollapsibleTrigger asChild>
-                      <Button
-                        variant="ghost"
+                      <Button 
+                        variant="ghost" 
                         className="w-full p-0 h-auto hover:bg-transparent"
                         onClick={(e) => {
-                          if (
-                            (window.getSelection()?.toString().length ?? 0) > 0
-                          ) {
+                          if ((window.getSelection()?.toString().length ?? 0) > 0) {
                             e.stopPropagation();
                           }
                         }}
@@ -1365,47 +1359,29 @@ export function ProductRequestsManagement({
                           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
                             {/* LEFT SIDE — Order info */}
                             <div className="flex flex-col text-left flex-1 min-w-0 space-y-1">
+
                               {/* Customer Name */}
                               <div className="flex items-center gap-1 min-w-0">
                                 <p className="font-medium text-base flex items-baseline gap-1 min-w-0">
-                                  <span
-                                    className="flex-shrink-0 select-text"
-                                    onMouseDown={(e) => e.stopPropagation()}
-                                    onClick={(e) => e.stopPropagation()}
-                                  >
-                                    Order from
-                                  </span>
-                                  <span
+                                  <span className="flex-shrink-0 select-text" onMouseDown={(e) => e.stopPropagation()} onClick={(e) => e.stopPropagation()}>Order from</span>
+                                  <span 
                                     className="text-blue-500 font-semibold truncate select-text"
-                                    title={
-                                      order.profiles?.full_name ||
-                                      order.profiles?.email ||
-                                      "Unknown"
-                                    }
+                                    title={order.profiles?.full_name || order.profiles?.email || "Unknown"}
                                     onMouseDown={(e) => e.stopPropagation()}
                                     onClick={(e) => e.stopPropagation()}
                                   >
-                                    {order.profiles?.full_name ||
-                                      order.profiles?.email ||
-                                      "Unknown"}
+                                    {order.profiles?.full_name || order.profiles?.email || "Unknown"}
                                   </span>
                                 </p>
-                                {order.profiles?.full_name ||
-                                order.profiles?.email ? (
+                                {order.profiles?.full_name || order.profiles?.email ? (
                                   <Button
                                     variant="ghost"
                                     size="icon"
                                     className="h-4 w-4 p-0"
                                     onClick={(e) => {
                                       e.stopPropagation();
-                                      navigator.clipboard.writeText(
-                                        order.profiles?.full_name ||
-                                          order.profiles?.email ||
-                                          ""
-                                      );
-                                      sonnerToast.success(
-                                        "Customer name copied to clipboard"
-                                      );
+                                      navigator.clipboard.writeText(order.profiles?.full_name || order.profiles?.email || "");
+                                      sonnerToast.success("Customer name copied to clipboard");
                                     }}
                                     title="Copy Customer Name"
                                   >
@@ -1417,26 +1393,14 @@ export function ProductRequestsManagement({
                               {/* Customer ID */}
                               <div className="flex items-center gap-1 text-sm text-muted-foreground min-w-0">
                                 <span className="flex items-baseline gap-1 min-w-0">
-                                  <span
-                                    className="flex-shrink-0 select-text"
-                                    onMouseDown={(e) => e.stopPropagation()}
-                                    onClick={(e) => e.stopPropagation()}
-                                  >
-                                    Customer ID:
-                                  </span>
-                                  <span
+                                  <span className="flex-shrink-0 select-text" onMouseDown={(e) => e.stopPropagation()} onClick={(e) => e.stopPropagation()}>Customer ID:</span>
+                                  <span 
                                     className="font-medium text-green-500 truncate select-text"
-                                    title={
-                                      order.profiles?.user_personal_id
-                                        ? `#${order.profiles.user_personal_id}`
-                                        : "N/A"
-                                    }
+                                    title={order.profiles?.user_personal_id ? `#${order.profiles.user_personal_id}` : "N/A"}
                                     onMouseDown={(e) => e.stopPropagation()}
                                     onClick={(e) => e.stopPropagation()}
                                   >
-                                    {order.profiles?.user_personal_id
-                                      ? `#${order.profiles.user_personal_id}`
-                                      : "N/A"}
+                                    {order.profiles?.user_personal_id ? `#${order.profiles.user_personal_id}` : "N/A"}
                                   </span>
                                 </span>
                                 {order.profiles?.user_personal_id && (
@@ -1446,12 +1410,8 @@ export function ProductRequestsManagement({
                                     className="h-4 w-4 p-0"
                                     onClick={(e) => {
                                       e.stopPropagation();
-                                      navigator.clipboard.writeText(
-                                        order.profiles?.user_personal_id || ""
-                                      );
-                                      sonnerToast.success(
-                                        "Customer ID copied to clipboard"
-                                      );
+                                      navigator.clipboard.writeText(order.profiles?.user_personal_id || "");
+                                      sonnerToast.success("Customer ID copied to clipboard");
                                     }}
                                     title="Copy Customer ID"
                                   >
@@ -1463,26 +1423,14 @@ export function ProductRequestsManagement({
                               {/* Customer Order ID */}
                               <div className="flex items-center gap-1 text-sm text-muted-foreground min-w-0">
                                 <span className="flex items-baseline gap-1 min-w-0">
-                                  <span
-                                    className="flex-shrink-0 select-text"
-                                    onMouseDown={(e) => e.stopPropagation()}
-                                    onClick={(e) => e.stopPropagation()}
-                                  >
-                                    Customer Order ID:
-                                  </span>
-                                  <span
+                                  <span className="flex-shrink-0 select-text" onMouseDown={(e) => e.stopPropagation()} onClick={(e) => e.stopPropagation()}>Customer Order ID:</span>
+                                  <span 
                                     className="font-medium text-green-500 truncate select-text"
-                                    title={
-                                      order.order_personal_id
-                                        ? `#${order.order_personal_id}`
-                                        : "N/A"
-                                    }
+                                    title={order.order_personal_id ? `#${order.order_personal_id}` : "N/A"}
                                     onMouseDown={(e) => e.stopPropagation()}
                                     onClick={(e) => e.stopPropagation()}
                                   >
-                                    {order.order_personal_id
-                                      ? `#${order.order_personal_id}`
-                                      : "N/A"}
+                                    {order.order_personal_id ? `#${order.order_personal_id}` : "N/A"}
                                   </span>
                                 </span>
                                 {order.order_personal_id && (
@@ -1492,12 +1440,8 @@ export function ProductRequestsManagement({
                                     className="h-4 w-4 p-0"
                                     onClick={(e) => {
                                       e.stopPropagation();
-                                      navigator.clipboard.writeText(
-                                        order.order_personal_id || ""
-                                      );
-                                      sonnerToast.success(
-                                        "Customer Order ID copied to clipboard"
-                                      );
+                                      navigator.clipboard.writeText(order.order_personal_id || "");
+                                      sonnerToast.success("Customer Order ID copied to clipboard");
                                     }}
                                     title="Copy Customer Order ID"
                                   >
@@ -1507,7 +1451,7 @@ export function ProductRequestsManagement({
                               </div>
 
                               <div className="flex items-center gap-1 text-sm text-muted-foreground min-w-0">
-                                <span
+                                <span 
                                   className="font-medium truncate select-text"
                                   title={`Order #${order.id.slice(0, 8).toUpperCase()}`}
                                   onMouseDown={(e) => e.stopPropagation()}
@@ -1522,9 +1466,7 @@ export function ProductRequestsManagement({
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     navigator.clipboard.writeText(order.id);
-                                    sonnerToast.success(
-                                      "Order ID copied to clipboard"
-                                    );
+                                    sonnerToast.success("Order ID copied to clipboard");
                                   }}
                                   title="Copy Order ID"
                                 >
@@ -1533,45 +1475,43 @@ export function ProductRequestsManagement({
                               </div>
                             </div>
 
+
                             {/* RIGHT SIDE — Status + Chevron */}
                             <div className="flex flex-row sm:flex-col items-center sm:items-end justify-between sm:justify-start gap-2 sm:gap-1 text-right flex-shrink-0 min-w-fit">
                               <div className="flex items-center gap-2">
-                                <Badge
-                                  className={`${getOrderStatusColor(orderStatus)} text-xs`}
-                                >
+                                <Badge className={`${getOrderStatusColor(orderStatus)} text-xs`}>
                                   {orderStatus}
                                 </Badge>
                                 <ChevronDown
-                                  className={`h-5 w-5 text-muted-foreground transform transition-transform duration-300 ${
-                                    isOpen ? "rotate-180" : "rotate-0"
-                                  }`}
+                                  className={`h-5 w-5 text-muted-foreground transform transition-transform duration-300 ${isOpen ? "rotate-180" : "rotate-0"
+                                    }`}
                                 />
                               </div>
 
                               <div className="flex flex-col sm:items-end text-xs text-muted-foreground">
                                 <p className="flex items-center gap-1">
                                   <Clock className="h-3 w-3" />
-                                  {new Date(order.created_at).toLocaleString(
-                                    undefined,
-                                    {
-                                      year: "numeric",
-                                      month: "short",
-                                      day: "numeric",
-                                      hour: "2-digit",
-                                      minute: "2-digit",
-                                    }
-                                  )}
+                                  {new Date(order.created_at).toLocaleString(undefined, {
+                                    year: "numeric",
+                                    month: "short",
+                                    day: "numeric",
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                  })}
                                 </p>
                                 <p>
-                                  {order.items.length} product
-                                  {order.items.length !== 1 ? "s" : ""}
+                                  {order.items.length} product{order.items.length !== 1 ? "s" : ""}
                                 </p>
                               </div>
                             </div>
                           </div>
                         </div>
+
                       </Button>
                     </CollapsibleTrigger>
+
+
+
 
                     <CollapsibleContent>
                       <div className="px-4 pb-4 border-t pt-3">
@@ -1582,21 +1522,14 @@ export function ProductRequestsManagement({
 
                         {/* Rejection Details */}
                         {order.is_rejected && order.rejection_details && (
-                          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                          <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
                             <div className="flex items-start gap-2">
-                              <AlertCircle className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
+                              <AlertCircle className="h-5 w-5 text-red-600 mt-0.5 flex-shrink-0" />
                               <div className="flex-1">
-                                <p className="font-medium text-blue-900 mb-1">
-                                  Order Rejected
-                                </p>
-                                <p className="text-sm text-blue-800">
-                                  {order.rejection_details.rejection_reason}
-                                </p>
-                                <p className="text-xs text-blue-600 mt-2">
-                                  Rejected on{" "}
-                                  {new Date(
-                                    order.rejection_details.rejected_at
-                                  ).toLocaleString()}
+                                <p className="font-medium text-red-900 mb-1">Order Rejected</p>
+                                <p className="text-sm text-red-800">{order.rejection_details.rejection_reason}</p>
+                                <p className="text-xs text-red-600 mt-2">
+                                  Rejected on {new Date(order.rejection_details.rejected_at).toLocaleString()}
                                 </p>
                               </div>
                             </div>
@@ -1605,21 +1538,13 @@ export function ProductRequestsManagement({
 
                         {/* Products */}
                         <div className="space-y-3">
-                          <h4 className="font-medium text-sm">
-                            Products in this order:
-                          </h4>
+                          <h4 className="font-medium text-sm">Products in this order:</h4>
                           {order.items.map((item, index: number) => (
-                            <div
-                              key={item.id}
-                              className="p-3 bg-secondary/30 rounded-lg"
-                            >
+                            <div key={item.id} className="p-3 bg-secondary/30 rounded-lg">
                               <div className="flex items-start justify-between">
                                 <div className="flex-1 space-y-2">
                                   <div className="flex items-center gap-2">
-                                    <p className="font-medium">
-                                      {index + 1}){" "}
-                                      {item.item_name || "Unnamed Product"}
-                                    </p>
+                                    <p className="font-medium">{index + 1}) {item.item_name || "Unnamed Product"}</p>
                                     {item.has_purchase_issue && (
                                       <Badge className="bg-yellow-500/10 text-yellow-600 border-yellow-500/20 text-xs">
                                         <Flag className="h-3 w-3 mr-1" />
@@ -1642,30 +1567,26 @@ export function ProductRequestsManagement({
                                         <Link className="h-3 w-3 flex-shrink-0" />
                                         {formatShortUrl(item.product_url)}
                                       </a>
+
+
                                     </div>
+
                                   </div>
 
-                                  {item.notes && (
-                                    <p className="text-sm text-muted-foreground">
-                                      Notes: {item.notes}
-                                    </p>
-                                  )}
+                                  {item.notes && <p className="text-sm text-muted-foreground">Notes: {item.notes}</p>}
 
                                   {/* Show rejection issue from snapshot */}
                                   {(() => {
                                     if (order.rejection_details) {
-                                      const rejectionIssue =
-                                        order.rejection_details.product_issues?.find(
-                                          (pi: any) => pi.product_id === item.id
-                                        );
+                                      const rejectionIssue = order.rejection_details.product_issues?.find(
+                                        (pi: any) => pi.product_id === item.id,
+                                      );
 
-                                      return rejectionIssue?.has_issue &&
-                                        rejectionIssue?.issue_description ? (
+                                      return rejectionIssue?.has_issue && rejectionIssue?.issue_description ? (
                                         <div className="flex items-center gap-1 mt-2 bg-yellow-50 border border-yellow-200 rounded p-2">
                                           <AlertCircle className="h-3 w-3 text-yellow-600 flex-shrink-0" />
                                           <span className="text-xs text-yellow-700">
-                                            Issue:{" "}
-                                            {rejectionIssue.issue_description}
+                                            Issue: {rejectionIssue.issue_description}
                                           </span>
                                         </div>
                                       ) : null;
@@ -1674,8 +1595,7 @@ export function ProductRequestsManagement({
                                         <div className="flex items-center gap-1 mt-2 bg-yellow-50 border border-yellow-200 rounded p-2">
                                           <AlertCircle className="h-3 w-3 text-yellow-600 flex-shrink-0" />
                                           <span className="text-xs text-yellow-700">
-                                            Issue:{" "}
-                                            {item.purchase_issue_description}
+                                            Issue: {item.purchase_issue_description}
                                           </span>
                                         </div>
                                       ) : null;
@@ -1684,95 +1604,72 @@ export function ProductRequestsManagement({
 
                                   {/* Individual purchase button for paid items */}
                                   {item.status === "paid" && (
-                                    <Button
-                                      size="sm"
-                                      variant="outline"
-                                      onClick={() =>
-                                        markIndividualProductAsPurchased(
-                                          item.id
-                                        )
-                                      }
-                                      className="mt-2"
-                                    >
-                                      <Package className="h-3 w-3 mr-1" />
-                                      Mark as Purchased
-                                    </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => {
+                                  setItemForPurchased({ id: item.id });
+                                  setShowMarkIndividualPurchasedDialog(true);
+                                }}
+                                className="mt-2"
+                              >
+                                <Package className="h-3 w-3 mr-1" />
+                                Mark as Purchased
+                              </Button>
                                   )}
 
-                                  {/* Invoice ID field logic */}
-                                  {[
-                                    "paid",
-                                    "purchased",
-                                    "received",
-                                    "shipping_quoted",
-                                    "shipping_paid",
-                                    "shipped",
-                                  ].includes(item.status) && (
-                                    <div className="flex items-center gap-2 mt-2">
-                                      <Input
-                                        type="text"
-                                        placeholder="Invoice ID"
-                                        className="w-40 h-8"
-                                        defaultValue={
-                                          (item as any).invoice_id || ""
-                                        }
-                                        id={`invoice-${item.id}`}
-                                      />
-
-                                      {/* Only show Save button if status is purchased or later */}
-                                      {[
-                                        "purchased",
-                                        "received",
-                                        "shipping_quoted",
-                                        "shipping_paid",
-                                        "shipped",
-                                      ].includes(item.status) && (
-                                        <Button
-                                          onClick={() => {
-                                            const invoiceInput =
-                                              document.getElementById(
-                                                `invoice-${item.id}`
-                                              ) as HTMLInputElement;
-                                            if (invoiceInput) {
-                                              updateProductInvoiceId(
-                                                item.id,
-                                                invoiceInput.value
-                                              );
-                                            }
-                                          }}
-                                          size="sm"
-                                          variant="outline"
-                                        >
-                                          Save Invoice ID
-                                        </Button>
-                                      )}
-                                    </div>
-                                  )}
-
-                                  {/* Individual received button with weight input for purchased items */}
+                                  {/* Individual received button with dimension inputs for purchased items */}
                                   {item.status === "purchased" && (
-                                    <div className="flex items-center gap-2 mt-2">
-                                      <Input
-                                        type="number"
-                                        placeholder="Weight (g)"
-                                        className="w-28 h-8"
-                                        id={`weight-${item.id}`}
-                                        min="0"
-                                        step="1"
-                                      />
+                                    <div className="flex flex-col gap-2 mt-2">
+                                      <div className="flex items-center gap-2 flex-wrap">
+                                        <Input
+                                          type="number"
+                                          placeholder="Weight (g)"
+                                          className="w-24 h-8"
+                                          id={`weight-${item.id}`}
+                                          min="0"
+                                          step="1"
+                                        />
+                                        <Input
+                                          type="number"
+                                          placeholder="Width (cm)"
+                                          className="w-24 h-8"
+                                          id={`width-${item.id}`}
+                                          min="0"
+                                          step="0.1"
+                                        />
+                                        <Input
+                                          type="number"
+                                          placeholder="Length (cm)"
+                                          className="w-24 h-8"
+                                          id={`length-${item.id}`}
+                                          min="0"
+                                          step="0.1"
+                                        />
+                                        <Input
+                                          type="number"
+                                          placeholder="Height (cm)"
+                                          className="w-24 h-8"
+                                          id={`height-${item.id}`}
+                                          min="0"
+                                          step="0.1"
+                                        />
+                                      </div>
                                       <Button
                                         onClick={() => {
-                                          const weightInput =
-                                            document.getElementById(
-                                              `weight-${item.id}`
-                                            ) as HTMLInputElement;
-                                          const weight = weightInput
-                                            ? parseFloat(weightInput.value)
-                                            : undefined;
-                                          markIndividualProductAsReceived(
-                                            item.id,
-                                            weight
-                                          );
+                                          const weightInput = document.getElementById(`weight-${item.id}`) as HTMLInputElement;
+                                          const widthInput = document.getElementById(`width-${item.id}`) as HTMLInputElement;
+                                          const lengthInput = document.getElementById(`length-${item.id}`) as HTMLInputElement;
+                                          const heightInput = document.getElementById(`height-${item.id}`) as HTMLInputElement;
+                                          
+                                          setItemForReceived({ 
+                                            id: item.id, 
+                                            weight: weightInput?.value ? parseFloat(weightInput.value) : undefined,
+                                            width: widthInput?.value ? parseFloat(widthInput.value) : undefined,
+                                            length: lengthInput?.value ? parseFloat(lengthInput.value) : undefined,
+                                            height: heightInput?.value ? parseFloat(heightInput.value) : undefined,
+                                          });
+                                          setShowMarkReceivedDialog(true);
                                         }}
                                         size="sm"
                                         variant="outline"
@@ -1783,13 +1680,17 @@ export function ProductRequestsManagement({
                                     </div>
                                   )}
 
-                                  {/* Display weight for received items */}
-                                  {item.status === "received" &&
-                                    (item as any).weight && (
-                                      <p className="text-sm text-muted-foreground mt-2">
-                                        Weight: {(item as any).weight}g
-                                      </p>
-                                    )}
+                                  {/* Display dimensions for received items */}
+                                  {item.status === "received" && (
+                                    <div className="text-sm text-muted-foreground mt-2">
+                                      {(item as any).weight && <span>Weight: {(item as any).weight}g</span>}
+                                      {((item as any).width || (item as any).length || (item as any).height) && (
+                                        <span className={`${(item as any).weight ? 'ml-2' : ''}`}>
+                                          Dimensions: {(item as any).width || 0} × {(item as any).length || 0} × {(item as any).height || 0} cm
+                                        </span>
+                                      )}
+                                    </div>
+                                  )}
                                 </div>
                               </div>
                             </div>
@@ -1797,63 +1698,49 @@ export function ProductRequestsManagement({
                         </div>
 
                         {/* Order Actions */}
-                        {!order.is_rejected && (
+                        {!order.is_rejected && !order.is_cancelled && (
                           <div className="flex flex-wrap gap-2 mt-4">
                             {/* Show create quote if no quotes exist */}
                             {!order.quotes?.length && (
                               <>
                                 <Dialog>
                                   <DialogTrigger asChild>
-                                    <Button
-                                      size="sm"
-                                      variant="outline"
-                                      onClick={() => setSelectedOrder(order)}
-                                    >
+                                    <Button size="sm" variant="outline" onClick={() => setSelectedOrder(order)}>
                                       <DollarSign className="h-4 w-4 mr-1" />
                                       Create Quote
                                     </Button>
                                   </DialogTrigger>
                                   <DialogContent className="max-w-2xl">
                                     <DialogHeader>
-                                      <DialogTitle>
-                                        Create Order Quote
-                                      </DialogTitle>
-                                      <DialogDescription>
-                                        Enter the invoice URL for this order
-                                        quote.
-                                      </DialogDescription>
+                                      <DialogTitle>Create Order Quote</DialogTitle>
+                                      <DialogDescription>Enter the invoice URL for this order quote.</DialogDescription>
                                     </DialogHeader>
                                     <div className="space-y-4">
                                       <div>
-                                        <Label htmlFor="quote-url">
-                                          Invoice URL
-                                        </Label>
+                                        <Label htmlFor="quote-url">Invoice URL</Label>
                                         <Input
                                           id="quote-url"
                                           type="url"
                                           value={quoteInvoiceUrl}
-                                          onChange={(e) =>
-                                            setQuoteInvoiceUrl(e.target.value)
-                                          }
+                                          onChange={(e) => setQuoteInvoiceUrl(e.target.value)}
                                           placeholder="Enter PayPal invoice URL"
                                           className="mt-2"
                                         />
                                       </div>
                                     </div>
                                     <DialogFooter>
-                                      <Button onClick={createOrderQuote}>
-                                        Create Quote
-                                      </Button>
+                                      <Button onClick={createOrderQuote}>Create Quote</Button>
                                     </DialogFooter>
                                   </DialogContent>
                                 </Dialog>
+
 
                                 <Dialog>
                                   <DialogTrigger asChild>
                                     <Button
                                       size="sm"
                                       variant="outline"
-                                      className="text-blue-600 hover:text-blue-700"
+                                      className="text-red-600 hover:text-red-700"
                                       onClick={() => setSelectedOrder(order)}
                                     >
                                       <X className="h-4 w-4 mr-1" />
@@ -1864,21 +1751,16 @@ export function ProductRequestsManagement({
                                     <DialogHeader>
                                       <DialogTitle>Reject Order</DialogTitle>
                                       <DialogDescription>
-                                        Reject the entire order. The customer
-                                        will be able to edit and resubmit.
+                                        Reject the entire order. The customer will be able to edit and resubmit.
                                       </DialogDescription>
                                     </DialogHeader>
                                     <div className="space-y-4">
                                       <div>
-                                        <Label htmlFor="rejection-reason">
-                                          Rejection Reason *
-                                        </Label>
+                                        <Label htmlFor="rejection-reason">Rejection Reason *</Label>
                                         <Textarea
                                           id="rejection-reason"
                                           value={rejectionReason}
-                                          onChange={(e) =>
-                                            setRejectionReason(e.target.value)
-                                          }
+                                          onChange={(e) => setRejectionReason(e.target.value)}
                                           placeholder="Explain why the order is being rejected..."
                                           className="min-h-[100px]"
                                         />
@@ -1886,54 +1768,33 @@ export function ProductRequestsManagement({
 
                                       {/* Product Issues */}
                                       <div>
-                                        <Label>
-                                          Flag Specific Products with Issues
-                                          (optional)
-                                        </Label>
+                                        <Label>Flag Specific Products with Issues (optional)</Label>
                                         <div className="space-y-2 mt-2 max-h-60 overflow-y-auto">
                                           {order.items.map((item) => {
-                                            const issue = productIssues.get(
-                                              item.id
-                                            ) || {
+                                            const issue = productIssues.get(item.id) || {
                                               hasIssue: false,
                                               description: "",
                                             };
                                             return (
-                                              <div
-                                                key={item.id}
-                                                className="p-3 border rounded-lg"
-                                              >
+                                              <div key={item.id} className="p-3 border rounded-lg">
                                                 <div className="flex items-start gap-2">
                                                   <Checkbox
                                                     checked={issue.hasIssue}
-                                                    onCheckedChange={(
-                                                      checked
-                                                    ) =>
-                                                      updateProductIssue(
-                                                        item.id,
-                                                        checked as boolean,
-                                                        issue.description
-                                                      )
+                                                    onCheckedChange={(checked) =>
+                                                      updateProductIssue(item.id, checked as boolean, issue.description)
                                                     }
                                                   />
                                                   <div className="flex-1">
                                                     <p className="text-sm font-medium">
-                                                      {item.item_name ||
-                                                        "Unnamed Product"}
+                                                      {item.item_name || "Unnamed Product"}
                                                     </p>
                                                     {issue.hasIssue && (
                                                       <Input
                                                         className="mt-2"
                                                         placeholder="Describe the issue with this product..."
-                                                        value={
-                                                          issue.description
-                                                        }
+                                                        value={issue.description}
                                                         onChange={(e) =>
-                                                          updateProductIssue(
-                                                            item.id,
-                                                            true,
-                                                            e.target.value
-                                                          )
+                                                          updateProductIssue(item.id, true, e.target.value)
                                                         }
                                                       />
                                                     )}
@@ -1946,10 +1807,7 @@ export function ProductRequestsManagement({
                                       </div>
                                     </div>
                                     <DialogFooter>
-                                      <Button
-                                        variant="destructive"
-                                        onClick={rejectOrder}
-                                      >
+                                      <Button variant="destructive" onClick={rejectOrder}>
                                         Reject Order
                                       </Button>
                                     </DialogFooter>
@@ -1958,15 +1816,33 @@ export function ProductRequestsManagement({
                               </>
                             )}
 
+                            {/* Cancel Order button - appears for New or Quoted orders */}
+                            {(!order.quotes?.length || 
+                              order.quotes?.some(q => q.type === 'product' && q.status === 'sent')) && (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="text-gray-600 hover:text-gray-700"
+                                onClick={() => {
+                                  setOrderToCancel(order);
+                                  setShowCancelDialog(true);
+                                }}
+                              >
+                                <XCircle className="h-4 w-4 mr-1" />
+                                Cancel Order
+                              </Button>
+                            )}
+
                             {/* Show confirm payment button for sent product quotes */}
-                            {order.quotes?.some(
-                              (q) => q.status === "sent" && q.type === "product"
-                            ) && (
+                            {order.quotes?.some((q) => q.status === "sent" && q.type === "product") && (
                               <Button
                                 size="sm"
                                 variant="outline"
                                 className="text-green-600 hover:text-green-700"
-                                onClick={() => confirmProductPayment(order)}
+                                onClick={() => {
+                                  setOrderForPayment(order);
+                                  setShowConfirmPaymentDialog(true);
+                                }}
                               >
                                 <CheckCircle className="h-4 w-4 mr-1" />
                                 Confirm Payment
@@ -1974,13 +1850,14 @@ export function ProductRequestsManagement({
                             )}
 
                             {/* After product payment confirmed - Mark as Purchased */}
-                            {order.items.some(
-                              (item) => item.status === "paid"
-                            ) && (
+                            {order.items.some((item) => item.status === "paid") && (
                               <Button
                                 size="sm"
                                 variant="outline"
-                                onClick={() => markProductsAsPurchased(order)}
+                                onClick={() => {
+                                  setOrderForPurchased(order);
+                                  setShowMarkPurchasedDialog(true);
+                                }}
                               >
                                 <Package className="h-4 w-4 mr-1" />
                                 Mark All Paid as Purchased
@@ -1988,32 +1865,34 @@ export function ProductRequestsManagement({
                             )}
 
                             {/* After purchased - Mark as Received */}
-                            {order.items.some(
-                              (item) => item.status === "purchased"
-                            ) && (
+                            {order.items.some((item) => item.status === "purchased") && (
                               <Button
                                 size="sm"
                                 variant="outline"
                                 onClick={() => {
-                                  // Collect weights from all input fields
-                                  const weights = new Map<string, number>();
+                                  // Collect dimensions from all input fields
+                                  const dimensions = new Map<string, {weight?: number, width?: number, length?: number, height?: number}>();
                                   order.items.forEach((item) => {
                                     if (item.status === "purchased") {
-                                      const weightInput =
-                                        document.getElementById(
-                                          `weight-${item.id}`
-                                        ) as HTMLInputElement;
-                                      if (weightInput?.value) {
-                                        const weight = parseFloat(
-                                          weightInput.value
-                                        );
-                                        if (!isNaN(weight)) {
-                                          weights.set(item.id, weight);
-                                        }
+                                      const weightInput = document.getElementById(`weight-${item.id}`) as HTMLInputElement;
+                                      const widthInput = document.getElementById(`width-${item.id}`) as HTMLInputElement;
+                                      const lengthInput = document.getElementById(`length-${item.id}`) as HTMLInputElement;
+                                      const heightInput = document.getElementById(`height-${item.id}`) as HTMLInputElement;
+                                      
+                                      const itemDimensions: any = {};
+                                      if (weightInput?.value) itemDimensions.weight = parseFloat(weightInput.value);
+                                      if (widthInput?.value) itemDimensions.width = parseFloat(widthInput.value);
+                                      if (lengthInput?.value) itemDimensions.length = parseFloat(lengthInput.value);
+                                      if (heightInput?.value) itemDimensions.height = parseFloat(heightInput.value);
+                                      
+                                      if (Object.keys(itemDimensions).length > 0) {
+                                        dimensions.set(item.id, itemDimensions);
                                       }
                                     }
                                   });
-                                  markProductsAsReceived(order, weights);
+                                  setDimensionsForAllReceived(dimensions);
+                                  setOrderForAllReceived(order);
+                                  setShowMarkAllReceivedDialog(true);
                                 }}
                               >
                                 <Check className="h-4 w-4 mr-1" />
@@ -2022,10 +1901,7 @@ export function ProductRequestsManagement({
                             )}
 
                             {/* Show confirm shipping payment button */}
-                            {order.quotes?.some(
-                              (q) =>
-                                q.status === "sent" && q.type === "shipping"
-                            ) && (
+                            {order.quotes?.some((q) => q.status === "sent" && q.type === "shipping") && (
                               <Button
                                 size="sm"
                                 variant="outline"
@@ -2038,19 +1914,10 @@ export function ProductRequestsManagement({
                             )}
 
                             {/* After shipping payment confirmed - Ship Order */}
-                            {order.items.every(
-                              (item) => item.status === "shipping_paid"
-                            ) && (
-                              <Dialog
-                                open={showTrackingDialog}
-                                onOpenChange={setShowTrackingDialog}
-                              >
+                            {order.items.every((item) => item.status === "shipping_paid") && (
+                              <Dialog open={showTrackingDialog} onOpenChange={setShowTrackingDialog}>
                                 <DialogTrigger asChild>
-                                  <Button
-                                    size="sm"
-                                    variant="outline"
-                                    className="text-blue-600 hover:text-blue-700"
-                                  >
+                                  <Button size="sm" variant="outline" className="text-blue-600 hover:text-blue-700">
                                     <Truck className="h-4 w-4 mr-1" />
                                     Mark as Shipped
                                   </Button>
@@ -2058,30 +1925,21 @@ export function ProductRequestsManagement({
                                 <DialogContent>
                                   <DialogHeader>
                                     <DialogTitle>Ship Order</DialogTitle>
-                                    <DialogDescription>
-                                      Enter the tracking number for this
-                                      shipment.
-                                    </DialogDescription>
+                                    <DialogDescription>Enter the tracking number for this shipment.</DialogDescription>
                                   </DialogHeader>
                                   <div className="space-y-4">
                                     <div>
-                                      <Label htmlFor="tracking">
-                                        Tracking Number
-                                      </Label>
+                                      <Label htmlFor="tracking">Tracking Number</Label>
                                       <Input
                                         id="tracking"
                                         value={trackingNumber}
-                                        onChange={(e) =>
-                                          setTrackingNumber(e.target.value)
-                                        }
+                                        onChange={(e) => setTrackingNumber(e.target.value)}
                                         placeholder="Enter tracking number"
                                       />
                                     </div>
                                   </div>
                                   <DialogFooter>
-                                    <Button onClick={() => shipOrder(order)}>
-                                      Confirm Shipment
-                                    </Button>
+                                    <Button onClick={() => shipOrder(order)}>Confirm Shipment</Button>
                                   </DialogFooter>
                                 </DialogContent>
                               </Dialog>
@@ -2092,35 +1950,25 @@ export function ProductRequestsManagement({
                         {/* Quote Information */}
                         {order.quotes && order.quotes.length > 0 && (
                           <div className="mt-4 p-4 border border-blue-200 bg-blue-50/50 rounded-xl">
-                            <p className="text-sm font-semibold text-blue-900 mb-2">
-                              Quote Information
-                            </p>
+                            <p className="text-sm font-semibold text-blue-900 mb-2">Quote Information</p>
 
                             <div className="space-y-2">
                               {order.quotes.map((quote) => {
                                 // Capitalize first letter of status
                                 const formattedStatus =
-                                  quote.status.charAt(0).toUpperCase() +
-                                  quote.status.slice(1);
+                                  quote.status.charAt(0).toUpperCase() + quote.status.slice(1);
 
                                 // Shorten URL (domain + 20 chars max)
                                 let shortUrl = quote.quote_url;
                                 try {
                                   const parsed = new URL(quote.quote_url);
-                                  const domain = parsed.hostname.replace(
-                                    /^www\./,
-                                    ""
-                                  );
-                                  const path =
-                                    parsed.pathname +
-                                    parsed.search +
-                                    parsed.hash;
+                                  const domain = parsed.hostname.replace(/^www\./, "");
+                                  const path = parsed.pathname + parsed.search + parsed.hash;
                                   shortUrl = `${domain}${path.length > 20 ? path.slice(0, 20) + "..." : path}`;
                                 } catch {
-                                  shortUrl =
-                                    quote.quote_url.length > 25
-                                      ? quote.quote_url.slice(0, 25) + "..."
-                                      : quote.quote_url;
+                                  shortUrl = quote.quote_url.length > 25
+                                    ? quote.quote_url.slice(0, 25) + "..."
+                                    : quote.quote_url;
                                 }
 
                                 return (
@@ -2129,9 +1977,7 @@ export function ProductRequestsManagement({
                                     className="flex items-center justify-between bg-white/60 rounded-lg p-3 border border-blue-100 "
                                   >
                                     <div className=" sm:flex-row sm:items-center sm:gap-3 text-sm">
-                                      <p className="text-blue-900 font-medium">
-                                        Status: {formattedStatus}
-                                      </p>
+                                      <p className="text-blue-900 font-medium">Status: {formattedStatus}</p>
 
                                       <a
                                         href={quote.quote_url}
@@ -2150,6 +1996,7 @@ export function ProductRequestsManagement({
                             </div>
                           </div>
                         )}
+
                       </div>
                     </CollapsibleContent>
                   </Card>
@@ -2175,11 +2022,7 @@ export function ProductRequestsManagement({
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() =>
-                  setCurrentPage((prev) =>
-                    Math.min(totalFilteredPages, prev + 1)
-                  )
-                }
+                onClick={() => setCurrentPage((prev) => Math.min(totalFilteredPages, prev + 1))}
                 disabled={currentPage === totalFilteredPages}
               >
                 Next
@@ -2188,6 +2031,138 @@ export function ProductRequestsManagement({
           )}
         </CardContent>
       </Card>
+
+      {/* Cancel Order Confirmation Dialog */}
+      <AlertDialog open={showCancelDialog} onOpenChange={setShowCancelDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Cancel Order?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to cancel Order #{orderToCancel?.order_personal_id}? 
+              This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isCancelling}>
+              Keep Order
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={adminCancelOrder}
+              disabled={isCancelling}
+              className="bg-gray-600 hover:bg-gray-700"
+            >
+              {isCancelling ? "Cancelling..." : "Yes, Cancel Order"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Confirm Payment Dialog */}
+      <AlertDialog open={showConfirmPaymentDialog} onOpenChange={setShowConfirmPaymentDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirm Payment?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to confirm payment for Order #{orderForPayment?.order_personal_id}? 
+              This will mark the product quote as paid.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isConfirmingPayment}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmPayment}
+              disabled={isConfirmingPayment}
+              className="bg-green-600 hover:bg-green-700"
+            >
+              {isConfirmingPayment ? "Confirming..." : "Confirm Payment"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Mark All Paid as Purchased Dialog */}
+      <AlertDialog open={showMarkPurchasedDialog} onOpenChange={setShowMarkPurchasedDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Mark All as Purchased?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to mark all paid items in Order #{orderForPurchased?.order_personal_id} as purchased?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isMarkingPurchased}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleMarkPurchased}
+              disabled={isMarkingPurchased}
+            >
+              {isMarkingPurchased ? "Marking..." : "Mark as Purchased"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Mark All Purchased as Received Dialog */}
+      <AlertDialog open={showMarkAllReceivedDialog} onOpenChange={setShowMarkAllReceivedDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Mark All as Received?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to mark all purchased items in Order #{orderForAllReceived?.order_personal_id} as received?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isMarkingAllReceived}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleMarkAllReceived}
+              disabled={isMarkingAllReceived}
+            >
+              {isMarkingAllReceived ? "Marking..." : "Mark as Received"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Mark Individual as Received Dialog */}
+      <AlertDialog open={showMarkReceivedDialog} onOpenChange={setShowMarkReceivedDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Mark as Received?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to mark this item as received?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isMarkingReceived}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleMarkReceived}
+              disabled={isMarkingReceived}
+            >
+              {isMarkingReceived ? "Marking..." : "Mark as Received"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Mark Individual as Purchased Dialog */}
+      <AlertDialog open={showMarkIndividualPurchasedDialog} onOpenChange={setShowMarkIndividualPurchasedDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Mark as Purchased?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to mark this item as purchased?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isMarkingIndividualPurchased}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleMarkIndividualPurchased}
+              disabled={isMarkingIndividualPurchased}
+            >
+              {isMarkingIndividualPurchased ? "Marking..." : "Mark as Purchased"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
