@@ -86,7 +86,10 @@ export const HowItWorksSection = () => {
                   <h3 className="mb-3 text-2xl font-bold text-gray-900">
                     {step.title}
                   </h3>
-                  <p className="text-lg text-gray-600">{step.description}</p>
+                  <p
+                    className="text-lg text-gray-600"
+                    dangerouslySetInnerHTML={{ __html: step.description }}
+                  ></p>
                 </div>
               </div>
             ))}

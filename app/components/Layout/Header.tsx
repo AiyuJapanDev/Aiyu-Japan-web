@@ -99,11 +99,10 @@ const Header = () => {
           isVisible ? "translate-y-0" : "-translate-y-full"
         }`}
       >
-        {!user && (
-          <div className="h-10 w-full bg-capybara-blue flex justify-center items-center text-sm">
-            <p className="animate-bounce font-bold">{t("newUser")}</p>
-          </div>
-        )}
+        <div className="h-10 w-full bg-capybara-blue flex justify-center items-center text-sm">
+          <p className="animate-bounce font-bold">{t("newUser")}</p>
+        </div>
+
         <nav className="px-2 pt-2 max-w-7xl mx-auto  sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-14">
             {/* Logo */}
@@ -123,7 +122,7 @@ const Header = () => {
             {/* Centered Desktop Navigation */}
             <div className="hidden lg:flex items-center justify-center flex-1">
               <div className="flex items-center space-x-1">
-                <NavLink
+                {/* <NavLink
                   to="/services"
                   className={({ isActive }) =>
                     `px-3 py-2 text-sm font-semibold transition-all duration-300 ${
@@ -134,7 +133,7 @@ const Header = () => {
                   }
                 >
                   {t("services")}
-                </NavLink>
+                </NavLink> */}
 
                 <NavLink
                   to="/store-guide/what-is"
@@ -318,17 +317,12 @@ const Header = () => {
               ref={mobileMenuRef}
             >
               <div className="space-y-6 pt-4 pb-2  bg-white/95 border-t-2 border-capybara-orange/20 rounded-b-3xl min-h-screen">
-                {user && (
-                  <div className="flex items-center gap-2 w-full">
-                    <MobileAccountMenu />
-                  </div>
-                )}
                 {/* Information Section Title */}
                 <div className=" py-2 text-base font-bold text-gray-500">
                   {t("information")}
                 </div>
 
-                <NavLink
+                {/*         <NavLink
                   to="/services"
                   className={({ isActive }) =>
                     `block   rounded-full text-base transition-all duration-300 ml-4 ${
@@ -340,7 +334,7 @@ const Header = () => {
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   {t("services")}
-                </NavLink>
+                </NavLink> */}
 
                 <NavLink
                   to="/store-guide/what-is"
@@ -397,6 +391,12 @@ const Header = () => {
                 >
                   {t("calculator")}
                 </NavLink>
+
+                {user && (
+                  <div className="flex items-center gap-2 w-full">
+                    <MobileAccountMenu />
+                  </div>
+                )}
 
                 {/* Mobile auth actions */}
                 <div className="flex flex-col lg:hidden justify-center items-center space-y-2 ">

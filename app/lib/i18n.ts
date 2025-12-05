@@ -99,7 +99,7 @@ export const translations = {
     productCost: "Product Cost (¥)",
     destination: "Destination Country",
     calculate: "Calculate",
-    serviceFee: "Service Fee + Premium benefits",
+    serviceFee: "Service Fee",
     handlingFee: "Payment processing fee: 3.9%",
     viewBenefits: "View Benefits",
     handlingFeeBenefitConsolidation: "Package consolidation",
@@ -224,7 +224,7 @@ export const translations = {
     purchaseCalculator: "Purchase Calculator",
     enterPriceInYen: "Enter the product price in Japanese Yen",
     quotedPrice: "Quoted Price",
-    serviceFeeLabel: "Service Fee + Premium benefits",
+    serviceFeeLabel: "Shopping Agent + Premium benefits",
     enterPriceToCalculate: "Enter a price to calculate it!",
 
     // Shipping Calculator
@@ -972,12 +972,13 @@ export const translations = {
     // What Is Section
     whatIsTitle: "What is Aiyu Japan?",
     whatIsDescription1:
-      "Aiyu Japan is an international shopping and shipping service based in Japan 🌏. We help customers worldwide purchase authentic Japanese products — from figures and clothing to collectibles and anime goods — easily and safely.",
+      "Aiyu Japan is a Japanese Proxy service company, that helps to users to buy products from Japan and offers international shipping worldwide We are one of the various proxy service companies, could you give us a chance? :D.",
     whatIsDescription2:
       "Unlike other proxy services that add hidden fees or extra charges after purchasing, Aiyu Japan offers one single transparent fee that already includes:",
     whatIsFeature1: "Unlimited storage",
-    whatIsFeature2: "No extra charges for weight or days",
-    whatIsFeature3: "Personalized support throughout the process",
+    whatIsFeature2: "No extra charges for weight or unpacking",
+    whatIsFeature3:
+      "No extra charge for consultations or Photos of your orders",
     whatIsDescription3:
       "With Aiyu Japan, shopping from Japan is simple, reliable, and free of surprises.",
     whatIsBenefit1Title: "Authentic Products",
@@ -985,7 +986,7 @@ export const translations = {
     whatIsBenefit2Title: "Safe Shopping",
     whatIsBenefit2Desc: "We protect your data",
     whatIsBenefit3Title: "Global Community",
-    whatIsBenefit3Desc: "Thousands of users",
+    whatIsBenefit3Desc: "Clients all over the world",
     whatIsBenefit4Title: "Worldwide Shipping",
     whatIsBenefit4Desc: "To your doorstep",
     whatIsVideoTitle: "AIYU JAPAN - Introduction to our proxy service",
@@ -996,41 +997,49 @@ export const translations = {
       "The process is simple and transparent. Here is the step-by-step of how our service works:",
     howItWorksStep1Title: "Find your item",
     howItWorksStep1Desc:
-      "Search on your favorite Japanese stores or use our Store Guide to discover official shops. Once you find what you want, simply copy the product link and paste it in our request form.",
+      "Search on your favorite Japanese stores or use our Store Guide to discover official shops. Once you find what you want, simply <strong>copy the product link</strong> and paste it in our request form.",
     howItWorksStep2Title: "Create your purchase request",
     howItWorksStep2Desc:
-      "Enter the product link and details — our team will verify everything and confirm availability. Once confirmed, we'll send you a payment link. After you complete payment, we'll buy the item for you directly from the seller.",
-    howItWorksStep3Title: "Receive and store your items",
+      "Send us the product link and any details you want (quantity, color, size, etc.). Our team will check the product first to make sure it can be purchased and shipped. If everything is OK, we’ll send you a payment link. Once you pay, we buy the item for you right away.",
+    howItWorksStep3Title: "Receive, store and weigh your items",
     howItWorksStep3Desc:
-      "All items arrive at our Aiyu Japan warehouse in Osaka, where we safely store them. Storage is unlimited and free, so you can collect multiple items before shipping them together.",
+      "When your package arrives, we will weigh them so you know how much the international shipping cost will be, they going to be safe at our Aiyu Japan warehouse in Osaka.  Storage is free and unlimited, so you can keep adding items until you're ready to ship.",
     howItWorksStep4Title: "Packing your order",
     howItWorksStep4Desc:
       "When you're ready, request shipping. Our team will carefully pack and protect your items using secure materials to ensure they arrive in perfect condition.",
     howItWorksStep5Title: "International shipping",
     howItWorksStep5Desc:
-      "Choose your preferred shipping method — Japan Post, DHL, Yamato, or FedEx — and we'll send your package anywhere in the world. You'll receive your tracking number and updates until delivery.",
+      "Choose your preferred shipping method - Japan Post Economy, EMS, or DHL Express. We'll send your package anywhere in the world.",
     howItWorksCTA: "Start shopping now",
+
+    /* New Services */
+    onSiteOsakaShoppingTitle: "On-site shopping in Osaka",
+    onSiteOsakaShoppingDesc: "1,500 yen per occasion (includes transportation)",
+    shoppingLimitPerPersonTitle: "Purchase of products with a limit per person",
+    shoppingLimitPerPersonDesc:
+      "For items with a limit of 1 to 3 units per person, an additional charge of 1,000 yen will be applied for each limited item.",
 
     // Fees Section
     feesTitle: "Fees & Costs",
     feesSubtitle:
       "Total transparency in our pricing. No hidden fees, no surprises.",
-    feeServiceTitle: "Service Fee + Premium benefits",
+    feeServiceTitle: "Shopping Agent + Premium benefits",
     feeServicePrice: "¥500 + 10%",
     feeServiceDesc:
-      "Per item + 10% of total purchase. This includes unlimited storage, full customer support, and purchase handling.",
+      "This service fee is per item. This includes unlimited storage, consolidation with other packages, free photos request and purchase handling.",
     feeServiceNote: "One transparent fee",
-    feeStorageTitle: "Storage Fee",
-    feeStoragePrice: "Free",
+    feeStorageTitle: "Locker service (Japanese Address)",
+    feeStoragePrice: "¥1000 yen",
     feeStorageDesc:
       "Storage is unlimited and free. You can collect multiple items before shipping them together without any extra cost.",
     feeStorageNote: "Unlimited time",
     feeShippingTitle: "International Shipping",
     feeShippingPrice: "Variable",
     feeShippingDesc:
-      "Choose your preferred shipping method — Japan Post, DHL, Yamato, or FedEx. We'll send your package anywhere in the world.",
+      "Choose your preferred shipping method - Japan Post Economy, EMS, or DHL Express. We'll send your package anywhere in the world.",
     feeShippingNote: "Calculated by weight/destination",
     feesShippingOptionsTitle: "International Shipping Options",
+    feesShippingOptionsTitleSpecial: "International Shipping (Special)",
     feesMethodHeader: "Method",
     feesTimeHeader: "Delivery Time",
     feesTrackingHeader: "Tracking",
@@ -1039,17 +1048,21 @@ export const translations = {
     feesOptionAirmail: "Airmail",
     feesOptionEMS: "EMS",
     feesOptionDHL: "DHL/FedEx",
+    feesOptionAiyuJapanExpress: "Aiyu Japan Express",
     feesTimeMonths: "2-3 months",
     feesTimeWeeks: "2-3 weeks",
     feesTimeDays3_7: "3-7 days",
     feesTimeDays2_5: "2-5 days",
+    feesTimeDays14: "14 days",
     feesTrackingLimited: "Limited",
+    feesTrackingContactSupport: "Contact Support",
     feesTrackingBasic: "Basic",
     feesTrackingFull: "Full",
     feesPriceCheapest: "Cheapest",
     feesPriceEconomy: "Economy",
     feesPriceStandard: "Standard",
     feesPricePremium: "Premium",
+    feesPriceAiyuJapanExpress: "$35USD/KG",
     feesConsolidationTitle: "Save money by consolidating packages",
     feesConsolidationDesc:
       "You can wait to accumulate multiple items in our warehouse and request to ship them together in a single package. This significantly reduces international shipping costs.",
@@ -1118,7 +1131,8 @@ export const translations = {
     restrictionsRestrictedTitle: "Restricted Items",
     restrictionsRestrictedDesc: "These items have special limitations",
     restrictionsRestricted1Cat: "Lithium Batteries",
-    restrictionsRestricted1Desc: "Only by surface or sea mail, not by air",
+    restrictionsRestricted1Desc:
+      "Up to 2 lithium batteries can be send in one shipping (if your country aproves sending batteries), some country do not accept, please check your country laws..",
     restrictionsRestricted2Cat: "Liquids and Aerosols",
     restrictionsRestricted2Desc: "Quantity and shipping type restrictions",
     restrictionsRestricted3Cat: "Food and Beverages",
@@ -2142,12 +2156,12 @@ export const translations = {
     // What Is Section
     whatIsTitle: "¿Qué es Aiyu Japan?",
     whatIsDescription1:
-      "Aiyu Japan es un servicio internacional de compras y envíos con sede en Japón 🌏. Ayudamos a clientes de todo el mundo a comprar productos japoneses auténticos —desde figuras y ropa hasta coleccionables y artículos de anime— de forma fácil y segura.",
+      "Aiyu Japan es una empresa de servicios de proxy japonesa que ayuda a los usuarios a comprar productos de Japón y ofrece envíos internacionales a todo el mundo. Somos una de las diversas empresas de servicios de proxy, ¿podrías darnos una oportunidad? :D.",
     whatIsDescription2:
       "A diferencia de otros servicios proxy que añaden tarifas ocultas o cargos extra después de la compra, Aiyu Japan ofrece una única tarifa transparente que ya incluye:",
     whatIsFeature1: "Almacenamiento ilimitado",
-    whatIsFeature2: "Sin cargos extra por peso o días",
-    whatIsFeature3: "Soporte personalizado durante todo el proceso",
+    whatIsFeature2: "Sin cargos extra por peso o desempaquetado",
+    whatIsFeature3: "Sin cargo extra por consultas o fotos de tus pedidos",
     whatIsDescription3:
       "Con Aiyu Japan, comprar desde Japón es simple, confiable y libre de sorpresas.",
     whatIsBenefit1Title: "Productos Auténticos",
@@ -2155,7 +2169,7 @@ export const translations = {
     whatIsBenefit2Title: "Compra Segura",
     whatIsBenefit2Desc: "Protegemos tus datos",
     whatIsBenefit3Title: "Comunidad Global",
-    whatIsBenefit3Desc: "Miles de usuarios",
+    whatIsBenefit3Desc: "Usuarios de todo el mundo",
     whatIsBenefit4Title: "Envío Mundial",
     whatIsBenefit4Desc: "Hasta tu puerta",
     whatIsVideoTitle: "AIYU JAPAN - Introducción a nuestro servicio proxy",
@@ -2166,41 +2180,49 @@ export const translations = {
       "El proceso es simple y transparente. Aquí te explicamos paso a paso cómo funciona nuestro servicio:",
     howItWorksStep1Title: "Encuentra tu artículo",
     howItWorksStep1Desc:
-      "Busca en tus tiendas japonesas favoritas o usa nuestra Guía de Tiendas para descubrir tiendas oficiales. Una vez que encuentres lo que quieres, simplemente copia el enlace del producto y pégalo en nuestro formulario de solicitud.",
+      "Busca en tus tiendas japonesas favoritas o usa nuestra Guía de Tiendas para descubrir tiendas oficiales. Una vez que encuentres lo que quieres, simplemente <strong>copia el enlace del producto</strong> y pégalo en nuestro formulario de solicitud.",
     howItWorksStep2Title: "Crea tu solicitud de compra",
     howItWorksStep2Desc:
-      "Introduce el enlace del producto y los detalles — nuestro equipo verificará todo y confirmará la disponibilidad. Una vez confirmado, te enviaremos un enlace de pago. Después de completar el pago, compraremos el artículo por ti directamente al vendedor.",
-    howItWorksStep3Title: "Recibe y almacena tus artículos",
+      "Envíanos el enlace del producto y cualquier detalle que desees (cantidad, color, talla, etc.). Nuestro equipo revisará el producto primero para asegurarse de que se pueda comprar y enviar. Si todo está bien, te enviaremos un enlace de pago. Una vez que pagues, compraremos el artículo para ti de inmediato.",
+    howItWorksStep3Title: "Recibe, almacena y pesa tus artículos",
     howItWorksStep3Desc:
-      "Todos los artículos llegan a nuestro almacén de Aiyu Japan en Osaka, donde los almacenamos de forma segura. El almacenamiento es ilimitado y gratuito, por lo que puedes acumular varios artículos antes de enviarlos juntos.",
+      "Cuando tu paquete llegue, lo pesaremos para que sepas el costo del envío internacional. Tus artículos estarán seguros en nuestro almacén de Aiyu Japan en Osaka. El almacenamiento es gratuito e ilimitado, así que puedes seguir añadiendo artículos hasta que estés listo para enviar.",
     howItWorksStep4Title: "Empaquetando tu pedido",
     howItWorksStep4Desc:
       "Cuando estés listo, solicita el envío. Nuestro equipo empaquetará y protegerá cuidadosamente tus artículos utilizando materiales seguros para asegurar que lleguen en perfectas condiciones.",
     howItWorksStep5Title: "Envío internacional",
     howItWorksStep5Desc:
-      "Elige tu método de envío preferido — Japan Post, DHL, Yamato o FedEx — y enviaremos tu paquete a cualquier parte del mundo. Recibirás tu número de seguimiento y actualizaciones hasta la entrega.",
+      "Elige tu método de envío preferido — Japan Post Economy, EMS (correo urgente) o DHL Express — y enviaremos tu paquete a cualquier parte del mundo. Recibirás tu número de seguimiento y actualizaciones hasta la entrega.",
     howItWorksCTA: "Empieza a comprar ahora",
+
+    /* New Services */
+    onSiteOsakaShoppingTitle: "Compra presencial en Osaka",
+    onSiteOsakaShoppingDesc: "1.500 tenes por ocasión (incluye transporte)",
+    shoppingLimitPerPersonTitle: "Compra de productos con límite por persona",
+    shoppingLimitPerPersonDesc:
+      "Para artículos con límite de 1 a 3 unidades por persona, se aplicará un cargo adicional de 1.000 yenes por cada ítem limitado.",
 
     // Fees Section
     feesTitle: "Tarifas y Costos",
     feesSubtitle:
       "Transparencia total en nuestros precios. Sin tarifas ocultas, sin sorpresas.",
-    feeServiceTitle: "Tarifa de Servicio",
+    feeServiceTitle: "Agente de Compras + Beneficios Premium",
     feeServicePrice: "¥500 + 10%",
     feeServiceDesc:
-      "Por artículo + 10% del total de la compra. Esto incluye almacenamiento ilimitado, soporte completo al cliente y gestión de compras.",
+      "Esta tarifa de servicio es por artículo. Esto incluye almacenamiento ilimitado, consolidación con otros paquetes, solicitud de fotos gratuita y gestión de compra.",
     feeServiceNote: "Una tarifa transparente",
-    feeStorageTitle: "Tarifa de Almacenamiento",
-    feeStoragePrice: "Gratis",
+    feeStorageTitle: "Servicio de Almacenamiento (Dirección japonesa)",
+    feeStoragePrice: "¥1000 yen",
     feeStorageDesc:
       "El almacenamiento es ilimitado y gratuito. Puedes acumular varios artículos antes de enviarlos juntos sin ningún costo adicional.",
     feeStorageNote: "Tiempo ilimitado",
     feeShippingTitle: "Envío Internacional",
     feeShippingPrice: "Variable",
     feeShippingDesc:
-      "Elige tu método de envío preferido — Japan Post, DHL, Yamato o FedEx. Enviaremos tu paquete a cualquier parte del mundo.",
+      "Elige tu método de envío preferido — Japan Post Economy, EMS o DHL Express — y enviaremos tu paquete a cualquier parte del mundo.",
     feeShippingNote: "Calculado por peso/destino",
     feesShippingOptionsTitle: "Opciones de Envío Internacional",
+    feesShippingOptionsTitleSpecial: "Envío Internacional (Especial)",
     feesMethodHeader: "Método",
     feesTimeHeader: "Tiempo de Entrega",
     feesTrackingHeader: "Seguimiento",
@@ -2209,6 +2231,10 @@ export const translations = {
     feesOptionAirmail: "Correo Aéreo",
     feesOptionEMS: "EMS",
     feesOptionDHL: "DHL/FedEx",
+    feesOptionAiyuJapanExpress: "Aiyu Japan Express",
+    feesTimeDays14: "14 días",
+    feesTrackingContactSupport: "Contactar Soporte",
+    feesPriceAiyuJapanExpress: "$35USD/KG",
     feesTimeMonths: "2-3 meses",
     feesTimeWeeks: "2-3 semanas",
     feesTimeDays3_7: "3-7 días",
@@ -2290,7 +2316,7 @@ export const translations = {
       "Estos artículos tienen limitaciones especiales",
     restrictionsRestricted1Cat: "Baterías de Litio",
     restrictionsRestricted1Desc:
-      "Solo por correo de superficie o marítimo, no por aire",
+      "Se pueden enviar hasta 2 baterías de litio en un solo envío (si tu país aprueba el envío de baterías); algunos países no las aceptan, por favor, consulta las leyes de tu país.",
     restrictionsRestricted2Cat: "Líquidos y Aerosoles",
     restrictionsRestricted2Desc: "Restricciones de cantidad y tipo de envío",
     restrictionsRestricted3Cat: "Alimentos y Bebidas",

@@ -9,6 +9,7 @@ import {
 import { Card, CardContent } from "@/components/ui/card";
 import { Link } from "react-router";
 import { Star, CheckCircle } from "lucide-react";
+import Autoplay from "embla-carousel-autoplay";
 
 export const ReviewsSection = () => {
   const { t } = useApp();
@@ -61,6 +62,11 @@ export const ReviewsSection = () => {
               align: "start",
               loop: true,
             }}
+            plugins={[
+              Autoplay({
+                delay: 3000,
+              }),
+            ]}
             className="w-full"
           >
             <CarouselContent className="-ml-4">

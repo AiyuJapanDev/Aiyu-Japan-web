@@ -1,5 +1,14 @@
 import { useApp } from "@/contexts/AppContext";
-import { Box, Check, CreditCard, Info, Plane } from "lucide-react";
+import {
+  Box,
+  Check,
+  CreditCard,
+  Info,
+  PersonStanding,
+  Plane,
+  ShoppingBag,
+  User2,
+} from "lucide-react";
 
 export const FeesSection = () => {
   const { t } = useApp();
@@ -28,13 +37,20 @@ export const FeesSection = () => {
     },
   ];
 
-  const shippingOptions = [
+  const newServices = [
     {
-      method: t("feesOptionSurface"),
-      time: t("feesTimeMonths"),
-      tracking: t("feesTrackingLimited"),
-      price: t("feesPriceCheapest"),
+      title: t("onSiteOsakaShoppingTitle"),
+      description: t("onSiteOsakaShoppingDesc"),
+      icon: <ShoppingBag className="h-6 w-6 text-blue-600" />,
     },
+    {
+      title: t("shoppingLimitPerPersonTitle"),
+      description: t("shoppingLimitPerPersonDesc"),
+      icon: <User2 className="h-6 w-6 text-green-600" />,
+    },
+  ];
+
+  const shippingOptions = [
     {
       method: t("feesOptionAirmail"),
       time: t("feesTimeWeeks"),
@@ -67,7 +83,7 @@ export const FeesSection = () => {
           </p>
         </div>
 
-        <div className="mb-20 grid gap-8 md:grid-cols-3">
+        <div className="mb-4 grid gap-8 md:grid-cols-3">
           {serviceFees.map((fee, index) => (
             <div
               key={index}
@@ -87,6 +103,22 @@ export const FeesSection = () => {
                 <Check className="h-4 w-4" />
                 {fee.note}
               </div>
+            </div>
+          ))}
+        </div>
+        <div className="mb-20 flex gap-8 justify-center">
+          {newServices.map((fee, index) => (
+            <div
+              key={index}
+              className="flex-1 relative overflow-hidden rounded-2xl border border-gray-100 bg-white p-8 shadow-lg transition-shadow hover:shadow-xl"
+            >
+              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-gray-50">
+                {fee.icon}
+              </div>
+              <h3 className="mb-2 text-xl font-bold text-gray-900">
+                {fee.title}
+              </h3>
+              <p className="mb-4 text-gray-600">{fee.description}</p>
             </div>
           ))}
         </div>
@@ -135,6 +167,50 @@ export const FeesSection = () => {
                       </td>
                     </tr>
                   ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div className="overflow-hidden rounded-3xl bg-gray-50 shadow-inner">
+          <div className="p-8 md:p-12">
+            <h3 className="mb-8 text-2xl font-bold text-gray-900">
+              {t("feesShippingOptionsTitleSpecial")}
+            </h3>
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[600px]">
+                <thead>
+                  <tr className="border-b border-gray-200 text-left text-sm text-gray-500">
+                    <th className="pb-4 font-medium">
+                      {t("feesMethodHeader")}
+                    </th>
+                    <th className="pb-4 font-medium">{t("feesTimeHeader")}</th>
+                    <th className="pb-4 font-medium">
+                      {t("feesTrackingHeader")}
+                    </th>
+                    <th className="pb-4 font-medium">{t("feesPriceHeader")}</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200">
+                  <tr className="group">
+                    <td className="py-4 font-medium text-gray-900">
+                      {t("feesOptionAiyuJapanExpress")}
+                    </td>
+                    <td className="py-4 text-gray-600">
+                      {t("feesTimeDays14")}
+                    </td>
+                    <td className="py-4">
+                      <span
+                        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-blue-100 text-blue-800`}
+                      >
+                        {t("feesTrackingContactSupport")}
+                      </span>
+                    </td>
+                    <td className="py-4 font-medium text-gray-900">
+                      {t("feesPriceAiyuJapanExpress")}
+                    </td>
+                  </tr>
                 </tbody>
               </table>
             </div>

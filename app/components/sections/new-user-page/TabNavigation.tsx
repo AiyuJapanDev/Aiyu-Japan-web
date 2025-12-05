@@ -8,7 +8,7 @@ export const TabNavigation = () => {
     { label: t("tabWhatIs"), value: "what-is" },
     { label: t("tabHowItWorks"), value: "how-it-works" },
     { label: t("tabFees"), value: "fees" },
-    { label: t("tabCommission"), value: "commission" },
+    /* { label: t("tabCommission"), value: "commission" }, */
     { label: t("tabMarkets"), value: "popular-markets" },
     { label: t("tabRestrictions"), value: "restrictions" },
   ];

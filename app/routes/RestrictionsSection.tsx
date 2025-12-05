@@ -1,5 +1,13 @@
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import { Button } from "@/components/ui/button";
 import { useApp } from "@/contexts/AppContext";
 import { AlertTriangle, Ban, HelpCircle, Info } from "lucide-react";
+import { Link } from "react-router";
 
 export const RestrictionsSection = () => {
   const { t } = useApp();
@@ -19,10 +27,6 @@ export const RestrictionsSection = () => {
     {
       category: t("restrictionsRestricted1Cat"),
       description: t("restrictionsRestricted1Desc"),
-    },
-    {
-      category: t("restrictionsRestricted2Cat"),
-      description: t("restrictionsRestricted2Desc"),
     },
     {
       category: t("restrictionsRestricted3Cat"),
@@ -57,7 +61,7 @@ export const RestrictionsSection = () => {
         <div className="grid gap-12 lg:grid-cols-2 lg:gap-20">
           <div>
             <div className="mb-12 overflow-hidden rounded-3xl bg-blue-50">
-              <div className="bg-blue-600 px-8 py-6 text-white">
+              <div className="bg-red-400 px-8 py-6 text-white">
                 <div className="flex items-center gap-4">
                   <Ban className="h-8 w-8" />
                   <div>
@@ -74,7 +78,7 @@ export const RestrictionsSection = () => {
                 <ul className="grid gap-4 sm:grid-cols-2">
                   {prohibitedItems.map((item, index) => (
                     <li key={index} className="flex items-start gap-3">
-                      <div className="mt-1 flex h-2 w-2 flex-shrink-0 rounded-full bg-blue-500" />
+                      <div className="mt-1 flex h-2 w-2 flex-shrink-0 rounded-full bg-red-400" />
                       <span className="text-gray-700">{item}</span>
                     </li>
                   ))}
@@ -138,14 +142,54 @@ export const RestrictionsSection = () => {
                   <p className="text-blue-100">{t("restrictionsDoubtsDesc")}</p>
                 </div>
               </div>
-              <div className="flex flex-col gap-4 sm:flex-row">
-                <button className="flex-1 rounded-xl bg-white py-3 font-bold text-blue-600 transition-colors hover:bg-blue-50">
-                  {t("marketsContactSupport")}
-                </button>
-                <button className="flex-1 rounded-xl border-2 border-white/30 py-3 font-bold text-white transition-colors hover:bg-white/10">
-                  {t("restrictionsViewFAQ")}
-                </button>
-              </div>
+              <Accordion
+                type="single"
+                collapsible
+                className="rounded-xl bg-white flex justify-center gap-4"
+              >
+                <AccordionItem value="item-1" className="">
+                  <AccordionTrigger className="text-blue-600">
+                    {t("marketsContactSupport")}
+                  </AccordionTrigger>
+                  <AccordionContent className="flex flex-col gap-4 text-blue-600">
+                    <Link
+                      className="flex gap-4 items-center font-bold"
+                      to={"https://www.instagram.com/aiyu.japan/"}
+                    >
+                      <img
+                        src="/instagram.svg"
+                        alt="Instagram"
+                        className="h-6 w-5 "
+                      />
+                      Instagram
+                    </Link>
+                    <Link
+                      className="flex gap-4 items-center font-bold"
+                      to={
+                        "https://www.facebook.com/p/Aiyu-Japan-61566577742246/"
+                      }
+                    >
+                      <img
+                        src="/facebook.svg"
+                        alt="Facebook"
+                        className="h-6 w-5 "
+                      />
+                      Facebook
+                    </Link>
+                    <Link
+                      className="flex gap-4 items-center font-bold"
+                      to={"https://wa.me/819072380362"}
+                    >
+                      <img
+                        src="/whatsapp.svg"
+                        alt="WhatsApp"
+                        className="h-6 w-5 "
+                      />
+                      WhatsApp
+                    </Link>
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
             </div>
           </div>
         </div>
