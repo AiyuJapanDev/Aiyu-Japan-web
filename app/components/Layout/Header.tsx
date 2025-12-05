@@ -439,7 +439,7 @@ const Header = () => {
             </div>
           )}
           <p
-            className="font-bold text-center"
+            className="font-bold text-center max-w-[600px] mx-auto"
             dangerouslySetInnerHTML={{ __html: t("headerParagraph") }}
           ></p>
         </nav>

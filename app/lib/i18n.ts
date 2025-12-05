@@ -12,7 +12,7 @@ export const translations = {
     home: "Home",
     services: "Services",
     calculator: "Cost Simulator",
-    storeGuide: "Store Guide",
+    storeGuide: "First Time?",
     simulator: "Simulator",
     dashboard: "Dashboard",
     login: "Login",

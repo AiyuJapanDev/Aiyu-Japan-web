@@ -177,7 +177,9 @@ export function ProductRequestForm() {
           asChild
           className="flex-1 min-w-0 text-center w-full border-2 border-black-800 text-black bg-white hover:bg-capybara-orange hover:text-white transition-colors px-3 py-2.5 sm:px-4 sm:py-3 text-xs sm:text-sm font-medium whitespace-normal"
         >
-          <Link to="/store-guide">{t("seeJapaneseStores")}</Link>
+          <Link to="/store-guide/popular-markets">
+            {t("seeJapaneseStores")}
+          </Link>
         </Button>
 
         <Button

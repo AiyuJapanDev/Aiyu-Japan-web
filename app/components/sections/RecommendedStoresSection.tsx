@@ -7,68 +7,7 @@ export default function RecommendedStoresSection({
   storeMarkets: StoreMarket[];
 }) {
   const { t } = useApp();
-  const shops = [
-    {
-      id: 1,
-      image: "banpresto.png",
-    },
-    {
-      id: 2,
-      image: "banpresto.png",
-    },
-    {
-      id: 3,
-      image: "banpresto.png",
-    },
-    {
-      id: 4,
-      image: "banpresto.png",
-    },
-    {
-      id: 5,
-      image: "banpresto.png",
-    },
-    {
-      id: 6,
-      image: "banpresto.png",
-    },
-    {
-      id: 6,
-      image: "banpresto.png",
-    },
-    {
-      id: 6,
-      image: "banpresto.png",
-    },
-    {
-      id: 6,
-      image: "banpresto.png",
-    },
-    {
-      id: 6,
-      image: "banpresto.png",
-    },
-    {
-      id: 6,
-      image: "banpresto.png",
-    },
-    {
-      id: 6,
-      image: "banpresto.png",
-    },
-    {
-      id: 6,
-      image: "banpresto.png",
-    },
-    {
-      id: 6,
-      image: "banpresto.png",
-    },
-    {
-      id: 6,
-      image: "banpresto.png",
-    },
-  ];
+
   return (
     <div className="py-20 sm:mx-auto px-4 sm:px-[19px] max-w-6xl">
       <div className="text-center mb-16 max-w-3xl mx-auto">
@@ -81,16 +20,20 @@ export default function RecommendedStoresSection({
       </div>
       <div className="grid grid-cols-4 sm:grid-cols-8 gap-2 [&_div]:h-[50px] [&_div]:sm:h-[80px] [&_div]:bg-white [&_div]:border [&_div]:border-[#DFE0E2] [&_div]:rounded-xl [&_div]:flex [&_div]:items-center [&_div]:justify-center">
         {storeMarkets.map((shop) => (
-          <div key={shop.id} className="overflow-hidden">
-            <a
-              href={shop.link}
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="Weverse"
-            >
-              <img className="object-cover" src={`${shop.logo.url}`} />
-            </a>
-          </div>
+          <a
+            key={shop.id}
+            href={shop.link}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="h-[50px] sm:h-[80px] bg-white border border-[#DFE0E2] rounded-xl flex items-center justify-center p-2"
+            aria-label={shop.title}
+          >
+            <img
+              className="object-contain w-full h-full"
+              src={`${shop.logo.url}`}
+              alt={shop.title}
+            />
+          </a>
         ))}
       </div>
     </div>

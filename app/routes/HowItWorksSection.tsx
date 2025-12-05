@@ -1,6 +1,8 @@
 import { useApp } from "@/contexts/AppContext";
 import { ArrowRight, Package, Plane, Search, ShoppingCart } from "lucide-react";
 import { Route } from ".react-router/types/app/routes/+types/HowItWorksSection";
+import { Button } from "@/components/ui/button";
+import { Link } from "react-router";
 
 export async function loader({ params }: Route.LoaderArgs) {
   return null;
@@ -92,10 +94,14 @@ export const HowItWorksSection = () => {
         </div>
 
         <div className="mt-16 text-center">
-          <button className="inline-flex items-center gap-2 rounded-full bg-blue-600 px-8 py-4 text-lg font-bold text-white shadow-lg transition-transform hover:scale-105 hover:bg-blue-700">
-            {t("howItWorksCTA")}
-            <ArrowRight className="h-5 w-5" />
-          </button>
+          <Button
+            asChild
+            className="inline-flex items-center gap-2 rounded-full bg-blue-600 px-8 py-4 text-lg font-bold text-white shadow-lg transition-transform hover:scale-105 hover:bg-blue-700"
+          >
+            <Link to="/user-dashboard?tab=submit">
+              {t("howItWorksCTA")} <ArrowRight className="h-5 w-5" />
+            </Link>
+          </Button>
         </div>
       </div>
     </section>

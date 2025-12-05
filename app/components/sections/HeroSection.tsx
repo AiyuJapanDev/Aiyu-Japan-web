@@ -42,7 +42,8 @@ const HeroSection = () => {
     },
     {
       id: 2,
-      bgClass: "bg-capybara-blue",
+      bgClass:
+        "bg-capybara-blue bg-[url('/dotonbori.png')] bg-cover bg-[left_bottom_-12rem] bg-no-repeat",
       title: t("heroSlide2Title"),
       titleColor: "text-white",
       subtitle: "",
@@ -56,7 +57,7 @@ const HeroSection = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [url, setUrl] = useState("");
-  
+
   // Drag/Swipe state
   const [isDragging, setIsDragging] = useState(false);
   const [startX, setStartX] = useState(0);
@@ -66,7 +67,7 @@ const HeroSection = () => {
   // Autoplay Logic
   useEffect(() => {
     if (isDragging) return; // Pause autoplay while dragging
-    
+
     const timer = setInterval(() => {
       setCurrentSlide((prev) => (prev === SLIDES.length - 1 ? 0 : prev + 1));
     }, 5000);
@@ -93,7 +94,7 @@ const HeroSection = () => {
 
   const handleDragEnd = () => {
     if (!isDragging) return;
-    
+
     const diff = currentX - startX;
     const threshold = 50; // Minimum drag distance to trigger slide change
 
@@ -154,7 +155,7 @@ const HeroSection = () => {
   return (
     <section className="relative w-full animate-fade-in ">
       <div className="w-full h-[500px] sm:h-[370px]">
-        <div 
+        <div
           className="relative group w-full h-full bg-gray-100 overflow-hidden cursor-grab active:cursor-grabbing"
           onMouseDown={handleMouseDown}
           onMouseMove={handleMouseMove}
@@ -166,10 +167,10 @@ const HeroSection = () => {
         >
           {/* SLIDER TRACK */}
           <div
-            className={`flex w-full h-full ${isDragging ? 'transition-none' : 'transition-transform duration-700 ease-in-out'}`}
-            style={{ 
+            className={`flex w-full h-full ${isDragging ? "transition-none" : "transition-transform duration-700 ease-in-out"}`}
+            style={{
               transform: `translateX(calc(-${currentSlide * 100}% + ${dragOffset}px))`,
-              userSelect: 'none'
+              userSelect: "none",
             }}
           >
             {SLIDES.map((slide) => (
