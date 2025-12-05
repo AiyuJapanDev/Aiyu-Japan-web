@@ -59,7 +59,9 @@ interface StoredItem {
   product_url: string;
   quantity: number;
   weight: number | null;
-  invoice_id: string | null;
+  width: number | null;
+  length: number | null;
+  height: number | null;
   created_at: string;
   status: string;
   isShipped: boolean;
@@ -102,7 +104,9 @@ export const StorageManagement = React.memo(() => {
   const queryClient = useQueryClient();
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({});
   const [weights, setWeights] = useState<Record<string, string>>({});
-  const [invoiceIds, setInvoiceIds] = useState<Record<string, string>>({});
+  const [widths, setWidths] = useState<Record<string, string>>({});
+  const [lengths, setLengths] = useState<Record<string, string>>({});
+  const [heights, setHeights] = useState<Record<string, string>>({});
   const [searchTerm, setSearchTerm] = useState('');
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [deleteItemId, setDeleteItemId] = useState<string | null>(null);
@@ -116,7 +120,9 @@ export const StorageManagement = React.memo(() => {
   const [productUrl, setProductUrl] = useState('');
   const [quantity, setQuantity] = useState('1');
   const [itemWeight, setItemWeight] = useState('');
-  const [itemInvoiceId, setItemInvoiceId] = useState('');
+  const [itemWidth, setItemWidth] = useState('');
+  const [itemLength, setItemLength] = useState('');
+  const [itemHeight, setItemHeight] = useState('');
   const [notes, setNotes] = useState('');
   const [isBox, setIsBox] = useState(false);
   const [localTrackingNumber, setLocalTrackingNumber] = useState('');
@@ -233,7 +239,9 @@ export const StorageManagement = React.memo(() => {
           product_url: item.product_url,
           quantity: item.quantity,
           weight: item.weight,
-          invoice_id: item.invoice_id,
+          width: item.width,
+          length: item.length,
+          height: item.height,
           created_at: item.created_at,
           status: item.status,
           isShipped,
@@ -249,11 +257,23 @@ export const StorageManagement = React.memo(() => {
     refetchInterval: 30000, // Refetch every 30 seconds
   });
 
-  const updateWeightMutation = useMutation({
-    mutationFn: async ({ itemId, weight }: { itemId: string; weight: number }) => {
+  const updateItemDetailsMutation = useMutation({
+    mutationFn: async ({ itemId, weight, width, length, height }: { 
+      itemId: string; 
+      weight?: number;
+      width?: number;
+      length?: number;
+      height?: number;
+    }) => {
+      const updateData: any = {};
+      if (weight !== undefined) updateData.weight = weight;
+      if (width !== undefined) updateData.width = width;
+      if (length !== undefined) updateData.length = length;
+      if (height !== undefined) updateData.height = height;
+      
       const { error } = await supabase
         .from('product_requests')
-        .update({ weight })
+        .update(updateData)
         .eq('id', itemId);
       
       if (error) throw error;
@@ -261,43 +281,17 @@ export const StorageManagement = React.memo(() => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-storage'] });
       toast({
-        title: 'Weight updated',
-        description: 'Item weight has been updated successfully.',
+        title: 'Item updated',
+        description: 'Weight and dimensions have been updated successfully.',
       });
     },
     onError: (error) => {
       toast({
         title: 'Error',
-        description: 'Failed to update weight. Please try again.',
+        description: 'Failed to update item details. Please try again.',
         variant: 'destructive',
       });
-      console.error('Update weight error:', error);
-    },
-  });
-
-  const updateInvoiceIdMutation = useMutation({
-    mutationFn: async ({ itemId, invoiceId }: { itemId: string; invoiceId: string }) => {
-      const { error } = await supabase
-        .from('product_requests')
-        .update({ invoice_id: invoiceId } as any)
-        .eq('id', itemId);
-      
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin-storage'] });
-      toast({
-        title: 'Invoice ID updated',
-        description: 'Item invoice ID has been updated successfully.',
-      });
-    },
-    onError: (error) => {
-      toast({
-        title: 'Error',
-        description: 'Failed to update invoice ID. Please try again.',
-        variant: 'destructive',
-      });
-      console.error('Update invoice ID error:', error);
+      console.error('Update item details error:', error);
     },
   });
 
@@ -308,7 +302,9 @@ export const StorageManagement = React.memo(() => {
       product_url: string;
       quantity: number;
       weight?: number;
-      invoice_id?: string;
+      width?: number;
+      length?: number;
+      height?: number;
       notes?: string;
       is_box: boolean;
       local_tracking_number?: string;
@@ -373,17 +369,14 @@ export const StorageManagement = React.memo(() => {
     },
   });
 
-  const handleWeightUpdate = (itemId: string) => {
-    const weight = parseFloat(weights[itemId]);
-    if (!isNaN(weight) && weight > 0) {
-      updateWeightMutation.mutate({ itemId, weight });
-    }
-  };
-
-  const handleInvoiceIdUpdate = (itemId: string) => {
-    const invoiceId = invoiceIds[itemId]?.trim();
-    if (invoiceId) {
-      updateInvoiceIdMutation.mutate({ itemId, invoiceId });
+  const handleItemDetailsUpdate = (itemId: string) => {
+    const weight = weights[itemId] ? parseFloat(weights[itemId]) : undefined;
+    const width = widths[itemId] ? parseFloat(widths[itemId]) : undefined;
+    const length = lengths[itemId] ? parseFloat(lengths[itemId]) : undefined;
+    const height = heights[itemId] ? parseFloat(heights[itemId]) : undefined;
+    
+    if (weight !== undefined || width !== undefined || length !== undefined || height !== undefined) {
+      updateItemDetailsMutation.mutate({ itemId, weight, width, length, height });
     }
   };
 
@@ -393,7 +386,9 @@ export const StorageManagement = React.memo(() => {
     setProductUrl('');
     setQuantity('1');
     setItemWeight('');
-    setItemInvoiceId('');
+    setItemWidth('');
+    setItemLength('');
+    setItemHeight('');
     setNotes('');
     setIsBox(false);
     setLocalTrackingNumber('');
@@ -438,8 +433,16 @@ export const StorageManagement = React.memo(() => {
       itemData.weight = parseFloat(itemWeight);
     }
 
-    if (itemInvoiceId?.trim()) {
-      itemData.invoice_id = itemInvoiceId.trim();
+    if (itemWidth) {
+      itemData.width = parseFloat(itemWidth);
+    }
+
+    if (itemLength) {
+      itemData.length = parseFloat(itemLength);
+    }
+
+    if (itemHeight) {
+      itemData.height = parseFloat(itemHeight);
     }
 
     if (notes?.trim()) {
@@ -650,14 +653,43 @@ export const StorageManagement = React.memo(() => {
                       />
                     </div>
                   </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="invoice-id">Invoice ID</Label>
-                    <Input
-                      id="invoice-id"
-                      value={itemInvoiceId}
-                      onChange={(e) => setItemInvoiceId(e.target.value)}
-                      placeholder="Optional"
-                    />
+                  <div className="grid grid-cols-3 gap-4">
+                    <div className="grid gap-2">
+                      <Label htmlFor="width">Width (cm)</Label>
+                      <Input
+                        id="width"
+                        type="number"
+                        min="0"
+                        step="0.1"
+                        value={itemWidth}
+                        onChange={(e) => setItemWidth(e.target.value)}
+                        placeholder="Optional"
+                      />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="length">Length (cm)</Label>
+                      <Input
+                        id="length"
+                        type="number"
+                        min="0"
+                        step="0.1"
+                        value={itemLength}
+                        onChange={(e) => setItemLength(e.target.value)}
+                        placeholder="Optional"
+                      />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="height">Height (cm)</Label>
+                      <Input
+                        id="height"
+                        type="number"
+                        min="0"
+                        step="0.1"
+                        value={itemHeight}
+                        onChange={(e) => setItemHeight(e.target.value)}
+                        placeholder="Optional"
+                      />
+                    </div>
                   </div>
                   <div className="grid gap-2">
                     <Label htmlFor="is-box" className="flex items-center gap-2">
@@ -934,49 +966,47 @@ export const StorageManagement = React.memo(() => {
                                 <Trash2 className="h-4 w-4" />
                               </Button>
                             </div>
-                            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-2">
-                              <div className="flex items-center gap-2 w-full sm:w-auto">
-                                <Weight className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
-                                <Input
-                                  type="number"
-                                  placeholder="Weight (g)"
-                                  className="flex-1 sm:w-24 min-w-0"
-                                  value={weights[item.id] !== undefined ? weights[item.id] : (item.weight || '')}
-                                  onChange={(e) => setWeights(prev => ({
-                                    ...prev,
-                                    [item.id]: e.target.value
-                                  }))}
-                                />
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  onClick={() => handleWeightUpdate(item.id)}
-                                  disabled={!weights[item.id] || updateWeightMutation.isPending}
-                                >
-                                  Update
-                                </Button>
-                              </div>
-                              <div className="flex items-center gap-2 w-full sm:w-auto">
-                                <span className="text-sm text-muted-foreground whitespace-nowrap">Invoice:</span>
-                                <Input
-                                  type="text"
-                                  placeholder="Invoice ID"
-                                  className="flex-1 sm:w-32 min-w-0"
-                                  value={invoiceIds[item.id] !== undefined ? invoiceIds[item.id] : (item.invoice_id || '')}
-                                  onChange={(e) => setInvoiceIds(prev => ({
-                                    ...prev,
-                                    [item.id]: e.target.value
-                                  }))}
-                                />
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  onClick={() => handleInvoiceIdUpdate(item.id)}
-                                  disabled={invoiceIds[item.id] === undefined || updateInvoiceIdMutation.isPending}
-                                >
-                                  Update
-                                </Button>
-                              </div>
+                            <div className="flex flex-wrap items-center gap-2 mt-2">
+                              <Weight className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
+                              <Input
+                                type="number"
+                                placeholder="Weight (g)"
+                                className="w-24"
+                                value={weights[item.id] !== undefined ? weights[item.id] : (item.weight || '')}
+                                onChange={(e) => setWeights(prev => ({ ...prev, [item.id]: e.target.value }))}
+                              />
+                              <span className="text-sm text-muted-foreground ml-2">Dimensions:</span>
+                              <Input
+                                type="number"
+                                placeholder="W (cm)"
+                                className="w-20"
+                                value={widths[item.id] !== undefined ? widths[item.id] : (item.width || '')}
+                                onChange={(e) => setWidths(prev => ({ ...prev, [item.id]: e.target.value }))}
+                              />
+                              <span className="text-muted-foreground">×</span>
+                              <Input
+                                type="number"
+                                placeholder="L (cm)"
+                                className="w-20"
+                                value={lengths[item.id] !== undefined ? lengths[item.id] : (item.length || '')}
+                                onChange={(e) => setLengths(prev => ({ ...prev, [item.id]: e.target.value }))}
+                              />
+                              <span className="text-muted-foreground">×</span>
+                              <Input
+                                type="number"
+                                placeholder="H (cm)"
+                                className="w-20"
+                                value={heights[item.id] !== undefined ? heights[item.id] : (item.height || '')}
+                                onChange={(e) => setHeights(prev => ({ ...prev, [item.id]: e.target.value }))}
+                              />
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleItemDetailsUpdate(item.id)}
+                                disabled={updateItemDetailsMutation.isPending}
+                              >
+                                Update
+                              </Button>
                             </div>
                           </div>
                         ))}
