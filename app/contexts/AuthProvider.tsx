@@ -1,12 +1,12 @@
 import React, { createContext, useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { fetchUserMeta } from "../../Aiyu-Japan-V1.1-main (1)/Aiyu-Japan-V1.1-main/src/contexts/auth.utils";
+import { fetchUserMeta } from "../../app/contexts/auth.utils";
 import type {
   AuthContextType,
   UserRole,
   Profile,
-} from "../../Aiyu-Japan-V1.1-main (1)/Aiyu-Japan-V1.1-main/src/contexts/auth.types";
+} from "../../app/contexts/auth.types";
 
 export const AuthContext = createContext<AuthContextType | undefined>(
   undefined

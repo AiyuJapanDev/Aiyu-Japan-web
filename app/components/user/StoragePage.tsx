@@ -47,7 +47,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import ShippingQuoteDialog from "../../../Aiyu-Japan-V1.1-main (1)/Aiyu-Japan-V1.1-main/src/components/user/ShippingQuoteDialog";
+import ShippingQuoteDialog from "@/components/user/ShippingQuoteDialog";
 import { calculateShippingCost, destinations } from "@/lib/shippingUtils";
 import { useNavigate } from "react-router";
 import { useApp } from "@/contexts/AppContext";
