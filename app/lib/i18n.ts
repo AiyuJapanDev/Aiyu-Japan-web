@@ -99,8 +99,8 @@ export const translations = {
     productCost: "Product Cost (¥)",
     destination: "Destination Country",
     calculate: "Calculate",
-    serviceFee: "Service Fee",
-    handlingFee: "Handling Fee (10%)",
+    serviceFee: "Service Fee + Premium benefits",
+    handlingFee: "Payment processing fee: 3.9%",
     viewBenefits: "View Benefits",
     handlingFeeBenefitConsolidation: "Package consolidation",
     handlingFeeBenefitStorage: "Free unlimited storage",
@@ -224,7 +224,7 @@ export const translations = {
     purchaseCalculator: "Purchase Calculator",
     enterPriceInYen: "Enter the product price in Japanese Yen",
     quotedPrice: "Quoted Price",
-    serviceFeeLabel: "Service Fee",
+    serviceFeeLabel: "Service Fee + Premium benefits",
     enterPriceToCalculate: "Enter a price to calculate it!",
 
     // Shipping Calculator
@@ -994,7 +994,7 @@ export const translations = {
     feesTitle: "Fees & Costs",
     feesSubtitle:
       "Total transparency in our pricing. No hidden fees, no surprises.",
-    feeServiceTitle: "Service Fee",
+    feeServiceTitle: "Service Fee + Premium benefits",
     feeServicePrice: "¥500 + 10%",
     feeServiceDesc:
       "Per item + 10% of total purchase. This includes unlimited storage, full customer support, and purchase handling.",
