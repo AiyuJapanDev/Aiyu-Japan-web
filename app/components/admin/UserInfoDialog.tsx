@@ -8,10 +8,12 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns";
 import { UserWithRole } from "@/types/user";
+import { useNavigate } from "react-router";
+import { ExternalLink } from "lucide-react";
 
 interface UserInfoDialogProps {
   user: UserWithRole | null;
@@ -19,7 +21,13 @@ interface UserInfoDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
-export function UserInfoDialog({ user, open, onOpenChange }: UserInfoDialogProps) {
+export function UserInfoDialog({
+  user,
+  open,
+  onOpenChange,
+}: UserInfoDialogProps) {
+  const navigate = useNavigate();
+
   const { data: profile, isLoading: profileLoading } = useQuery({
     queryKey: ["user-profile", user?.id],
     queryFn: async () => {
@@ -92,52 +100,76 @@ export function UserInfoDialog({ user, open, onOpenChange }: UserInfoDialogProps
               <div className="space-y-3">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground">Full Name</p>
+                    <p className="text-sm font-medium text-muted-foreground">
+                      Full Name
+                    </p>
                     <p>{profile.full_name || "N/A"}</p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground">Email</p>
+                    <p className="text-sm font-medium text-muted-foreground">
+                      Email
+                    </p>
                     <p>{profile.email || user.email}</p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground">Phone</p>
+                    <p className="text-sm font-medium text-muted-foreground">
+                      Phone
+                    </p>
                     <p>{profile.phone_number || "N/A"}</p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground">User ID</p>
+                    <p className="text-sm font-medium text-muted-foreground">
+                      User ID
+                    </p>
                     <p>{profile.user_personal_id || "N/A"}</p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground">Country</p>
+                    <p className="text-sm font-medium text-muted-foreground">
+                      Country
+                    </p>
                     <p>{profile.country || "N/A"}</p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground">Postal Code</p>
+                    <p className="text-sm font-medium text-muted-foreground">
+                      Postal Code
+                    </p>
                     <p>{profile.postal_code || "N/A"}</p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground">City</p>
+                    <p className="text-sm font-medium text-muted-foreground">
+                      City
+                    </p>
                     <p>{profile.city || "N/A"}</p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground">State</p>
+                    <p className="text-sm font-medium text-muted-foreground">
+                      State
+                    </p>
                     <p>{profile.state || "N/A"}</p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground">Join Date</p>
+                    <p className="text-sm font-medium text-muted-foreground">
+                      Join Date
+                    </p>
                     <p>{format(new Date(user.created_at), "MMM dd, yyyy")}</p>
                   </div>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Address</p>
+                  <p className="text-sm font-medium text-muted-foreground">
+                    Address
+                  </p>
                   <p>{profile.address || "N/A"}</p>
                   {profile.address_notes && (
-                    <p className="text-sm text-muted-foreground mt-1">{profile.address_notes}</p>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      {profile.address_notes}
+                    </p>
                   )}
                 </div>
               </div>
             ) : (
-              <p className="text-muted-foreground">No profile information found</p>
+              <p className="text-muted-foreground">
+                No profile information found
+              </p>
             )}
           </TabsContent>
 
@@ -150,15 +182,32 @@ export function UserInfoDialog({ user, open, onOpenChange }: UserInfoDialogProps
             ) : orders && orders.length > 0 ? (
               <div className="space-y-3">
                 {orders.map((order: any) => (
-                  <div key={order.id} className="border rounded-lg p-4 space-y-2">
+                  <div
+                    key={order.id}
+                    className="border rounded-lg p-4 space-y-2"
+                  >
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="font-medium">Order #{order.order_personal_id}</p>
+                        <p className="font-medium">
+                          Order #{order.order_personal_id}
+                        </p>
                         <p className="text-sm text-muted-foreground">
                           {format(new Date(order.created_at), "MMM dd, yyyy")}
                         </p>
                       </div>
-                      <Badge>{order.status}</Badge>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          onOpenChange(false);
+                          navigate(
+                            `/admin-dashboard?tab=requests&orderId=${order.id}`
+                          );
+                        }}
+                      >
+                        <ExternalLink className="h-3 w-3 mr-1" />
+                        View Order
+                      </Button>
                     </div>
                     <p className="text-sm">
                       {order.order_items?.length || 0} item(s)
@@ -180,25 +229,66 @@ export function UserInfoDialog({ user, open, onOpenChange }: UserInfoDialogProps
             ) : shipments && shipments.length > 0 ? (
               <div className="space-y-3">
                 {shipments.map((shipment: any) => (
-                  <div key={shipment.id} className="border rounded-lg p-4 space-y-2">
+                  <div
+                    key={shipment.id}
+                    className="border rounded-lg p-4 space-y-2"
+                  >
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="font-medium">Shipment #{shipment.shipment_personal_id}</p>
+                        <p className="font-medium">
+                          Shipment #{shipment.shipment_personal_id}
+                        </p>
                         <p className="text-sm text-muted-foreground">
-                          {format(new Date(shipment.created_at), "MMM dd, yyyy")}
+                          {format(
+                            new Date(shipment.created_at),
+                            "MMM dd, yyyy"
+                          )}
                         </p>
                       </div>
-                      <Badge>{shipment.status}</Badge>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          onOpenChange(false);
+                          navigate(
+                            `/admin-dashboard?tab=shipping-requests&shipmentId=${shipment.id}`
+                          );
+                        }}
+                      >
+                        <ExternalLink className="h-3 w-3 mr-1" />
+                        View Shipment
+                      </Button>
                     </div>
                     <div className="text-sm space-y-1">
-                      <p><span className="text-muted-foreground">Destination:</span> {shipment.destination}</p>
-                      <p><span className="text-muted-foreground">Method:</span> {shipment.shipping_method}</p>
-                      <p><span className="text-muted-foreground">Weight:</span> {shipment.total_weight}g</p>
+                      <p>
+                        <span className="text-muted-foreground">
+                          Destination:
+                        </span>{" "}
+                        {shipment.destination}
+                      </p>
+                      <p>
+                        <span className="text-muted-foreground">Method:</span>{" "}
+                        {shipment.shipping_method}
+                      </p>
+                      <p>
+                        <span className="text-muted-foreground">Weight:</span>{" "}
+                        {shipment.total_weight}g
+                      </p>
                       {shipment.estimated_cost && (
-                        <p><span className="text-muted-foreground">Est. Cost:</span> ¥{shipment.estimated_cost}</p>
+                        <p>
+                          <span className="text-muted-foreground">
+                            Est. Cost:
+                          </span>{" "}
+                          ¥{shipment.estimated_cost}
+                        </p>
                       )}
                       {shipment.actual_cost && (
-                        <p><span className="text-muted-foreground">Actual Cost:</span> ¥{shipment.actual_cost}</p>
+                        <p>
+                          <span className="text-muted-foreground">
+                            Actual Cost:
+                          </span>{" "}
+                          ¥{shipment.actual_cost}
+                        </p>
                       )}
                     </div>
                   </div>

@@ -1,7 +1,7 @@
 export type ProductRequestStatus = 'requested' | 'quoted' | 'paid' | 'purchased' | 'received' | 'shipping_quoted' | 'shipping_paid' | 'shipped' | 'rejected';
 export type QuoteType = 'product' | 'shipping';
 export type QuoteStatus = 'pending' | 'sent' | 'paid';
-export type OrderStatus = 'preparing' | 'weighing' | 'awaiting_shipping_payment' | 'shipped';
+export type OrderStatus = 'preparing' | 'weighing' | 'awaiting_shipping_payment' | 'shipped' | 'cancelled';
 
 export interface ProductRequest {
   id: string;

@@ -115,8 +115,10 @@ export type Database = {
       }
       orders: {
         Row: {
+          cancelled_at: string | null
           created_at: string
           id: string
+          is_cancelled: boolean | null
           is_rejected: boolean | null
           is_resubmitted: boolean | null
           order_personal_id: string
@@ -128,8 +130,10 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          cancelled_at?: string | null
           created_at?: string
           id?: string
+          is_cancelled?: boolean | null
           is_rejected?: boolean | null
           is_resubmitted?: boolean | null
           order_personal_id?: string
@@ -141,8 +145,10 @@ export type Database = {
           user_id: string
         }
         Update: {
+          cancelled_at?: string | null
           created_at?: string
           id?: string
+          is_cancelled?: boolean | null
           is_rejected?: boolean | null
           is_resubmitted?: boolean | null
           order_personal_id?: string
@@ -168,10 +174,12 @@ export type Database = {
           created_at: string
           has_purchase_issue: boolean | null
           has_shipping_issue: boolean | null
+          height: number | null
           id: string
           invoice_id: string | null
           is_box: boolean | null
           item_name: string | null
+          length: number | null
           local_tracking_number: string | null
           notes: string | null
           product_url: string
@@ -183,15 +191,18 @@ export type Database = {
           updated_at: string
           user_id: string
           weight: number | null
+          width: number | null
         }
         Insert: {
           created_at?: string
           has_purchase_issue?: boolean | null
           has_shipping_issue?: boolean | null
+          height?: number | null
           id?: string
           invoice_id?: string | null
           is_box?: boolean | null
           item_name?: string | null
+          length?: number | null
           local_tracking_number?: string | null
           notes?: string | null
           product_url: string
@@ -203,15 +214,18 @@ export type Database = {
           updated_at?: string
           user_id: string
           weight?: number | null
+          width?: number | null
         }
         Update: {
           created_at?: string
           has_purchase_issue?: boolean | null
           has_shipping_issue?: boolean | null
+          height?: number | null
           id?: string
           invoice_id?: string | null
           is_box?: boolean | null
           item_name?: string | null
+          length?: number | null
           local_tracking_number?: string | null
           notes?: string | null
           product_url?: string
@@ -223,6 +237,7 @@ export type Database = {
           updated_at?: string
           user_id?: string
           weight?: number | null
+          width?: number | null
         }
         Relationships: []
       }
@@ -437,6 +452,8 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_cancel_order: { Args: { p_order_id: string }; Returns: boolean }
+      cancel_order: { Args: { p_order_id: string }; Returns: boolean }
       create_order_with_product_requests: {
         Args: { p_product_requests: Json; p_user_id: string }
         Returns: {
@@ -467,6 +484,7 @@ export type Database = {
         | "weighing"
         | "awaiting_shipping_payment"
         | "shipped"
+        | "cancelled"
       product_request_status:
         | "requested"
         | "quoted"
@@ -612,6 +630,7 @@ export const Constants = {
         "weighing",
         "awaiting_shipping_payment",
         "shipped",
+        "cancelled",
       ],
       product_request_status: [
         "requested",

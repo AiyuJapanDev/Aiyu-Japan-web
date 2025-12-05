@@ -28,6 +28,7 @@ import {
   AlertTriangle,
   AlertCircle,
   Filter,
+  X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -40,6 +41,16 @@ import {
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useApp } from "@/contexts/AppContext";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface ShippingQuoteItem {
   order_item_id?: string;
@@ -111,6 +122,8 @@ export const ShippingPage = () => {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [hideRejected, setHideRejected] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [cancelShipmentId, setCancelShipmentId] = useState<string | null>(null);
+  const [isCancellingShipment, setIsCancellingShipment] = useState(false);
   const { t } = useApp();
 
   // Separate quotes by status
@@ -396,6 +409,29 @@ export const ShippingPage = () => {
     }
   };
 
+  const handleCancelShipment = async () => {
+    if (!cancelShipmentId) return;
+
+    setIsCancellingShipment(true);
+    try {
+      const { error } = await supabase
+        .from("shipping_quotes")
+        .update({ status: "cancelled" })
+        .eq("id", cancelShipmentId);
+
+      if (error) throw error;
+
+      toast.success(t("shipmentCancelledSuccess"));
+      await fetchData();
+    } catch (error) {
+      console.error("Error cancelling shipment:", error);
+      toast.error(t("shipmentCancelError"));
+    } finally {
+      setIsCancellingShipment(false);
+      setCancelShipmentId(null);
+    }
+  };
+
   const toggleItem = (itemId: string) => {
     const newOpenItems = new Set(openItems);
     if (newOpenItems.has(itemId)) {
@@ -421,6 +457,22 @@ export const ShippingPage = () => {
           label: t("statusRejectedBadge"),
           status: "rejected" as StepStatus,
           icon: <AlertCircle className="h-4 w-4" />,
+        },
+      ];
+    }
+
+    // For cancelled shipments, show simplified flow
+    if (status === "cancelled") {
+      return [
+        {
+          label: t("requestSubmittedStatus"),
+          status: "completed" as StepStatus,
+          icon: <Package className="h-4 w-4" />,
+        },
+        {
+          label: t("statusCancelled"),
+          status: "rejected" as StepStatus,
+          icon: <X className="h-4 w-4" />,
         },
       ];
     }
@@ -544,12 +596,20 @@ export const ShippingPage = () => {
     filteredShipments = allShipments.filter(
       (s) => s.type === "processed_quote" && s.status === "rejected"
     );
+  } else if (statusFilter === "cancelled") {
+    filteredShipments = allShipments.filter(
+      (s) => s.type === "processed_quote" && s.status === "cancelled"
+    );
   }
 
-  // Hide rejected shipments if checkbox is checked
+  // Hide rejected and cancelled shipments if checkbox is checked
   if (hideRejected) {
     filteredShipments = filteredShipments.filter(
-      (s) => !(s.type === "processed_quote" && s.status === "rejected")
+      (s) =>
+        !(
+          s.type === "processed_quote" &&
+          (s.status === "rejected" || s.status === "cancelled")
+        )
     );
   }
 
@@ -594,12 +654,7 @@ export const ShippingPage = () => {
         <CollapsibleContent className="overflow-hidden data-[state=open]:animate-collapsible-down data-[state=closed]:animate-collapsible-up">
           <Card className="bg-muted/30 mb-4">
             <CardContent className="p-4">
-              <div
-                className="
-        flex flex-wrap items-center justify-between gap-3
-        md:justify-start
-      "
-              >
+              <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
                 {/* --- Left group: Status + Show per page --- */}
                 <div className="flex flex-wrap items-center gap-3">
                   {/* Status Filter */}
@@ -611,7 +666,7 @@ export const ShippingPage = () => {
                       value={statusFilter}
                       onValueChange={setStatusFilter}
                     >
-                      <SelectTrigger className="w-[190px]">
+                      <SelectTrigger className="w-[160px] sm:w-[190px]">
                         <SelectValue placeholder={t("selectStatus")} />
                       </SelectTrigger>
                       <SelectContent>
@@ -631,6 +686,9 @@ export const ShippingPage = () => {
                         <SelectItem value="rejected">
                           {t("statusRejectedBadge")}
                         </SelectItem>
+                        <SelectItem value="cancelled">
+                          {t("statusCancelled")}
+                        </SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -644,7 +702,7 @@ export const ShippingPage = () => {
                       value={itemsPerPage.toString()}
                       onValueChange={(val) => setItemsPerPage(Number(val))}
                     >
-                      <SelectTrigger className="w-[90px]">
+                      <SelectTrigger className="w-[70px] sm:w-[90px]">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -675,7 +733,7 @@ export const ShippingPage = () => {
                       htmlFor="hide-rejected"
                       className="text-sm font-medium cursor-pointer whitespace-nowrap"
                     >
-                      {t("hideRejected")}
+                      {t("hideRejectedCancelled")}
                     </label>
                   </div>
 
@@ -771,8 +829,10 @@ export const ShippingPage = () => {
                                 : quote.status === "paid"
                                   ? "bg-green-100 text-green-800 border-green-200"
                                   : quote.status === "rejected"
-                                    ? "bg-blue-100 text-blue-800 border-blue-200"
-                                    : "bg-purple-100 text-purple-800 border-purple-200"
+                                    ? "bg-red-100 text-red-800 border-red-200"
+                                    : quote.status === "cancelled"
+                                      ? "bg-gray-100 text-gray-800 border-gray-200"
+                                      : "bg-purple-100 text-purple-800 border-purple-200"
                           }
                         >
                           {quote.status === "pending" &&
@@ -786,6 +846,7 @@ export const ShippingPage = () => {
                             t("statusShippedBadge")}
                           {quote.status === "rejected" &&
                             t("statusRejectedBadge")}
+                          {quote.status === "cancelled" && t("statusCancelled")}
                         </Badge>
                       </div>
                       <CollapsibleTrigger asChild>
@@ -827,7 +888,7 @@ export const ShippingPage = () => {
                       {/* Quote URL if available */}
                       {quote.quote_url && quote.status === "quoted" && (
                         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                          <div className="flex items-center justify-between">
+                          <div className="flex items-center justify-between flex-wrap gap-2">
                             <div>
                               <p className="text-sm font-medium text-blue-900">
                                 {t("paymentLinkAvailable")}
@@ -836,17 +897,28 @@ export const ShippingPage = () => {
                                 {t("clickToPay")}
                               </p>
                             </div>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              className="border-blue-500 text-blue-700 hover:bg-blue-50"
-                              onClick={() =>
-                                window.open(quote.quote_url, "_blank")
-                              }
-                            >
-                              <CreditCard className="h-4 w-4 mr-1" />
-                              {t("payNow")}
-                            </Button>
+                            <div className="flex items-center gap-2">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="border-blue-500 text-blue-700 hover:bg-blue-50"
+                                onClick={() =>
+                                  window.open(quote.quote_url, "_blank")
+                                }
+                              >
+                                <CreditCard className="h-4 w-4 mr-1" />
+                                {t("payNow")}
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="border-red-500 text-red-700 hover:bg-red-50"
+                                onClick={() => setCancelShipmentId(quote.id)}
+                              >
+                                <X className="h-4 w-4 mr-1" />
+                                {t("cancelShipment")}
+                              </Button>
+                            </div>
                           </div>
                         </div>
                       )}
@@ -1237,8 +1309,10 @@ export const ShippingPage = () => {
                               : quote.status === "paid"
                                 ? "bg-green-100 text-green-800 border-green-200"
                                 : quote.status === "rejected"
-                                  ? "bg-blue-100 text-blue-800 border-blue-200"
-                                  : "bg-purple-100 text-purple-800 border-purple-200"
+                                  ? "bg-red-100 text-red-800 border-red-200"
+                                  : quote.status === "cancelled"
+                                    ? "bg-gray-100 text-gray-800 border-gray-200"
+                                    : "bg-purple-100 text-purple-800 border-purple-200"
                           }
                         >
                           {quote.status === "quoted" &&
@@ -1250,6 +1324,7 @@ export const ShippingPage = () => {
                             t("statusShippedBadge")}
                           {quote.status === "rejected" &&
                             t("statusRejectedBadge")}
+                          {quote.status === "cancelled" && t("statusCancelled")}
                         </Badge>
                       </div>
                       <CollapsibleTrigger asChild>
@@ -1291,7 +1366,7 @@ export const ShippingPage = () => {
                       {/* Quote URL if available */}
                       {quote.quote_url && quote.status === "quoted" && (
                         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                          <div className="flex items-center justify-between">
+                          <div className="flex items-center justify-between flex-wrap gap-2">
                             <div>
                               <p className="text-sm font-medium text-blue-900">
                                 {t("paymentLinkAvailable")}
@@ -1300,17 +1375,28 @@ export const ShippingPage = () => {
                                 {t("clickToPay")}
                               </p>
                             </div>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              className="border-blue-500 text-blue-700 hover:bg-blue-50"
-                              onClick={() =>
-                                window.open(quote.quote_url, "_blank")
-                              }
-                            >
-                              <CreditCard className="h-4 w-4 mr-1" />
-                              {t("payNow")}
-                            </Button>
+                            <div className="flex items-center gap-2">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="border-blue-500 text-blue-700 hover:bg-blue-50"
+                                onClick={() =>
+                                  window.open(quote.quote_url, "_blank")
+                                }
+                              >
+                                <CreditCard className="h-4 w-4 mr-1" />
+                                {t("payNow")}
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="border-red-500 text-red-700 hover:bg-red-50"
+                                onClick={() => setCancelShipmentId(quote.id)}
+                              >
+                                <X className="h-4 w-4 mr-1" />
+                                {t("cancelShipment")}
+                              </Button>
+                            </div>
                           </div>
                         </div>
                       )}
@@ -1456,7 +1542,7 @@ export const ShippingPage = () => {
                                     key={index}
                                     className={`flex items-start justify-between py-2 border-b last:border-0 ${
                                       hasIssue
-                                        ? "bg-blue-50 -mx-2 px-2 rounded"
+                                        ? "bg-red-50 -mx-2 px-2 rounded"
                                         : ""
                                     }`}
                                   >
@@ -1507,7 +1593,7 @@ export const ShippingPage = () => {
                                   key={index}
                                   className={`flex items-start justify-between py-2 border-b last:border-0 ${
                                     hasIssue
-                                      ? "bg-blue-50 -mx-2 px-2 rounded"
+                                      ? "bg-red-50 -mx-2 px-2 rounded"
                                       : ""
                                   }`}
                                 >
@@ -1755,6 +1841,36 @@ export const ShippingPage = () => {
           </CardContent>
         </Card>
       )}
+
+      {/* Cancel Shipment Confirmation Dialog */}
+      <AlertDialog
+        open={!!cancelShipmentId}
+        onOpenChange={(open) => !open && setCancelShipmentId(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t("confirmCancelShipment")}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t("cancelShipmentWarning")}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isCancellingShipment}>
+              {t("keepShipment")}
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => {
+                e.preventDefault();
+                handleCancelShipment();
+              }}
+              disabled={isCancellingShipment}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              {isCancellingShipment ? t("cancelling") : t("cancelShipment")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

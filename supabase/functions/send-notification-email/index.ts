@@ -10,8 +10,8 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type"
 };
 // Cambia esta URL por la del logo oficial de tu marca
-const logoUrl = "https://alpha.aiyujapan.com/aiyu_logo_small.png";
-const appUrl = "https://alpha.aiyujapan.com";
+const logoUrl = "https://aiyujapan.com/aiyu_logo_small.png";
+const appUrl = "https://aiyujapan.com";
 serve(async (req)=>{
   if (req.method === "OPTIONS") return new Response(null, {
     headers: corsHeaders

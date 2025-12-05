@@ -467,11 +467,22 @@ export const translations = {
 
     // Orders Page
     currentOrders: "Current Orders",
+    cancelOrder: "Cancel Order",
+    confirmCancelOrder: "Cancel Order?",
+    cancelOrderWarning:
+      "Are you sure you want to cancel this order? This action cannot be undone and you will need to submit a new request.",
+    keepOrder: "Keep Order",
+    confirmCancel: "Yes, Cancel Order",
+    cancelling: "Cancelling...",
+    orderCancelledSuccess: "Order cancelled successfully",
+    orderCancelError: "Failed to cancel order",
     filterOrders: "Filter Orders",
     statusFilter: "Status:",
     showPerPage: "Show:",
     perPage: "per page",
     hideRejected: "Hide rejected",
+    hideRejectedCancelled: "Hide rejected/cancelled",
+    showCancelled: "Show cancelled",
     update: "Update",
     refreshing: "Refreshing...",
     showingOrders: "Showing",
@@ -488,6 +499,7 @@ export const translations = {
     statusInTransit: "In Transit",
     statusAllAtWarehouse: "All at Warehouse",
     statusRejected: "Rejected",
+    statusCancelled: "Cancelled",
     shippingQuoteSent: "Shipping Quote Sent",
     shippingPaid: "Shipping Paid",
     statusShipped: "Shipped",
@@ -672,6 +684,17 @@ export const translations = {
     japaneseAddressuserCodeNote: "*This is your Aiyu Japan personal code",
     japaneseAddresstoggleJapanese: "Japanese",
     japaneseAddresstoggleRomaji: "Romaji",
+    japaneseAddresslabelsname: "Name",
+    japaneseAddresslabelsprefectureCity: "Prefecture, City",
+    japaneseAddresslabelsstreet: "Street",
+    japaneseAddresslabelsbuilding: "Building",
+    japaneseAddresslabelspostalCode: "Postal Code",
+    japaneseAddresslabelsphone: "Phone number",
+
+    japaneseAddressexplanation:
+      "This is your Japanese address! Every item received at our warehouse is charged 500 yen (~$3 USD), with up to 30 days of free storage.",
+
+    japaneseAddresswarningsTitle: "⚠️ Warnings:",
     japaneseAddresswarnings0:
       "Please make sure to copy everything correctly — we are not responsible for packages that are incorrectly addressed or delivered.",
     japaneseAddresswarnings1:
@@ -719,6 +742,7 @@ export const translations = {
     all_received: "All items in this order have arrived at our warehouse.",
     partial_received: "Some items have arrived. Others are still in transit.",
     rejected: "This order was rejected. Please review the reason.",
+    cancelled: "This order was cancelled.",
 
     // Shipping Quote Dialog
     requestShippingQuoteTitle: "Request Shipping Quote",
@@ -780,6 +804,15 @@ export const translations = {
     clickToProcessShipping: "Click here to process shipping request",
     allNotificationsRead: "All notifications marked as read",
     markAsReadError: "Failed to mark notification as read",
+    // Cancel Shipment
+    cancelShipment: "Cancel Shipment",
+    confirmCancelShipment: "Cancel Shipment Request",
+    cancelShipmentWarning:
+      "Are you sure you want to cancel this shipment request? This action cannot be undone.",
+    keepShipment: "Keep Shipment",
+    shipmentCancelledSuccess:
+      "Shipment request has been cancelled successfully.",
+    shipmentCancelError: "Failed to cancel shipment. Please try again.",
 
     //Auth Page
 
@@ -1091,18 +1124,6 @@ export const translations = {
     backToNews: "Volver a Noticias",
     noContent: "No hay contenido disponible",
     minRead: "mins. de lectura",
-
-    address: "Dirección:",
-    addressNotes: "Notas:",
-    cityState: "Ciudad / Estado:",
-    postalCode: "Código Postal:",
-    country: "País:",
-    addressName: "Nombre:",
-    addressPhone: "Teléfono:",
-    processing: "Procesando",
-    inTransit: "En Tránsito",
-    shippingDataLoadError: "Error al cargar datos de envío",
-    selectStatus: "Seleccionar estado",
 
     // Navigation
     newUser: "¿Eres Nuevo Usuario?",
@@ -1586,11 +1607,24 @@ export const translations = {
 
     // Orders Page
     currentOrders: "Pedidos Actuales",
+
+    cancelOrder: "Cancelar Pedido",
+    confirmCancelOrder: "Cancelar Pedido?",
+    cancelOrderWarning:
+      "¿Estás seguro de que quieres cancelar este pedido? Esta acción no puede ser deshecha y tendrás que enviar una nueva solicitud.",
+    keepOrder: "Mantener Pedido",
+    confirmCancel: "Sí, Cancelar Pedido",
+    cancelling: "Cancelando...",
+    orderCancelledSuccess: "Pedido cancelado con éxito",
+    orderCancelError: "Error al cancelar pedido",
+
     filterOrders: "Filtrar Pedidos",
     statusFilter: "Estado:",
     showPerPage: "Mostrar:",
     perPage: "por página",
     hideRejected: "Ocultar rechazados",
+    hideRejectedCancelled: "Ocultar rechazados/cancelados",
+    showCancelled: "Mostrar cancelados",
     update: "Actualizar",
     refreshing: "Actualizando...",
     showingOrders: "Mostrando",
@@ -1607,6 +1641,7 @@ export const translations = {
     statusInTransit: "En Tránsito",
     statusAllAtWarehouse: "Todos en Almacén",
     statusRejected: "Rechazado",
+    statusCancelled: "Cancelado",
     shippingQuoteSent: "Cotización de envío enviada",
     shippingPaid: "Envío pagado",
     statusShipped: "Enviado",
@@ -1740,6 +1775,17 @@ export const translations = {
     items: "Artículos:",
     unnamedProduct: "Producto sin nombre",
     issuePrefix: "Problema:",
+    addressName: "Nombre:",
+    addressPhone: "Teléfono:",
+    address: "Dirección:",
+    addressNotes: "Notas:",
+    cityState: "Ciudad / Estado:",
+    postalCode: "Código postal:",
+    country: "País:",
+    shippingDataLoadError: "Error al cargar datos de envío",
+    selectStatus: "Selecciona un filtro de estado",
+    processing: "Procesando",
+    inTransit: "En tránsito",
     delivered: "Entregado",
     trackPackageButton: "Rastrear paquete",
     requestedOn: "Solicitado el",
@@ -1782,6 +1828,18 @@ export const translations = {
     japaneseAddressuserCodeNote: "*Este es tu código personal de Aiyu Japan",
     japaneseAddresstoggleJapanese: "Japonés",
     japaneseAddresstoggleRomaji: "Rōmaji",
+
+    japaneseAddresslabelsname: "Nombre",
+    japaneseAddresslabelsprefectureCity: "Prefectura, Ciudad",
+    japaneseAddresslabelsstreet: "Calle",
+    japaneseAddresslabelsbuilding: "Edificio",
+    japaneseAddresslabelspostalCode: "Código postal",
+    japaneseAddresslabelsphone: "Número de teléfono",
+
+    japaneseAddressexplanation:
+      "¡Esta es tu dirección japonesa! Cada ítem recibido tiene un cargo de 500 yenes (~$3 USD) e incluye hasta 30 días de almacenamiento gratuito.",
+
+    japaneseAddresswarningsTitle: "⚠️ Advertencias:",
 
     japaneseAddresswarnings0:
       "Por favor, asegúrate de copiar toda la dirección correctamente. No nos hacemos responsables por paquetes mal dirigidos o entregados de forma incorrecta.",
@@ -1852,6 +1910,7 @@ export const translations = {
     partial_received:
       "Algunos artículos han llegado. Otros aún están en tránsito.",
     rejected: "Este pedido fue rechazado. Por favor, revisa el motivo.",
+    cancelled: "Este pedido fue cancelado.",
 
     // Shipping Quote Dialog
     requestShippingQuoteTitle: "Solicitar Cotización de Envío",
@@ -1914,6 +1973,17 @@ export const translations = {
     clickToProcessShipping: "Haz clic aquí para procesar la solicitud de envío",
     allNotificationsRead: "Todas las notificaciones marcadas como leídas",
     markAsReadError: "Error al marcar notificación como leída",
+
+    // Cancel Shipment
+    cancelShipment: "Cancelar Envío",
+    confirmCancelShipment: "Cancelar Solicitud de Envío",
+    cancelShipmentWarning:
+      "¿Estás seguro de que deseas cancelar esta solicitud de envío? Esta acción no se puede deshacer.",
+    keepShipment: "Mantener Envío",
+    shipmentCancelledSuccess:
+      "La solicitud de envío ha sido cancelada exitosamente.",
+    shipmentCancelError:
+      "Error al cancelar el envío. Por favor intenta de nuevo.",
 
     //Auth Page
     signIn: "Iniciar Sesión",

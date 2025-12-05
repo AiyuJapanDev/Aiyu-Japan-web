@@ -27,6 +27,16 @@ import {
   TooltipProvider,
 } from "@/components/ui/tooltip";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
   ChevronDown,
   ChevronUp,
   Package,
@@ -56,6 +66,8 @@ interface OrderWithDetails {
   updated_at: string;
   order_personal_id?: string;
   is_rejected?: boolean;
+  is_cancelled?: boolean;
+  cancelled_at?: string;
   rejection_reason?: string;
   rejection_details?: {
     rejection_reason: string;
@@ -100,7 +112,10 @@ export const OrdersPage = () => {
   const [itemsPerPage, setItemsPerPage] = useState(5);
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [hideRejected, setHideRejected] = useState(false);
+  const [showCancelled, setShowCancelled] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [cancelOrderId, setCancelOrderId] = useState<string | null>(null);
+  const [isCancelling, setIsCancelling] = useState(false);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { t } = useApp();
@@ -111,7 +126,7 @@ export const OrdersPage = () => {
   // Reset to page 1 when filter or items per page changes
   useEffect(() => {
     setCurrentPage(1);
-  }, [statusFilter, itemsPerPage, hideRejected]);
+  }, [statusFilter, itemsPerPage, hideRejected, showCancelled]);
 
   // Scroll to top when page changes
   useEffect(() => {
@@ -207,6 +222,7 @@ export const OrdersPage = () => {
   };
 
   const getOrderStatus = (order: OrderWithDetails): string => {
+    if (order.is_cancelled) return "cancelled";
     if (order.is_rejected) return "rejected";
 
     const productStatuses =
@@ -304,6 +320,21 @@ export const OrdersPage = () => {
       ];
     }
 
+    if (status === "cancelled") {
+      return [
+        {
+          label: t("statusStepRequestSubmitted"),
+          status: "completed" as StepStatus,
+          icon: <Clock className="h-4 w-4" />,
+        },
+        {
+          label: t("statusCancelled"),
+          status: "rejected" as StepStatus,
+          icon: <XCircle className="h-4 w-4" />,
+        },
+      ];
+    }
+
     return steps.map((step, index) => {
       // Step 0: Request Submitted is always completed
       if (index === 0) return { ...step, status: "completed" as StepStatus };
@@ -366,7 +397,7 @@ export const OrdersPage = () => {
 
   const getStatusColor = (status: string): string => {
     const colors: Record<string, string> = {
-      requested: "bg-capybara-yellow text-blue-500",
+      requested: "bg-capybara-yellow text-red-500",
       quoted: "bg-yellow-100 text-yellow-800",
       paid: "bg-green-100 text-green-800",
       some_purchased: "bg-purple-100 text-purple-800",
@@ -374,7 +405,8 @@ export const OrdersPage = () => {
       in_transit: "bg-blue-100 text-blue-800",
       all_received: "bg-indigo-100 text-indigo-800",
       purchased: "bg-purple-100 text-purple-800",
-      rejected: "bg-blue-100 text-blue-800",
+      rejected: "bg-red-100 text-red-800",
+      cancelled: "bg-gray-100 text-gray-800",
     };
     return colors[status] || "bg-gray-100 text-gray-800";
   };
@@ -387,6 +419,7 @@ export const OrdersPage = () => {
       all_received: t("all_received"),
       partial_received: t("partial_received"),
       rejected: t("rejected"),
+      cancelled: t("cancelled"),
     };
 
     return tooltips[status] || "Status information unavailable.";
@@ -405,6 +438,7 @@ export const OrdersPage = () => {
       received: <Home className="h-4 w-4" />,
       shipped: <Truck className="h-4 w-4" />,
       rejected: <XCircle className="h-4 w-4" />,
+      cancelled: <XCircle className="h-4 w-4" />,
     };
     return icons[status] || <Package className="h-4 w-4" />;
   };
@@ -451,7 +485,11 @@ export const OrdersPage = () => {
         icon = <Truck className="h-3 w-3 mr-1" />;
         break;
       case "rejected":
-        badgeClasses = "bg-blue-100 text-blue-800 border-blue-300";
+        badgeClasses = "bg-red-100 text-red-800 border-red-300";
+        icon = <XCircle className="h-3 w-3 mr-1" />;
+        break;
+      case "cancelled":
+        badgeClasses = "bg-gray-100 text-gray-800 border-gray-300";
         icon = <XCircle className="h-3 w-3 mr-1" />;
         break;
       default:
@@ -497,6 +535,25 @@ export const OrdersPage = () => {
     }
   };
 
+  const handleCancelOrder = async (orderId: string) => {
+    setIsCancelling(true);
+    try {
+      const { error } = await supabase.rpc("cancel_order", {
+        p_order_id: orderId,
+      });
+      if (error) throw error;
+
+      toast.success(t("orderCancelledSuccess"));
+      await fetchOrders();
+    } catch (error) {
+      console.error("Error cancelling order:", error);
+      toast.error(t("orderCancelError"));
+    } finally {
+      setIsCancelling(false);
+      setCancelOrderId(null);
+    }
+  };
+
   if (loading) {
     return <div className="flex justify-center p-8">{t("loadingOrders")}</div>;
   }
@@ -510,6 +567,11 @@ export const OrdersPage = () => {
   // Hide rejected orders if checkbox is checked
   if (hideRejected) {
     filteredOrders = filteredOrders.filter((order) => !order.is_rejected);
+  }
+
+  // Filter out cancelled orders unless showCancelled is true
+  if (!showCancelled) {
+    filteredOrders = filteredOrders.filter((order) => !order.is_cancelled);
   }
 
   // Calculate pagination
@@ -607,6 +669,9 @@ export const OrdersPage = () => {
                           <SelectItem value="rejected">
                             {t("statusRejected")}
                           </SelectItem>
+                          <SelectItem value="cancelled">
+                            {t("statusCancelled")}
+                          </SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -655,6 +720,23 @@ export const OrdersPage = () => {
                       </label>
                     </div>
 
+                    {/* Show Cancelled */}
+                    <div className="flex items-center gap-2">
+                      <Checkbox
+                        id="show-cancelled"
+                        checked={showCancelled}
+                        onCheckedChange={(checked) =>
+                          setShowCancelled(checked === true)
+                        }
+                      />
+                      <label
+                        htmlFor="show-cancelled"
+                        className="text-sm font-medium cursor-pointer whitespace-nowrap"
+                      >
+                        {t("showCancelled")}
+                      </label>
+                    </div>
+
                     {/* Refresh Button */}
                     <Button
                       variant="outline"
@@ -699,6 +781,7 @@ export const OrdersPage = () => {
             in_transit: t("statusInTransit"),
             all_received: t("statusAllAtWarehouse"),
             rejected: t("statusRejected"),
+            cancelled: t("statusCancelled"),
           };
 
           // fallback if the status isn't mapped
@@ -781,15 +864,15 @@ export const OrdersPage = () => {
                         </p>
                       </div>
                     )}
-                    {order.is_rejected && (
-                      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    {order.is_rejected && !order.is_cancelled && (
+                      <div className="bg-red-50 border border-red-200 rounded-lg p-4">
                         <div className="flex items-start gap-2">
-                          <AlertTriangle className="h-5 w-5 text-blue-600 mt-0.5" />
+                          <AlertTriangle className="h-5 w-5 text-red-600 mt-0.5" />
                           <div className="flex-1">
-                            <p className="font-medium text-blue-900">
+                            <p className="font-medium text-red-900">
                               {t("orderRejected")}
                             </p>
-                            <p className="text-sm text-blue-700 mt-1">
+                            <p className="text-sm text-red-700 mt-1">
                               {order.rejection_details?.rejection_reason ||
                                 order.rejection_reason}
                             </p>
@@ -926,7 +1009,9 @@ export const OrdersPage = () => {
                               {!order.is_rejected && (
                                 <div className="flex-shrink-0 ml-3 self-start">
                                   {getProductStatusBadge(
-                                    item.product_request.status
+                                    order.is_cancelled
+                                      ? "cancelled"
+                                      : item.product_request.status
                                   )}
                                 </div>
                               )}
@@ -934,77 +1019,95 @@ export const OrdersPage = () => {
                           ))}
                     </div>
 
-                    {(status === "all_received" ||
-                      (status === "in_transit" &&
-                        order.order_items?.some(
-                          (item) => item.product_request.status === "received"
-                        ))) && (
-                      <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-4">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <Home className="h-5 w-5 text-indigo-600" />
-                            <div>
-                              <p className="font-medium text-indigo-900">
-                                {status === "all_received"
-                                  ? "All items at warehouse"
-                                  : "Items on the way to warehouse"}
-                              </p>
-                              <p className="text-sm text-indigo-700">
-                                {status === "all_received"
-                                  ? "View and manage your items in storage"
-                                  : order.order_items?.some(
-                                        (item) =>
-                                          item.product_request.status ===
-                                          "received"
-                                      )
-                                    ? "Some items may already be available in storage"
-                                    : "Items will be available in storage once received"}
-                              </p>
+                    {!order.is_cancelled &&
+                      (status === "all_received" ||
+                        (status === "in_transit" &&
+                          order.order_items?.some(
+                            (item) => item.product_request.status === "received"
+                          ))) && (
+                        <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-4">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <Home className="h-5 w-5 text-indigo-600" />
+                              <div>
+                                <p className="font-medium text-indigo-900">
+                                  {status === "all_received"
+                                    ? "All items at warehouse"
+                                    : "Items on the way to warehouse"}
+                                </p>
+                                <p className="text-sm text-indigo-700">
+                                  {status === "all_received"
+                                    ? "View and manage your items in storage"
+                                    : order.order_items?.some(
+                                          (item) =>
+                                            item.product_request.status ===
+                                            "received"
+                                        )
+                                      ? "Some items may already be available in storage"
+                                      : "Items will be available in storage once received"}
+                                </p>
+                              </div>
                             </div>
-                          </div>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={handleGoToStorage}
-                            className="border-indigo-300 text-indigo-700 hover:bg-indigo-100"
-                          >
-                            {t("goToStorage")}
-                          </Button>
-                        </div>
-                      </div>
-                    )}
-
-                    {productQuote && productQuote.status !== "paid" && (
-                      <div className="bg-primary/5 rounded-lg p-4">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <p className="font-medium mb-2">
-                              {t("quoteIssued")}
-                            </p>
-
-                            <div className="flex items-start text-xs text-muted-foreground max-w-s text-left pt-1">
-                              <AlertTriangle className="h-3 w-3 mr-2 text-yellow-500 flex-shrink-0 mt-0.5" />
-                              <p className="text-xs text-muted-foreground">
-                                {t("paymentConfirmationNotice1")}
-                                <br />
-                                {t("paymentConfirmationNotice2")}
-                              </p>
-                            </div>
-                          </div>
-
-                          <div className="flex items-end gap-2">
                             <Button
-                              onClick={() =>
-                                handlePayment(productQuote.quote_url)
-                              }
-                              className="bg-primary hover:bg-primary/90"
+                              variant="outline"
+                              size="sm"
+                              onClick={handleGoToStorage}
+                              className="border-indigo-300 text-indigo-700 hover:bg-indigo-100"
                             >
-                              {t("payNow")}
+                              {t("goToStorage")}
                             </Button>
                           </div>
                         </div>
-                      </div>
-                    )}
+                      )}
+
+                    {productQuote &&
+                      productQuote.status !== "paid" &&
+                      !order.is_cancelled && (
+                        <div className="bg-primary/5 rounded-lg p-4">
+                          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                            <div className="flex-1">
+                              <p className="font-medium mb-2">
+                                {t("quoteIssued")}
+                              </p>
+
+                              <div className="flex items-start text-xs text-muted-foreground text-left pt-1">
+                                <AlertTriangle className="h-3 w-3 mr-2 text-yellow-500 flex-shrink-0 mt-0.5" />
+                                <p className="text-xs text-muted-foreground">
+                                  {t("paymentConfirmationNotice1")}
+                                  <br />
+                                  {t("paymentConfirmationNotice2")}
+                                </p>
+                              </div>
+                            </div>
+
+                            <div className="flex flex-wrap items-center gap-2 sm:flex-nowrap">
+                              <Button
+                                variant="outline"
+                                onClick={() => setCancelOrderId(order.id)}
+                                className="text-destructive border-destructive hover:bg-destructive/10 w-full sm:w-auto"
+                              >
+                                {t("cancelOrder")}
+                              </Button>
+                              <Button
+                                variant="outline"
+                                onClick={() => handleEditOrder(order.id)}
+                                className="w-full sm:w-auto"
+                              >
+                                <Edit className="h-4 w-4 mr-2" />
+                                {t("editOrder")}
+                              </Button>
+                              <Button
+                                onClick={() =>
+                                  handlePayment(productQuote.quote_url)
+                                }
+                                className="bg-primary hover:bg-primary/90 w-full sm:w-auto"
+                              >
+                                {t("payNow")}
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      )}
                   </CardContent>
                 </CollapsibleContent>
               </Card>
@@ -1060,6 +1163,35 @@ export const OrdersPage = () => {
             </CardContent>
           </Card>
         )}
+
+        {/* Cancel Order Confirmation Dialog */}
+        <AlertDialog
+          open={!!cancelOrderId}
+          onOpenChange={(open) => !open && setCancelOrderId(null)}
+        >
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>{t("confirmCancelOrder")}</AlertDialogTitle>
+              <AlertDialogDescription>
+                {t("cancelOrderWarning")}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel disabled={isCancelling}>
+                {t("keepOrder")}
+              </AlertDialogCancel>
+              <AlertDialogAction
+                onClick={() =>
+                  cancelOrderId && handleCancelOrder(cancelOrderId)
+                }
+                disabled={isCancelling}
+                className="bg-destructive hover:bg-destructive/90"
+              >
+                {isCancelling ? t("cancelling") : t("confirmCancel")}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </TooltipProvider>
   );

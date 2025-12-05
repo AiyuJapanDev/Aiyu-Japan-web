@@ -77,10 +77,6 @@ export default function Blog({ loaderData }: Route.ComponentProps) {
         <h3 className="text-lg font-bold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors line-clamp-2 leading-tight">
           {news.title}
         </h3>
-
-        <p className="text-gray-600 text-sm line-clamp-3 flex-grow leading-relaxed">
-          {news.content}
-        </p>
       </div>
     </Link>
   );

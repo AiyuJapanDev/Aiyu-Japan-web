@@ -1,15 +1,31 @@
 import { useState } from "react";
 import { Plus, X } from "lucide-react";
-import { Link, useLocation } from "react-router";
+import { Link } from "react-router";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { notifyAllAdmins } from "@/lib/notificationUtils";
 import { useApp } from "@/contexts/AppContext";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface ProductItem {
   url: string;
@@ -20,8 +36,11 @@ interface ProductItem {
 
 export function ProductRequestForm() {
   const { t } = useApp();
-  const [items, setItems] = useState<ProductItem[]>([{ url: "", name: "", quantity: 1, notes: "" }]);
+  const [items, setItems] = useState<ProductItem[]>([
+    { url: "", name: "", quantity: 1, notes: "" },
+  ]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const { toast } = useToast();
 
   const addItem = () => {
@@ -32,7 +51,11 @@ export function ProductRequestForm() {
     setItems(items.filter((_, i) => i !== index));
   };
 
-  const updateItem = (index: number, field: keyof ProductItem, value: string | number) => {
+  const updateItem = (
+    index: number,
+    field: keyof ProductItem,
+    value: string | number
+  ) => {
     const newItems = [...items];
     if (field === "quantity") {
       newItems[index][field] = Number(value) || 1;
@@ -42,8 +65,25 @@ export function ProductRequestForm() {
     setItems(newItems);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Validate before showing dialog
+    const validItems = items.filter((item) => item.url.trim());
+    if (validItems.length === 0) {
+      toast({
+        title: "Error",
+        description: t("atLeastOneProduct"),
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setShowConfirmDialog(true);
+  };
+
+  const handleConfirmSubmit = async () => {
+    setShowConfirmDialog(false);
     setIsSubmitting(true);
 
     try {
@@ -53,25 +93,20 @@ export function ProductRequestForm() {
       if (!user) throw new Error("Not authenticated");
 
       const validItems = items.filter((item) => item.url.trim());
-      if (validItems.length === 0) {
-        toast({
-          title: "Error",
-          description: t("atLeastOneProduct"),
-          variant: "destructive",
-        });
-        return;
-      }
 
       // Create order with product requests
-      const { data, error } = await supabase.rpc("create_order_with_product_requests", {
-        p_user_id: user.id,
-        p_product_requests: validItems.map((item) => ({
-          product_url: item.url.trim(),
-          item_name: item.name.trim() || null,
-          quantity: item.quantity,
-          notes: item.notes.trim() || null,
-        })),
-      });
+      const { data, error } = await supabase.rpc(
+        "create_order_with_product_requests",
+        {
+          p_user_id: user.id,
+          p_product_requests: validItems.map((item) => ({
+            product_url: item.url.trim(),
+            item_name: item.name.trim() || null,
+            quantity: item.quantity,
+            notes: item.notes.trim() || null,
+          })),
+        }
+      );
 
       if (error) throw error;
 
@@ -83,13 +118,17 @@ export function ProductRequestForm() {
           .select("order_personal_id")
           .eq("id", data[0].order_id)
           .single();
-        orderPersonalId = orderData?.order_personal_id || data[0].order_id.slice(0, 8);
+        orderPersonalId =
+          orderData?.order_personal_id || data[0].order_id.slice(0, 8);
       }
 
       // Create short readable ID
       let shortOrderId = orderPersonalId;
       if (data?.[0]?.order_id) {
-        shortOrderId = typeof data[0].order_id === "string" ? data[0].order_id.slice(0, 8).toUpperCase() : "";
+        shortOrderId =
+          typeof data[0].order_id === "string"
+            ? data[0].order_id.slice(0, 8).toUpperCase()
+            : "";
       }
 
       // 🟢 Fetch the user's profile (for name & personal ID)
@@ -100,14 +139,16 @@ export function ProductRequestForm() {
         .single();
 
       const customerName = profile?.full_name || "Unknown User";
-      const customerId = profile?.user_personal_id ? `#${profile.user_personal_id}` : "";
+      const customerId = profile?.user_personal_id
+        ? `#${profile.user_personal_id}`
+        : "";
 
       // 📨 Notify all admins with detailed message
       if (data?.[0]) {
         await notifyAllAdmins(
           "new_product_request",
           `New product request from ${customerName} ${customerId}. Order #${shortOrderId} with ${validItems.length} item${validItems.length > 1 ? "s" : ""}.`,
-          data[0].order_id,
+          data[0].order_id
         );
       }
 
@@ -153,7 +194,7 @@ export function ProductRequestForm() {
           <CardDescription>{t("productRequestSubtitle")}</CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleFormSubmit} className="space-y-4">
             {items.map((item, index) => (
               <div key={index} className="space-y-2 p-4 border rounded-lg">
                 <div className="flex justify-between items-center mb-2">
@@ -161,7 +202,12 @@ export function ProductRequestForm() {
                     {t("products")} {index + 1}
                   </Label>
                   {items.length > 1 && (
-                    <Button type="button" variant="ghost" size="sm" onClick={() => removeItem(index)}>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => removeItem(index)}
+                    >
                       <X className="h-4 w-4" />
                     </Button>
                   )}
@@ -178,7 +224,9 @@ export function ProductRequestForm() {
                     type="number"
                     placeholder={t("quantity")}
                     value={item.quantity}
-                    onChange={(e) => updateItem(index, "quantity", e.target.value)}
+                    onChange={(e) =>
+                      updateItem(index, "quantity", e.target.value)
+                    }
                     min="1"
                     required
                   />
@@ -199,7 +247,12 @@ export function ProductRequestForm() {
               </div>
             ))}
 
-            <Button type="button" variant="outline" onClick={addItem} className="w-full">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={addItem}
+              className="w-full"
+            >
               <Plus className="h-4 w-4 mr-2" />
               {t("addProduct")}
             </Button>
@@ -210,6 +263,24 @@ export function ProductRequestForm() {
           </form>
         </CardContent>
       </Card>
+
+      <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirm Submission</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to submit this product request? You will
+              receive a quote once we process your order.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmSubmit}>
+              Submit Request
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
