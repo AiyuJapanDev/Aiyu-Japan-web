@@ -10,7 +10,7 @@ import { Menu } from 'lucide-react';
 import { UserRole, UserProfile, UserWithRole } from '@/types/user';
 import { RequestItem } from '@/types/dashboard';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useSearchParams, useNavigate } from 'react-router';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import AdminSidebar from '@/components/admin/AdminSidebar';
 import UserManagement from '@/components/admin/UserManagement';
 import { ProductRequestsManagement } from '@/components/admin/ProductRequestsManagement';
@@ -18,7 +18,6 @@ import { ProductRequestsManagement } from '@/components/admin/ProductRequestsMan
 import { StorageManagement } from '@/components/admin/StorageManagement';
 import { ShippingRequestsManagement } from '@/components/admin/ShippingRequestsManagement';
 import { NotificationsView } from '@/components/user/NotificationsView';
-import Analytics from '@/components/admin/Analytics';
 import Settings from '@/components/admin/Settings';
 
 const fetchUsers = async () => {
@@ -70,7 +69,7 @@ const AdminDashboard = () => {
   // Set active tab from URL query parameter
   useEffect(() => {
     const tabParam = searchParams.get('tab');
-    if (tabParam && ['requests', 'storage', 'shipping-requests', 'users', 'notifications', 'analytics', 'settings', 'orders'].includes(tabParam)) {
+    if (tabParam && ['requests', 'storage', 'shipping-requests', 'users', 'notifications', 'settings', 'orders'].includes(tabParam)) {
       setActiveTab(tabParam);
     }
   }, [searchParams]);
@@ -146,9 +145,6 @@ const AdminDashboard = () => {
         return <ShippingRequestsManagement shipmentId={shipmentId} />;
       case 'notifications':
         return <NotificationsView />;
-      
-      case 'analytics':
-        return <Analytics />;
       case 'settings':
         return <Settings />;
       default:
