@@ -411,6 +411,27 @@ export const translations = {
     customerReviews: "Customer Reviews",
     instagramFeed: "Instagram Feed",
 
+    // Reviews Section
+    reviewsTitle: "See what people say about Aiyu Japan",
+    review1Title: "One of the best proxies, if not the best",
+    review1Content:
+      "Transparency and service are excellent, timely updates, and they also provide alternative options if the product is not available, they have various options. My favorite proxy to date!!",
+    review1Author: "Zai",
+    review1Date: "November 2",
+
+    review2Title: "Excellent service and attention",
+    review2Content:
+      "Excellent service and attention. I ordered a Dyson Airwrap, there were issues with the seller of the link I shared, and they provided me with alternatives at the same price as the original product. Once it arrived at Aiyu, with the EMS service, it reached the US in 4 business days. Super agile, quick responses, great clarity, and professionalism. Highly recommended!",
+    review2Author: "Gabriel",
+    review2Date: "August 4",
+
+    review3Title: "Reliable and accessible",
+    review3Content:
+      "They always answer any questions you may have on time. I consider them quite transparent and honest as intermediaries. When I picked up the package, everything arrived in good condition.",
+    review3Author: "Ceci",
+    review3Date: "July 11",
+    viewMoreReviews: "View more reviews",
+
     // FAQ
     faqTitle: "Frequently Asked Questions",
     faq1Question: "Service fee per item",
@@ -1140,6 +1161,28 @@ export const translations = {
     information: "Información",
     headerParagraph:
       "¡Compra en cualquier tienda <span class='text-blue-600'>japonesa</span>!",
+
+    // Reviews Section
+    reviewsTitle: "Mira lo que la gente dice sobre Aiyu Japan",
+    review1Title: "Uno de los mejores proxys si no el mejor",
+    review1Content:
+      "La transparencia y el servicio son excelentes, actualizaciones puntuales y además te dan opciones alternas en caso de no contar con la disponibilidad del producto, cuentan con opciones varias. Mi proxy favorito hasta la fecha!!",
+    review1Author: "Zai",
+    review1Date: "2 noviembre",
+
+    review2Title: "Excelente servicio y atención",
+    review2Content:
+      "Excelente servicio y atención. Pedí una Dyson Airwrap, hubo inconvenientes con el vendedor del link que les compartí y me proporcionaron alternativas del mismo precio del producto original. Una vez llegó a Aiyu, con el servicio de EMS me llegó a EEUU en 4 días hábiles. Super ágil, rápidas respuestas, mucha claridad y profesionalismo. Super recomendado!",
+    review2Author: "Gabriel",
+    review2Date: "4 agosto",
+
+    review3Title: "Confiables y accesibles",
+    review3Content:
+      "Siempre responden a tiempo las dudas que puedas tener. Los considero bastante transparentes y honestos como intermediarios. Cuando recogí el paquete, todo llego en buenas condiciones.",
+    review3Author: "Ceci",
+    review3Date: "11 julio",
+
+    viewMoreReviews: "Ver más reseñas",
 
     // Home Page
     heroSlide1Title: "Desde Japón a Tu Casa Cualquier Día",

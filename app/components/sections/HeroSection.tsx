@@ -43,7 +43,7 @@ const HeroSection = () => {
     {
       id: 2,
       bgClass:
-        "bg-capybara-blue bg-[url('/dotonbori.png')] bg-cover bg-[left_bottom_-12rem] bg-no-repeat",
+        "bg-capybara-blue bg-[url('/dotonbori.png')] bg-cover lg:bg-[left_bottom_-12rem] bg-no-repeat",
       title: t("heroSlide2Title"),
       titleColor: "text-white",
       subtitle: "",

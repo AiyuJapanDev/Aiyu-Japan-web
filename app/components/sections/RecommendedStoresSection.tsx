@@ -30,7 +30,7 @@ export default function RecommendedStoresSection({
           >
             <img
               className="object-contain w-full h-full"
-              src={`${shop.logo.url}`}
+              src={shop.logo.url ? shop.logo.url : ""}
               alt={shop.title}
             />
           </a>

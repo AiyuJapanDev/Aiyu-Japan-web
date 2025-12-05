@@ -29,6 +29,16 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   };
 
   useEffect(() => {
+    if (typeof window !== "undefined") {
+      const userLang = navigator.language.split("-")[0] as Language;
+      // Check if the detected user language is one of the supported languages
+      if (Object.keys(translations).includes(userLang)) {
+        setLanguage(userLang);
+      }
+    }
+  }, []); // Empty dependency array ensures this runs only once on mount
+
+  useEffect(() => {
     if (window.location.pathname.includes("/blog")) {
       navigate("/blog/" + language);
     }

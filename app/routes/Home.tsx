@@ -4,6 +4,7 @@ import FeaturedBlog from "@/components/sections/FeaturedBlog";
 import FeaturedNews from "@/components/sections/FeaturedNews";
 import HeroSection from "@/components/sections/HeroSection";
 import RecommendedStoresSection from "@/components/sections/RecommendedStoresSection";
+import { ReviewsSection } from "@/components/sections/ReviewsSection";
 import ServiceFeatures from "@/components/sections/ServiceFeatures";
 import SimpleHowItWorks from "@/components/sections/SimpleHowItWorks";
 import SocialMediaSection from "@/components/sections/SocialMediaSection";
@@ -125,6 +126,10 @@ const Home = ({ loaderData }: Route.ComponentProps) => {
 
       <AnimatedSection delay={500}>
         <SocialMediaSection />
+      </AnimatedSection>
+
+      <AnimatedSection delay={550}>
+        <ReviewsSection />
       </AnimatedSection>
 
       <AnimatedSection delay={600}>

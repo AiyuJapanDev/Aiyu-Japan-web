@@ -311,26 +311,6 @@ const Header = () => {
             </div>
           </div>
 
-          {/* Mobile auth actions */}
-          <div className="flex flex-col lg:hidden justify-center items-center space-y-2 pb-2">
-            <div className="flex lg:hidden justify-center items-center mx-auto">
-              {!user && (
-                <div className="flex gap-2 justify-center items-center flex-wrap">
-                  <Link to="/auth" reloadDocument>
-                    <Button className="bubble-btn-primary hover-bounce">
-                      {t("login")}
-                    </Button>
-                  </Link>
-                  <Link to="/auth?mode=signup" reloadDocument>
-                    <Button className="bubble-btn-secondary-blue hover-bounce">
-                      {t("register")}
-                    </Button>
-                  </Link>
-                </div>
-              )}
-            </div>
-          </div>
-
           {/* Mobile Navigation */}
           {isMobileMenuOpen && (
             <div
@@ -418,8 +398,28 @@ const Header = () => {
                   {t("calculator")}
                 </NavLink>
 
+                {/* Mobile auth actions */}
+                <div className="flex flex-col lg:hidden justify-center items-center space-y-2 ">
+                  <div className="flex lg:hidden justify-center items-center mx-auto">
+                    {!user && (
+                      <div className="flex gap-2 justify-center items-center flex-wrap">
+                        <Link to="/auth" reloadDocument>
+                          <Button className="bubble-btn-primary hover-bounce">
+                            {t("login")}
+                          </Button>
+                        </Link>
+                        <Link to="/auth?mode=signup" reloadDocument>
+                          <Button className="bubble-btn-secondary-blue hover-bounce">
+                            {t("register")}
+                          </Button>
+                        </Link>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
                 {/* language selector & logout button */}
-                <div className="relative flex items-center justify-center gap-2 px-1 py-3 border-b-2 border-capybara-orange/20">
+                <div className="relative flex items-center justify-center gap-2 px-1  border-b-2 border-capybara-orange/20">
                   <Select value={language} onValueChange={setLanguage}>
                     <SelectTrigger
                       aria-label="Language"
