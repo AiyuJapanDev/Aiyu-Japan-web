@@ -1,17 +1,23 @@
-import { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
-import { AlertCircle, Flag, Plus, Trash2, Save, ArrowLeft } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
-import { toast } from '@/hooks/use-toast';
-import type { ProductRequest, Order } from '@/types/orders';
-import { notifyAllAdmins } from '@/lib/notificationUtils';
-import { useApp } from '@/contexts/AppContext'; // ✅ for t()
+import { useEffect, useState } from "react";
+import { useParams, useNavigate } from "react-router";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import { AlertCircle, Flag, Plus, Trash2, Save, ArrowLeft } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
+import type { ProductRequest, Order } from "@/types/orders";
+import { notifyAllAdmins } from "@/lib/notificationUtils";
+import { useApp } from "@/contexts/AppContext"; // ✅ for t()
 
 interface OrderWithDetails extends Order {
   rejection_reason?: string | null;
@@ -27,6 +33,11 @@ interface OrderWithDetails extends Order {
       issue_description?: string;
     }>;
   } | null;
+  quotes?: Array<{
+    id: string;
+    type: string;
+    status: string;
+  }>;
   order_items: Array<{
     id: string;
     product_request: ProductRequest & {
@@ -56,6 +67,7 @@ export function EditOrder() {
   const [products, setProducts] = useState<EditableProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [isQuotedOrder, setIsQuotedOrder] = useState(false);
 
   useEffect(() => {
     if (orderId) fetchOrder();
@@ -63,35 +75,62 @@ export function EditOrder() {
 
   const fetchOrder = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) {
-        navigate('/auth');
+        navigate("/auth");
         return;
       }
 
       const { data: orderData, error: orderError } = await supabase
-        .from('orders')
-        .select(`
+        .from("orders")
+        .select(
+          `
           *,
+          quotes (*),
           order_items (
             id,
             product_request:product_requests (*)
           )
-        `)
-        .eq('id', orderId)
-        .eq('user_id', user.id)
-        .eq('is_rejected', true)
+        `
+        )
+        .eq("id", orderId)
+        .eq("user_id", user.id)
         .single();
 
       if (orderError || !orderData) {
         toast({
-          title: t('error'),
-          description: t('orderNotFound'),
-          variant: 'destructive',
+          title: t("error"),
+          description: t("orderNotFound"),
+          variant: "destructive",
         });
-        navigate('/user-dashboard');
+        navigate("/user-dashboard");
         return;
       }
+
+      // Check if order can be edited (either rejected or has unpaid quote)
+      const productQuote = orderData.quotes?.find(
+        (q: any) => q.type === "product"
+      );
+      const isRejected = (orderData as any).is_rejected;
+      const canEdit =
+        isRejected || (productQuote && productQuote.status !== "paid");
+
+      if (!canEdit) {
+        toast({
+          title: t("error"),
+          description: "This order cannot be edited",
+          variant: "destructive",
+        });
+        navigate("/user-dashboard");
+        return;
+      }
+
+      // Track if this is a quoted order (not rejected)
+      setIsQuotedOrder(
+        !isRejected && productQuote && productQuote.status !== "paid"
+      );
 
       setOrder(orderData as any);
 
@@ -102,25 +141,30 @@ export function EditOrder() {
         quantity: item.product_request.quantity || 1,
         notes: item.product_request.notes,
         has_purchase_issue: item.product_request.has_purchase_issue,
-        purchase_issue_description: item.product_request.purchase_issue_description,
+        purchase_issue_description:
+          item.product_request.purchase_issue_description,
         isNew: false,
         toDelete: false,
       }));
 
       setProducts(editableProducts);
     } catch (error) {
-      console.error('Error fetching order:', error);
+      console.error("Error fetching order:", error);
       toast({
-        title: t('error'),
-        description: t('loadingOrderDetails'),
-        variant: 'destructive',
+        title: t("error"),
+        description: t("loadingOrderDetails"),
+        variant: "destructive",
       });
     } finally {
       setLoading(false);
     }
   };
 
-  const handleProductChange = (index: number, field: keyof EditableProduct, value: any) => {
+  const handleProductChange = (
+    index: number,
+    field: keyof EditableProduct,
+    value: any
+  ) => {
     const updatedProducts = [...products];
     updatedProducts[index] = { ...updatedProducts[index], [field]: value };
     setProducts(updatedProducts);
@@ -129,7 +173,15 @@ export function EditOrder() {
   const addNewProduct = () => {
     setProducts([
       ...products,
-      { id: `new-${Date.now()}`, product_url: '', item_name: '', quantity: 1, notes: '', isNew: true, toDelete: false },
+      {
+        id: `new-${Date.now()}`,
+        product_url: "",
+        item_name: "",
+        quantity: 1,
+        notes: "",
+        isNew: true,
+        toDelete: false,
+      },
     ]);
   };
 
@@ -142,13 +194,21 @@ export function EditOrder() {
   const handleResubmit = async () => {
     const activeProducts = products.filter((p) => !p.toDelete);
     if (activeProducts.length === 0) {
-      toast({ title: t('error'), description: t('atLeastOneProductError'), variant: 'destructive' });
+      toast({
+        title: t("error"),
+        description: t("atLeastOneProductError"),
+        variant: "destructive",
+      });
       return;
     }
 
     for (const product of activeProducts) {
       if (!product.product_url) {
-        toast({ title: t('error'), description: t('allProductsUrlError'), variant: 'destructive' });
+        toast({
+          title: t("error"),
+          description: t("allProductsUrlError"),
+          variant: "destructive",
+        });
         return;
       }
     }
@@ -156,23 +216,38 @@ export function EditOrder() {
     setSubmitting(true);
 
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) return;
 
       const { data: profile } = await supabase
-        .from('profiles')
-        .select('full_name, user_personal_id')
-        .eq('id', user.id)
+        .from("profiles")
+        .select("full_name, user_personal_id")
+        .eq("id", user.id)
         .single();
 
-      const customerName = profile?.full_name || 'Unknown User';
-      const customerId = profile?.user_personal_id ? `#${profile.user_personal_id}` : '';
+      const customerName = profile?.full_name || "Unknown User";
+      const customerId = profile?.user_personal_id
+        ? `#${profile.user_personal_id}`
+        : "";
+
+      // If this was a quoted order (not rejected), cancel it first
+      if (isQuotedOrder && !(order as any).is_rejected) {
+        const { error: cancelError } = await supabase.rpc("cancel_order", {
+          p_order_id: orderId,
+        });
+        if (cancelError) {
+          console.error("Error cancelling order:", cancelError);
+          throw new Error("Failed to cancel original order");
+        }
+      }
 
       const { data: newOrder, error: orderError } = await supabase
-        .from('orders')
+        .from("orders")
         .insert({
           user_id: user.id,
-          status: 'preparing',
+          status: "preparing",
           is_resubmitted: true,
           parent_order_id: orderId,
         })
@@ -182,54 +257,66 @@ export function EditOrder() {
       if (orderError) throw orderError;
 
       await notifyAllAdmins(
-        'order_resubmitted',
+        "order_resubmitted",
         `Order resubmitted by ${customerName} ${customerId}.`,
         newOrder.id
       );
 
       for (const product of activeProducts) {
         const { data: newProduct } = await supabase
-          .from('product_requests')
+          .from("product_requests")
           .insert({
             user_id: user.id,
             product_url: product.product_url,
             item_name: product.item_name,
             quantity: product.quantity,
             notes: product.notes,
-            status: 'requested',
+            status: "requested",
           })
           .select()
           .single();
 
-        await supabase.from('order_items').insert({
+        await supabase.from("order_items").insert({
           order_id: newOrder.id,
           product_request_id: newProduct.id,
         });
       }
 
-      toast({ title: t('success'), description: t('orderResubmittedSuccess') });
-      navigate('/user-dashboard');
+      toast({ title: t("success"), description: t("orderResubmittedSuccess") });
+      navigate("/user-dashboard?tab=orders");
     } catch (error) {
-      console.error('Error resubmitting order:', error);
-      toast({ title: t('error'), description: t('orderResubmitError'), variant: 'destructive' });
+      console.error("Error resubmitting order:", error);
+      toast({
+        title: t("error"),
+        description: t("orderResubmitError"),
+        variant: "destructive",
+      });
     } finally {
       setSubmitting(false);
     }
   };
 
-  if (loading) return <div className="text-center py-8">{t('loadingOrderDetails')}</div>;
-  if (!order) return <div className="text-center py-8">{t('orderNotFound')}</div>;
+  if (loading)
+    return <div className="text-center py-8">{t("loadingOrderDetails")}</div>;
+  if (!order)
+    return <div className="text-center py-8">{t("orderNotFound")}</div>;
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" onClick={() => navigate('/user-dashboard')}>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => navigate("/user-dashboard?tab=orders")}
+        >
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <div>
-          <h1 className="text-2xl font-bold">{t('editRejectedOrder')}</h1>
+          <h1 className="text-2xl font-bold">
+            {isQuotedOrder ? t("editOrder") : t("editRejectedOrder")}
+          </h1>
           <p className="text-muted-foreground">
-            {t('orderNumber')} {order.order_personal_id}
+            {t("orderNumber")} {order.order_personal_id}
           </p>
         </div>
       </div>
@@ -239,7 +326,7 @@ export function EditOrder() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-destructive">
               <AlertCircle className="h-5 w-5" />
-              {t('orderRejectionReasonTitle')}
+              {t("orderRejectionReasonTitle")}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -250,27 +337,32 @@ export function EditOrder() {
 
       <Card>
         <CardHeader>
-          <CardTitle>{t('productsInOrder')}</CardTitle>
-          <CardDescription>{t('editOrderDescription')}</CardDescription>
+          <CardTitle>{t("productsInOrder")}</CardTitle>
+          <CardDescription>{t("editOrderDescription")}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           {products.map((product, index) => (
             <Card
               key={product.id}
-              className={`p-4 ${product.toDelete ? 'opacity-50' : ''} ${
-                product.has_purchase_issue ? 'border-yellow-500' : ''
+              className={`p-4 ${product.toDelete ? "opacity-50" : ""} ${
+                product.has_purchase_issue ? "border-yellow-500" : ""
               }`}
             >
               <div className="space-y-4">
-                {product.has_purchase_issue && product.purchase_issue_description && (
-                  <div className="p-3 bg-yellow-50 rounded-lg flex items-start gap-2">
-                    <Flag className="h-4 w-4 text-yellow-600 mt-0.5" />
-                    <div className="flex-1">
-                      <p className="text-sm font-medium text-yellow-900">{t('productIssue')}</p>
-                      <p className="text-sm text-yellow-700">{product.purchase_issue_description}</p>
+                {product.has_purchase_issue &&
+                  product.purchase_issue_description && (
+                    <div className="p-3 bg-yellow-50 rounded-lg flex items-start gap-2">
+                      <Flag className="h-4 w-4 text-yellow-600 mt-0.5" />
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-yellow-900">
+                          {t("productIssue")}
+                        </p>
+                        <p className="text-sm text-yellow-700">
+                          {product.purchase_issue_description}
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
 
                 <div className="grid gap-4">
                   <div>
@@ -278,7 +370,13 @@ export function EditOrder() {
                     <Input
                       id={`url-${index}`}
                       value={product.product_url}
-                      onChange={(e) => handleProductChange(index, 'product_url', e.target.value)}
+                      onChange={(e) =>
+                        handleProductChange(
+                          index,
+                          "product_url",
+                          e.target.value
+                        )
+                      }
                       placeholder="https://example.com/product"
                       disabled={product.toDelete}
                     />
@@ -286,24 +384,38 @@ export function EditOrder() {
 
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor={`name-${index}`}>{t('productName')}</Label>
+                      <Label htmlFor={`name-${index}`}>
+                        {t("productName")}
+                      </Label>
                       <Input
                         id={`name-${index}`}
-                        value={product.item_name || ''}
-                        onChange={(e) => handleProductChange(index, 'item_name', e.target.value)}
-                        placeholder={t('productNamePlaceholder')}
+                        value={product.item_name || ""}
+                        onChange={(e) =>
+                          handleProductChange(
+                            index,
+                            "item_name",
+                            e.target.value
+                          )
+                        }
+                        placeholder={t("productNamePlaceholder")}
                         disabled={product.toDelete}
                       />
                     </div>
                     <div>
-                      <Label htmlFor={`quantity-${index}`}>{t('quantity')}</Label>
+                      <Label htmlFor={`quantity-${index}`}>
+                        {t("quantity")}
+                      </Label>
                       <Input
                         id={`quantity-${index}`}
                         type="number"
                         min="1"
                         value={product.quantity}
                         onChange={(e) =>
-                          handleProductChange(index, 'quantity', parseInt(e.target.value) || 1)
+                          handleProductChange(
+                            index,
+                            "quantity",
+                            parseInt(e.target.value) || 1
+                          )
                         }
                         disabled={product.toDelete}
                       />
@@ -311,12 +423,16 @@ export function EditOrder() {
                   </div>
 
                   <div>
-                    <Label htmlFor={`notes-${index}`}>{t('productNotes')}</Label>
+                    <Label htmlFor={`notes-${index}`}>
+                      {t("productNotes")}
+                    </Label>
                     <Textarea
                       id={`notes-${index}`}
-                      value={product.notes || ''}
-                      onChange={(e) => handleProductChange(index, 'notes', e.target.value)}
-                      placeholder={t('productNotesPlaceholder')}
+                      value={product.notes || ""}
+                      onChange={(e) =>
+                        handleProductChange(index, "notes", e.target.value)
+                      }
+                      placeholder={t("productNotesPlaceholder")}
                       disabled={product.toDelete}
                     />
                   </div>
@@ -324,16 +440,20 @@ export function EditOrder() {
 
                 <div className="flex justify-between items-center">
                   <div className="flex gap-2">
-                    {product.isNew && <Badge variant="secondary">{t('newProductBadge')}</Badge>}
-                    {product.toDelete && <Badge variant="destructive">{t('willBeRemoved')}</Badge>}
+                    {product.isNew && (
+                      <Badge variant="secondary">{t("newProductBadge")}</Badge>
+                    )}
+                    {product.toDelete && (
+                      <Badge variant="destructive">{t("willBeRemoved")}</Badge>
+                    )}
                   </div>
                   <Button
-                    variant={product.toDelete ? 'default' : 'destructive'}
+                    variant={product.toDelete ? "default" : "destructive"}
                     size="sm"
                     onClick={() => toggleDeleteProduct(index)}
                   >
                     <Trash2 className="h-4 w-4 mr-2" />
-                    {product.toDelete ? t('restore') : t('remove')}
+                    {product.toDelete ? t("restore") : t("remove")}
                   </Button>
                 </div>
               </div>
@@ -342,21 +462,27 @@ export function EditOrder() {
 
           <Button variant="outline" onClick={addNewProduct} className="w-full">
             <Plus className="h-4 w-4 mr-2" />
-            {t('addNewProduct')}
+            {t("addNewProduct")}
           </Button>
         </CardContent>
       </Card>
 
       <div className="flex gap-4 justify-end">
-        <Button variant="outline" onClick={() => navigate('/user-dashboard')} disabled={submitting}>
-          {t('cancel')}
+        <Button
+          variant="outline"
+          onClick={() => navigate("/user-dashboard?tab=orders")}
+          disabled={submitting}
+        >
+          {t("cancel")}
         </Button>
         <Button
           onClick={handleResubmit}
-          disabled={submitting || products.filter((p) => !p.toDelete).length === 0}
+          disabled={
+            submitting || products.filter((p) => !p.toDelete).length === 0
+          }
         >
           <Save className="h-4 w-4 mr-2" />
-          {submitting ? t('resubmitting') : t('resubmitOrder')}
+          {submitting ? t("resubmitting") : t("resubmitOrder")}
         </Button>
       </div>
     </div>
