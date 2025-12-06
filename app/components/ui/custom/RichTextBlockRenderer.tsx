@@ -17,8 +17,11 @@ function RichTextBlockRenderer({ content }: { content: BlocksContent }) {
           const formats = image.formats;
           const srcset = formats
             ? [
+                //@ts-ignore
                 formats.small ? `${formats.small.url} 500w` : "",
+                //@ts-ignore  
                 formats.medium ? `${formats.medium.url} 750w` : "",
+                //@ts-ignore  
                 formats.large ? `${formats.large.url} 1200w` : "",
                 `${imageUrl} ${image.width}w`,
               ]
