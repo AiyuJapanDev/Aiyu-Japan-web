@@ -998,19 +998,19 @@ export const translations = {
       "The process is simple and transparent. Here is the step-by-step of how our service works:",
     howItWorksStep1Title: "Find your item",
     howItWorksStep1Desc:
-      "Search on your favorite Japanese stores or use our Store Guide to discover official shops. Once you find what you want, simply <strong>copy the product link</strong> and paste it in our request form.",
+      "Browse your favorite Japanese stores or use our Store Guide. <strong>Copy the product link</strong> you want to purchase.",
     howItWorksStep2Title: "Create your purchase request",
     howItWorksStep2Desc:
-      "Send us the product link and any details you want (quantity, color, size, etc.). Our team will check the product first to make sure it can be purchased and shipped. If everything is OK, we’ll send you a payment link. Once you pay, we buy the item for you right away.",
+      "Send us the item URL (and details like color, size, quantity). We check availability and price, and if everything is fine, we send you a payment link.",
     howItWorksStep3Title: "Receive, store and weigh your items",
     howItWorksStep3Desc:
-      "When your package arrives, we will weigh them so you know how much the international shipping cost will be, they going to be safe at our Aiyu Japan warehouse in Osaka.  Storage is free and unlimited, so you can keep adding items until you're ready to ship.",
+      "After purchase, items arrive at our Osaka warehouse. We weigh them so you know the tarifa international shipping cost. Storage is free and unlimited, allowing you to consolidate multiple items.",
     howItWorksStep4Title: "Packing your order",
     howItWorksStep4Desc:
-      "When you're ready, request shipping. Our team will carefully pack and protect your items using secure materials to ensure they arrive in perfect condition.",
+      "When you request shipping, we pack your items carefully with protective materials to ensure safe international delivery.",
     howItWorksStep5Title: "International shipping",
     howItWorksStep5Desc:
-      "Choose your preferred shipping method - Japan Post Economy, EMS, or DHL Express. We'll send your package anywhere in the world.",
+      "Choose your preferred method (Japan Post Economy, EMS, DHL Express). Once you pay for shipping, we send your parcel worldwide.",
     howItWorksCTA: "Start shopping now",
 
     /* New Services */
@@ -2182,19 +2182,19 @@ export const translations = {
       "El proceso es simple y transparente. Aquí te explicamos paso a paso cómo funciona nuestro servicio:",
     howItWorksStep1Title: "Encuentra tu artículo",
     howItWorksStep1Desc:
-      "Busca en tus tiendas japonesas favoritas o usa nuestra Guía de Tiendas para descubrir tiendas oficiales. Una vez que encuentres lo que quieres, simplemente <strong>copia el enlace del producto</strong> y pégalo en nuestro formulario de solicitud.",
+      "Navega por tus tiendas japonesas favoritas o usa nuestra Guía de Tiendas. <strong>Copia el enlace</strong> del producto que deseas comprar.",
     howItWorksStep2Title: "Crea tu solicitud de compra",
     howItWorksStep2Desc:
-      "Envíanos el enlace del producto y cualquier detalle que desees (cantidad, color, talla, etc.). Nuestro equipo revisará el producto primero para asegurarse de que se pueda comprar y enviar. Si todo está bien, te enviaremos un enlace de pago. Una vez que pagues, compraremos el artículo para ti de inmediato.",
+      "Envíanos la URL del artículo (y detalles como color, talla, cantidad). Verificamos disponibilidad y precio, y si todo está bien, te enviamos un enlace de pago.",
     howItWorksStep3Title: "Recibe, almacena y pesa tus artículos",
     howItWorksStep3Desc:
-      "Cuando tu paquete llegue, lo pesaremos para que sepas el costo del envío internacional. Tus artículos estarán seguros en nuestro almacén de Aiyu Japan en Osaka. El almacenamiento es gratuito e ilimitado, así que puedes seguir añadiendo artículos hasta que estés listo para enviar.",
+      "Después de la compra, los artículos llegan a nuestro almacén de Osaka. Los pesamos para que sepas el costo de envío internacional. El almacenamiento es gratuito e ilimitado, lo que te permite consolidar múltiples artículos.",
     howItWorksStep4Title: "Empaquetando tu pedido",
     howItWorksStep4Desc:
-      "Cuando estés listo, solicita el envío. Nuestro equipo empaquetará y protegerá cuidadosamente tus artículos utilizando materiales seguros para asegurar que lleguen en perfectas condiciones.",
+      "Cuando solicitas el envío, empacamos tus artículos cuidadosamente con materiales de protección para asegurar una entrega internacional segura.",
     howItWorksStep5Title: "Envío internacional",
     howItWorksStep5Desc:
-      "Elige tu método de envío preferido — Japan Post Economy, EMS (correo urgente) o DHL Express — y enviaremos tu paquete a cualquier parte del mundo. Recibirás tu número de seguimiento y actualizaciones hasta la entrega.",
+      "Elige tu método preferido (Japan Post Economy, EMS, DHL Express). Una vez que pagues el envío, enviamos tu paquete a todo el mundo.",
     howItWorksCTA: "Empieza a comprar ahora",
 
     /* New Services */

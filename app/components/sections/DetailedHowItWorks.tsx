@@ -1,18 +1,6 @@
-import React from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import {
-  Search,
-  Calculator,
-  CreditCard,
-  Clock,
-  Truck,
-  DollarSign,
-  Package,
-  CloudCog,
-} from "lucide-react";
-import { useIntersectionObserver } from "@/hooks/useIntersectionObserver";
 import { useApp } from "@/contexts/AppContext";
+import { useIntersectionObserver } from "@/hooks/useIntersectionObserver";
+import { Calculator, Clock, CreditCard, Search, Truck } from "lucide-react";
 
 const DetailedHowItWorks = () => {
   const { t } = useApp();
@@ -20,52 +8,33 @@ const DetailedHowItWorks = () => {
   const steps = [
     {
       icon: Search,
-      title: t("step1DetailedTitle"),
-      description: "",
-      details: t("step1DetailedDescription"),
+      title: t("howItWorksStep1Title"),
+      description: t("howItWorksStep1Desc"),
       step: "01",
     },
     {
       icon: Calculator,
-      title: t("step2DetailedTitle"),
-      description: "",
-      details: t("step2DetailedDescription"),
+      title: t("howItWorksStep2Title"),
+      description: t("howItWorksStep2Desc"),
       step: "02",
     },
     {
       icon: CreditCard,
-      title: t("step3DetailedTitle"),
-      description: "",
-      details: t("step3DetailedDescription"),
+      title: t("howItWorksStep3Title"),
+      description: t("howItWorksStep3Desc"),
       step: "03",
     },
     {
       icon: Clock,
-      title: t("step4DetailedTitle"),
-      description: "",
-      details: t("step4DetailedDescription"),
+      title: t("howItWorksStep4Title"),
+      description: t("howItWorksStep4Desc"),
       step: "04",
     },
     {
       icon: Truck,
-      title: t("step5DetailedTitle"),
-      description: "",
-      details: t("step5DetailedDescription"),
+      title: t("howItWorksStep5Title"),
+      description: t("howItWorksStep5Desc"),
       step: "05",
-    },
-    {
-      icon: DollarSign,
-      title: t("step6DetailedTitle"),
-      description: "",
-      details: t("step6DetailedDescription"),
-      step: "06",
-    },
-    {
-      icon: Package,
-      title: t("step7DetailedTitle"),
-      description: "",
-      details: t("step7DetailedDescription"),
-      step: "07",
     },
   ];
 
@@ -121,9 +90,10 @@ const DetailedHowItWorks = () => {
               <h3 className="text-lg font-bold text-gray-900 mb-3">
                 {step.title}
               </h3>
-              <p className="text-gray-600 text-sm leading-relaxed">
-                {step.details}
-              </p>
+              <p
+                className="text-gray-600 text-sm leading-relaxed"
+                dangerouslySetInnerHTML={{ __html: step.description }}
+              ></p>
             </div>
           </div>
         </div>
@@ -132,14 +102,8 @@ const DetailedHowItWorks = () => {
   };
 
   return (
-    <section className="py-20 animate-fade-in">
+    <div className="animate-fade-in">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-            {t("howItWorksDetailedTitle")}
-          </h2>
-        </div>
-
         {/* Vertical flow design */}
         <div className="flex flex-col items-center space-y-8">
           {steps.map((step, index) => (
@@ -152,7 +116,7 @@ const DetailedHowItWorks = () => {
           ))}
         </div>
       </div>
-    </section>
+    </div>
   );
 };
 
