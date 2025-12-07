@@ -13,6 +13,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import globeMap from "/global-delivery.png";
+import { Plus } from "lucide-react";
 
 interface SlideData {
   id: number;
@@ -191,17 +192,32 @@ const HeroSection = () => {
                           </p>
                         )}
                       </div>
-                      <Link to="/auth">
-                        <button
-                          type="button"
-                          className={`flex items-center justify-center whitespace-nowrap rounded-3xl font-medium transition-all enabled:active:scale-95 opacity-50 enabled:opacity-100 text-[12px] px-8 h-[44px] border 
+                      {!user ? (
+                        <Link to="/auth">
+                          <button
+                            type="button"
+                            className={`flex items-center justify-center whitespace-nowrap rounded-3xl font-medium transition-all enabled:active:scale-95 opacity-50 enabled:opacity-100 text-[12px] px-8 h-[44px]  
                           bubble-btn-primary`}
-                        >
-                          <span className="font-bold">
-                            Login to use the service
-                          </span>
-                        </button>
-                      </Link>
+                          >
+                            <span className="font-bold">
+                              Login to use the service
+                            </span>
+                          </button>
+                        </Link>
+                      ) : (
+                        <Link to="/user-dashboard?tab=submit">
+                          <button
+                            type="button"
+                            className={`flex items-center justify-center whitespace-nowrap rounded-3xl font-medium transition-all enabled:active:scale-95 opacity-50 enabled:opacity-100 text-[12px] px-8 h-[44px]  
+                          bubble-btn-primary`}
+                          >
+                            <Plus className="h-4 w-4 mr-2" />
+                            <span className="font-bold">
+                              {t("submitRequest")}
+                            </span>
+                          </button>
+                        </Link>
+                      )}
                     </div>
 
                     {/* Visual Content (Image or SVG) */}

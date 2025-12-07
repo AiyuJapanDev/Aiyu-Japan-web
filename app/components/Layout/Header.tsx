@@ -232,7 +232,7 @@ const Header = () => {
                     }`
                   }
                 >
-                  News
+                  {t("newsLinkTitle")}
                 </NavLink>
                 <NavLink
                   to="/contact"

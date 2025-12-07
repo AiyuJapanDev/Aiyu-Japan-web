@@ -1046,7 +1046,8 @@ export const translations = {
       "Choose your preferred shipping method - Japan Post Economy, EMS, or DHL Express. We'll send your package anywhere in the world.",
     feeShippingNote: "Calculated by weight/destination",
     feesShippingOptionsTitle: "International Shipping Options",
-    feesShippingOptionsTitleSpecial: "International Shipping (Special)",
+    feesShippingOptionsTitleSpecial:
+      "Paraguay international shipping (special)",
     feesMethodHeader: "Method",
     feesTimeHeader: "Delivery Time",
     feesTrackingHeader: "Tracking",
@@ -1172,7 +1173,7 @@ export const translations = {
     moreInfo: "Más Info",
     home: "Inicio",
     services: "Servicios",
-    calculator: "Estimador de costos",
+    calculator: "Calculadora de costos",
     storeGuide: "¿Primera Vez?",
     simulator: "Calculadora Beta",
     dashboard: "Panel principal",
@@ -2235,7 +2236,8 @@ export const translations = {
       "Elige tu método de envío preferido — Japan Post Economy, EMS o DHL Express — y enviaremos tu paquete a cualquier parte del mundo.",
     feeShippingNote: "Calculado por peso/destino",
     feesShippingOptionsTitle: "Opciones de Envío Internacional",
-    feesShippingOptionsTitleSpecial: "Envío Internacional (Especial)",
+    feesShippingOptionsTitleSpecial:
+      "Envío Internacional a Paraguay (Especial)",
     feesMethodHeader: "Método",
     feesTimeHeader: "Tiempo de Entrega",
     feesTrackingHeader: "Seguimiento",
