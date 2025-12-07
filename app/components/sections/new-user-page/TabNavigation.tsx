@@ -1,3 +1,4 @@
+import { Button } from "@/components/ui/button";
 import { useApp } from "@/contexts/AppContext";
 import { NavLink } from "react-router";
 
@@ -14,22 +15,24 @@ export const TabNavigation = () => {
   ];
 
   return (
-    <div className="sticky top-0 z-10 border-b border-gray-200 bg-white/80 backdrop-blur-md">
-      <div className="container mx-auto overflow-x-auto px-4">
-        <div className="flex min-w-max space-x-8">
+    <div className=" border-b border-gray-200 bg-white/80 backdrop-blur-md">
+      <div className="container overflow-x-hidden px-4">
+        <div className="flex flex-wrap gap-2 py-2">
           {tabs.map((tab, index) => (
             <NavLink
-              to={`${tab.value}`}
               key={index}
+              to={`${tab.value}`}
               className={({ isActive, isPending }) => {
                 const active = "text-blue-600";
                 const inactive = "text-gray-500 hover:text-gray-900";
-                return `relative py-4 text-sm font-medium transition-colors ${
+                return `flex-1 relative font-medium transition-colors w-full ${
                   isActive ? active : inactive
                 }`;
               }}
             >
-              {tab.label}
+              <Button variant="outline" className="w-full">
+                {tab.label}
+              </Button>
             </NavLink>
           ))}
         </div>
