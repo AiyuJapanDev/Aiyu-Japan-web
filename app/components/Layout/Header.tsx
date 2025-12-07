@@ -100,6 +100,41 @@ const Header = () => {
     setIsMobileMenuOpen(false);
   }, [location.pathname]);
 
+  const navLinks = [
+    { to: "/", label: t("home") },
+    { to: "/store-guide/what-is", label: t("storeGuide") },
+    { to: `/news/${language}`, label: t("newsLinkTitle") },
+    { to: `/blog/${language}`, label: t("blog") },
+    { to: "/contact", label: t("contact") },
+    { to: "/calculator", label: t("calculator") },
+  ];
+
+  const Navlink = ({
+    to,
+    label,
+    className,
+  }: {
+    to: string;
+    label: string;
+    className?: string;
+  }) => {
+    return (
+      <NavLink
+        to={to}
+        className={({ isActive }) =>
+          `max-w-xs  block rounded-full text-base transition-all duration-300 ml-4 ${className} ${
+            isActive
+              ? "text-white bg-capybara-orange py-2 px-4"
+              : "text-gray-700 hover:text-capybara-orange hover:bg-capybara-cream py-2 hover:px-4"
+          }`
+        }
+        onClick={() => setIsMobileMenuOpen(false)}
+      >
+        {label}
+      </NavLink>
+    );
+  };
+
   return (
     <>
       <header
@@ -332,95 +367,27 @@ const Header = () => {
               className="px-4 lg:hidden animate-fade-in "
               ref={mobileMenuRef}
             >
-              <div className="space-y-6 pt-4 pb-2  bg-white/95 border-t-2 border-capybara-orange/20 rounded-b-3xl min-h-screen">
+              <div className="space-y-4 pt-4 pb-2  bg-white/95 border-t-2 border-capybara-orange/20 rounded-b-3xl min-h-screen">
                 {/* Information Section Title */}
                 <div className=" py-2 text-base font-bold text-gray-500">
                   {t("information")}
                 </div>
 
-                {/*         <NavLink
-                  to="/services"
-                  className={({ isActive }) =>
-                    `block   rounded-full text-base transition-all duration-300 ml-4 ${
-                      isActive
-                        ? "text-white bg-capybara-orange"
-                        : "text-gray-700 hover:text-capybara-orange hover:bg-capybara-cream"
-                    }`
+                {navLinks.map((link) => {
+                  if (link.to !== "/" && link.to !== "/calculator") {
+                    return (
+                      <Navlink key={link.to} to={link.to} label={link.label} />
+                    );
                   }
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  {t("services")}
-                </NavLink> */}
+                })}
 
-                <NavLink
-                  to="/store-guide/what-is"
-                  className={({ isActive }) =>
-                    `block   rounded-full text-base transition-all duration-300 ml-4 ${
-                      isActive
-                        ? "text-white bg-capybara-orange"
-                        : "text-gray-700 hover:text-capybara-orange hover:bg-capybara-cream"
-                    }`
+                <Navlink
+                  to={navLinks.find((link) => link.to === "/calculator")?.to}
+                  className={"font-semibold"}
+                  label={
+                    navLinks.find((link) => link.to === "/calculator")?.label
                   }
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  {t("storeGuide")}
-                </NavLink>
-
-                <NavLink
-                  to={`/news/${language}`}
-                  className={({ isActive }) =>
-                    `block   rounded-full text-base transition-all duration-300 ml-4 ${
-                      isActive
-                        ? "text-white bg-capybara-orange"
-                        : "text-gray-700 hover:text-capybara-orange hover:bg-capybara-cream"
-                    }`
-                  }
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  {t("newsLinkTitle")}
-                </NavLink>
-
-                <NavLink
-                  to={`/blog/${language}`}
-                  className={({ isActive }) =>
-                    `block   rounded-full text-base transition-all duration-300 ml-4 ${
-                      isActive
-                        ? "text-white bg-capybara-orange"
-                        : "text-gray-700 hover:text-capybara-orange hover:bg-capybara-cream"
-                    }`
-                  }
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  {t("blog")}
-                </NavLink>
-
-                <NavLink
-                  to="/contact"
-                  className={({ isActive }) =>
-                    `block   rounded-full text-base transition-all duration-300 ml-4 ${
-                      isActive
-                        ? "text-white bg-capybara-orange"
-                        : "text-gray-700 hover:text-capybara-orange hover:bg-capybara-cream"
-                    }`
-                  }
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  {t("contact")}
-                </NavLink>
-
-                <NavLink
-                  to="/calculator"
-                  className={({ isActive }) =>
-                    `block   rounded-full text-base font-semibold transition-all duration-300 ${
-                      isActive
-                        ? "text-white bg-capybara-orange"
-                        : "text-gray-700 hover:text-capybara-orange hover:bg-capybara-cream"
-                    }`
-                  }
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  {t("calculator")}
-                </NavLink>
+                />
 
                 {user && (
                   <div className="flex items-center gap-2 w-full">
