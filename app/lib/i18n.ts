@@ -9,6 +9,7 @@ export const translations = {
 
     // Navigation
     newUser: "Are you new to Aiyu Japan?",
+    moreInfo: "More Info",
     home: "Home",
     services: "Services",
     calculator: "Cost Simulator",
@@ -1168,6 +1169,7 @@ export const translations = {
 
     // Navigation
     newUser: "¿Eres Nuevo Usuario?",
+    moreInfo: "Más Info",
     home: "Inicio",
     services: "Servicios",
     calculator: "Estimador de costos",

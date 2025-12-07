@@ -3,7 +3,15 @@ import { useApp } from "@/contexts/AppContext";
 import { useAuth } from "@/contexts/useAuth";
 import { Button } from "@/components/ui/button";
 import { Link, NavLink, useLocation } from "react-router";
-import { Globe, Menu, X, Bell, Calculator, Crown } from "lucide-react";
+import {
+  Globe,
+  Menu,
+  X,
+  Bell,
+  Calculator,
+  Crown,
+  ArrowRight,
+} from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { useNotifications } from "@/hooks/useNotifications";
 import {
@@ -99,8 +107,16 @@ const Header = () => {
           isVisible ? "translate-y-0" : "-translate-y-full"
         }`}
       >
-        <div className="h-10 w-full bg-capybara-blue flex justify-center items-center text-sm">
-          <p className="animate-bounce font-bold">{t("newUser")}</p>
+        <div className="relative h-10 w-full">
+          <div className="w-full h-full bg-black/80 flex justify-center items-center text-sm z-2 gap-4">
+            <p className="font-bold text-white">{t("newUser")}</p>
+            <Link to="/store-guide/what-is">
+              <Button className="text-white" variant="breadcrumb" size="xs">
+                {t("moreInfo")}
+                <ArrowRight />
+              </Button>
+            </Link>
+          </div>
         </div>
 
         <nav className="px-2 pt-2 max-w-7xl mx-auto  sm:px-6 lg:px-8">
