@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { useNavigate } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { Button } from "@/components/ui/button";
 import { useApp } from "@/contexts/AppContext";
 import { useAuth } from "@/contexts/useAuth";
@@ -191,7 +191,7 @@ const HeroSection = () => {
                           </p>
                         )}
                       </div>
-                      <a href="/login">
+                      <Link to="/auth">
                         <button
                           type="button"
                           className={`flex items-center justify-center whitespace-nowrap rounded-3xl font-medium transition-all enabled:active:scale-95 opacity-50 enabled:opacity-100 text-[12px] px-8 h-[44px] border 
@@ -201,7 +201,7 @@ const HeroSection = () => {
                             Login to use the service
                           </span>
                         </button>
-                      </a>
+                      </Link>
                     </div>
 
                     {/* Visual Content (Image or SVG) */}
