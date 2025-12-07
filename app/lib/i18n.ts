@@ -1015,24 +1015,30 @@ export const translations = {
 
     /* New Services */
     onSiteOsakaShoppingTitle: "On-site shopping in Osaka",
-    onSiteOsakaShoppingDesc: "1,500 yen per occasion (includes transportation)",
-    shoppingLimitPerPersonTitle: "Purchase of products with a limit per person",
+    onSiteOsakaShoppingPrice: "¥1,500 yen",
+    onSiteOsakaShoppingDesc:
+      "Shop in physical stores across Osaka with our in-person purchase service. The fee is per visit and includes up to 1 hour in the store, starting from the moment we arrive. Contact us through our social media channels to book a reservation.",
+    shoppingLimitPerPersonTitle:
+      "Limited Purchase Fee (Rare or Restricted Items)",
+    shoppingLimitPerPersonPrice: "¥1,000 per item",
     shoppingLimitPerPersonDesc:
-      "For items with a limit of 1 to 3 units per person, an additional charge of 1,000 yen will be applied for each limited item.",
+      "For items with purchase limits (1-3 units per customer), an <strong>extra ¥1,000 yen per item</strong> will apply. This fee is added on top of the normal service cost.",
 
     // Fees Section
     feesTitle: "Fees & Costs",
     feesSubtitle:
       "Total transparency in our pricing. No hidden fees, no surprises.",
+    extraServicesTitle: "Extra services (optional)",
+
     feeServiceTitle: "Shopping Agent + Premium benefits",
-    feeServicePrice: "¥500 + 10%",
+    feeServicePrice: "¥500 yen",
     feeServiceDesc:
       "This service fee is per item. This includes unlimited storage, consolidation with other packages, free photos request and purchase handling.",
     feeServiceNote: "One transparent fee",
     feeStorageTitle: "Locker service (Japanese Address)",
     feeStoragePrice: "¥1000 yen",
     feeStorageDesc:
-      "Storage is unlimited and free. You can collect multiple items before shipping them together without any extra cost.",
+      "This service cost is charged per received box. Boxes received cannot be consolidated with other orders; each box will be shipped to the customer exactly as we receive it. This service includes unlimited storage.",
     feeStorageNote: "Unlimited time",
     feeShippingTitle: "International Shipping",
     feeShippingPrice: "Variable",
@@ -1054,7 +1060,7 @@ export const translations = {
     feesTimeWeeks: "2-3 weeks",
     feesTimeDays3_7: "3-7 days",
     feesTimeDays2_5: "2-5 days",
-    feesTimeDays14: "14 days",
+    feesTimeDays12_14: "12-14 days",
     feesTrackingLimited: "Limited",
     feesTrackingContactSupport: "Contact Support",
     feesTrackingBasic: "Basic",
@@ -2199,24 +2205,29 @@ export const translations = {
 
     /* New Services */
     onSiteOsakaShoppingTitle: "Compra presencial en Osaka",
-    onSiteOsakaShoppingDesc: "1.500 tenes por ocasión (incluye transporte)",
-    shoppingLimitPerPersonTitle: "Compra de productos con límite por persona",
+    onSiteOsakaShoppingPrice: "¥1,500 yen",
+    onSiteOsakaShoppingDesc:
+      "Compra en tiendas físicas de Osaka con nuestro servicio de compra en persona. La tarifa es por visita e incluye hasta 1 hora en la tienda, a partir del momento en que llegamos. Contáctanos a través de nuestras redes sociales para hacer una reserva.",
+    shoppingLimitPerPersonTitle:
+      "Tarifa por Compra Limitada (Artículos Raros o Restringidos)",
+    shoppingLimitPerPersonPrice: "¥1,000 por cada item",
     shoppingLimitPerPersonDesc:
-      "Para artículos con límite de 1 a 3 unidades por persona, se aplicará un cargo adicional de 1.000 yenes por cada ítem limitado.",
+      "Para artículos con límites de compra (1-3 unidades por cliente), se aplicará un <strong>cargo adicional de ¥1,000 yenes por artículo</strong>. Esta tarifa se añade al costo de servicio normal.",
 
     // Fees Section
     feesTitle: "Tarifas y Costos",
+    extraServicesTitle: "Servicios Extra (Opcionales)",
     feesSubtitle:
       "Transparencia total en nuestros precios. Sin tarifas ocultas, sin sorpresas.",
     feeServiceTitle: "Agente de Compras + Beneficios Premium",
-    feeServicePrice: "¥500 + 10%",
+    feeServicePrice: "¥500 yen",
     feeServiceDesc:
       "Esta tarifa de servicio es por artículo. Esto incluye almacenamiento ilimitado, consolidación con otros paquetes, solicitud de fotos gratuita y gestión de compra.",
     feeServiceNote: "Una tarifa transparente",
     feeStorageTitle: "Servicio de Almacenamiento (Dirección japonesa)",
     feeStoragePrice: "¥1000 yen",
     feeStorageDesc:
-      "El almacenamiento es ilimitado y gratuito. Puedes acumular varios artículos antes de enviarlos juntos sin ningún costo adicional.",
+      "El costo de este servicio se cobra por caja recibida. Las cajas recibidas no se pueden consolidar con otros pedidos; cada caja se enviará al cliente exactamente como la recibimos. Este servicio incluye almacenamiento ilimitado.",
     feeStorageNote: "Tiempo ilimitado",
     feeShippingTitle: "Envío Internacional",
     feeShippingPrice: "Variable",
@@ -2234,7 +2245,7 @@ export const translations = {
     feesOptionEMS: "EMS",
     feesOptionDHL: "DHL/FedEx",
     feesOptionAiyuJapanExpress: "Aiyu Japan Express",
-    feesTimeDays14: "14 días",
+    feesTimeDays12_14: "12-14 días",
     feesTrackingContactSupport: "Contactar Soporte",
     feesPriceAiyuJapanExpress: "$35USD/KG",
     feesTimeMonths: "2-3 meses",
