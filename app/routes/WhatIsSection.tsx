@@ -40,10 +40,10 @@ export const WhatIsSection = ({ loaderData }: Route.ComponentProps) => {
   ];
 
   return (
-    <section className="bg-white py-16 md:py-24">
-      <div className="container mx-auto px-4">
-        <div className="grid gap-12 md:grid-cols-2 lg:gap-20">
-          <div className="flex flex-col justify-center">
+    <section className="bg-white py-16 md:py-24 ">
+      <div className="container mx-auto px-4 ">
+        <div className=" grid gap-12 md:grid-cols-2 lg:gap-20 ">
+          <div className="flex flex-col justify-center ">
             <h2 className="mb-6 text-3xl font-bold text-gray-900 md:text-4xl">
               {t("whatIsTitle")}
             </h2>
@@ -85,7 +85,7 @@ export const WhatIsSection = ({ loaderData }: Route.ComponentProps) => {
           </div>
 
           <div className="relative flex items-center justify-center">
-            <div className="relative aspect-video w-full overflow-hidden rounded-2xl shadow-2xl">
+            <div className=" relative aspect-video w-full rounded-2xl shadow-2xl">
               {/* Placeholder for video or main image */}
               <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
                 <iframe
@@ -103,10 +103,6 @@ export const WhatIsSection = ({ loaderData }: Route.ComponentProps) => {
                 <p className="font-medium">{t("whatIsVideoTitle")}</p>
               </div>
             </div>
-
-            {/* Decorative elements */}
-            <div className="absolute -bottom-10 -right-10 -z-10 h-64 w-64 rounded-full bg-blue-50 blur-3xl"></div>
-            <div className="absolute -left-10 -top-10 -z-10 h-64 w-64 rounded-full bg-blue-50 blur-3xl"></div>
           </div>
         </div>
       </div>
