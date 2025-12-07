@@ -434,31 +434,32 @@ export const translations = {
 
     // FAQ
     faqTitle: "Frequently Asked Questions",
-    faq1Question: "Service fee per item",
+    faq1Question: "Shopping Agent Service",
     faq1Answer:
-      "The fee is ¥500 (approx. 3 USD) per item, plus 10% tax on the total product value. Includes: search, consolidation, packaging, and free storage.",
-    faq2Question: "How are payments made?",
+      "For purchases made by Aiyu Japan on behalf of the customer.\n• Items up to ¥10,000 in value: ¥500 per item\n• Items over ¥10,000 in value: ¥1,000 per item\nIncludes: product search, purchase processing, consolidation, packaging, and free storage.",
+    faq2Question: "Locker Service",
     faq2Answer:
-      "We issue an electronic receipt via PayPal. You don't need a PayPal account: just a credit or debit card.",
-    faq3Question: "What is the first payment and final payment?",
+      "For customers who already purchased the product themselves and ship it to our warehouse.\n• ¥1,000 per box received\nNotes:\n• Locker service cannot be consolidated with other orders or boxes. Packages are shipped exactly as received.\n• Shopping Agent orders can be consolidated, and include all premium benefits listed in our service & fees page.",
+    faq3Question: "How are payments made?",
     faq3Answer:
-      "• First payment: covers the cost of the products you choose.\n• If you add more items, we'll issue a new receipt.\n• Final payment: corresponds to international shipping after consolidating and weighing your purchases.",
-    faq4Question: "How long does shipping take?",
+      "Payments are processed through Stripe, accepting most credit and debit cards internationally.\nBank transfer is available upon request — contact us privately for details.",
+    faq4Question: "What is the first payment and the final payment?",
     faq4Answer:
-      "• Economy shipping to Latin America, USA, and Europe: 2–3 weeks.\n• Economy shipping to Asia: 1 week.\n• Express shipping (optional): 1–2 weeks.",
-    faq5Question: "Do you have a physical store outside Japan?",
+      "• First payment: corresponds to the purchase price of the products requested.\n• Final payment: once all items are received in our warehouse, we weigh your package and you pay the international shipping cost before dispatch.",
+    faq5Question: "How long does shipping take?",
     faq5Answer:
-      "Aiyu Japan is located in Osaka, Japan, and we don't have branches in other countries.",
-    faq6Question: "Accepted payment methods",
+      "Delivery time varies depending on the method and destination:\n\n• Airmail: approx. 15–21 days (2–3 weeks)\n• EMS: 4–12 days (10–12 days average for Latin America)\n• DHL Express: 2–6 days, depending on your region",
+    faq6Question: "Do you have a physical store outside Japan?",
     faq6Answer:
-      "• Credit and debit cards\n• PayPal balance\n• Coming soon: bank transfer, Wise, etc.",
+      "No. Our operation is based in Osaka, Japan, and we do not have branches abroad at the moment.",
     faq7Question: "Shipping coverage",
-    faq7Answer:
-      "• Direct: Mexico, Chile, Peru, El Salvador, Costa Rica, Spain, and Argentina.\n• Courier (via USA): Paraguay, Ecuador, Bolivia, and Colombia.\n• Europe, Oceania, and rest of Asia: direct deliveries without intermediaries.",
+    faq7Answer: "We currently ship worldwide — no exceptions.",
     faq8Question: "What happens if my package is lost or doesn't arrive?",
     faq8Answer:
-      "Aiyu Japan and Japan Post will investigate the case. If loss is confirmed, we'll refund 50% of the total product value.",
+      "Aiyu Japan and the postal carrier will investigate the shipment.\nIf loss is officially confirmed, we will refund 50% of the total product value.",
     faq9Question: "Do I have to pay customs duties when receiving the package?",
+    faq9Answer:
+      "Custom duties may apply depending on your country’s regulations and value threshold.\nCustoms processing is outside Aiyu Japan’s control and the customer is responsible for local import fees.\nFor guidance, you may contact us via email or social media.",
 
     // User Dashboard Navigation
     submitRequest: "Submit Request",
@@ -916,8 +917,6 @@ export const translations = {
     awaitingPaymentStatus: "Awaiting Payment",
     paymentReceivedStatus: "Payment Received",
     itemsShipped: "Items Shipped",
-    faq9Answer:
-      "You may have to pay customs duties if the value exceeds the allowed limit in your country. Aiyu Japan has no jurisdiction over this; it's the customer's responsibility. For more details, contact us by email or social media.",
 
     // Common
     language: "Language",
@@ -1607,30 +1606,29 @@ export const translations = {
 
     // FAQ
     faqTitle: "Preguntas frecuentes",
-    faq1Question: "Tarifa de servicio por artículo",
+    faq1Question: "Servicio de Agente de Compras",
     faq1Answer:
-      "La tarifa es de ¥500 (aprox. 3 USD) por artículo, más un 10 % de tax sobre el valor total del producto. Incluye: búsqueda, consolidación, empaquetado y almacenamiento gratuito.",
-    faq2Question: "¿Cómo se realizan los pagos?",
+      "Para compras realizadas por Aiyu Japan en nombre del cliente.\n• Artículos de hasta ¥10,000 de valor: ¥500 por artículo\n• Artículos de más de ¥10,000 de valor: ¥1,000 por artículo\nIncluye: búsqueda de productos, procesamiento de compra, consolidación, empaquetado y almacenamiento gratuito.",
+    faq2Question: "Servicio de Casillero (Locker)",
     faq2Answer:
-      "Emitimos un recibo electrónico vía PayPal. No necesitas cuenta de PayPal: solo tarjeta de crédito o débito.",
-    faq3Question: "¿Cuál es el primer pago y el pago final?",
+      "Para clientes que ya compraron el producto por sí mismos y lo envían a nuestro almacén.\n• ¥1,000 por caja recibida\nNotas:\n• El servicio de casillero no se puede consolidar con otros pedidos o cajas. Los paquetes se envían exactamente como se reciben.\n• Los pedidos de Agente de Compras se pueden consolidar e incluyen todos los beneficios premium listados en nuestra página de servicios y tarifas.",
+    faq3Question: "¿Cómo se realizan los pagos?",
     faq3Answer:
-      "• Primer pago: cubre el costo de los productos que elijas.\n• Si agregas más artículos, emitiremos un nuevo recibo.\n• Pago final: corresponde al envío internacional tras consolidar y pesar tus compras.",
-    faq4Question: "¿Cuánto tarda el envío?",
+      "Los pagos se procesan a través de Stripe, aceptando la mayoría de tarjetas de crédito y débito internacionalmente.\nLas transferencias bancarias están disponibles bajo solicitud — contáctanos en privado para más detalles.",
+    faq4Question: "¿Cuál es el primer pago y el pago final?",
     faq4Answer:
-      "• Envío económico a Latinoamérica, EE. UU. y Europa: 2–3 semanas.\n• Envío económico a Asia: 1 semana.\n• Envío exprés (opcional): 1–2 semanas.",
-    faq5Question: "¿Tienen tienda física fuera de Japón?",
+      "• Primer pago: corresponde al precio de compra de los productos solicitados.\n• Pago final: una vez que todos los artículos son recibidos en nuestro almacén, pesamos tu paquete y pagas el costo de envío internacional antes del despacho.",
+    faq5Question: "¿Cuánto tarda el envío?",
     faq5Answer:
-      "Aiyu Japan está en Osaka, Japón, y no contamos con sucursales en otros países.",
-    faq6Question: "Métodos de pago aceptados",
+      "El tiempo de entrega varía según el método y el destino:\n\n• Airmail: aprox. 15–21 días (2–3 semanas)\n• EMS: 4–12 días (10–12 días promedio para Latinoamérica)\n• DHL Express: 2–6 días, dependiendo de tu región",
+    faq6Question: "¿Tienen tienda física fuera de Japón?",
     faq6Answer:
-      "• Tarjetas de crédito y débito\n• Saldo de PayPal\n• Próximamente: transferencia bancaria, Wise, etc.",
+      "No. Nuestra operación se basa en Osaka, Japón, y no tenemos sucursales en el extranjero por el momento.",
     faq7Question: "Cobertura de envíos",
-    faq7Answer:
-      "• Directo: México, Chile, Perú, El Salvador, Costa Rica, España y Argentina.\n• Courier (vía EE. UU.): Paraguay, Ecuador, Bolivia y Colombia.\n• Europa, Oceanía y resto de Asia: entregas directas sin intermediarios.",
+    faq7Answer: "Actualmente enviamos a todo el mundo — sin excepciones.",
     faq8Question: "¿Qué pasa si mi paquete se pierde o no llega?",
     faq8Answer:
-      "Aiyu Japan y Japan Post investigarán el caso. Si se confirma pérdida, reembolsaremos el 50 % del valor total del producto.",
+      "Aiyu Japan y el transportista postal investigarán el envío.\nSi se confirma oficialmente la pérdida, reembolsaremos el 50% del valor total del producto.",
     faq9Question: "¿Debo pagar aranceles al recibir el paquete?",
     faq9Answer:
       "Puede que debas abonar aranceles si el valor excede el límite permitido en tu país. Aiyu Japan no tiene jurisdicción sobre esto; es responsabilidad del cliente. Para más detalles, contáctanos por email o SNS.",
