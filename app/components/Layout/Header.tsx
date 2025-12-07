@@ -351,7 +351,7 @@ const Header = () => {
                 </NavLink>
 
                 <NavLink
-                  to={`"/news"`}
+                  to={`/news/${language}`}
                   className={({ isActive }) =>
                     `block   rounded-full text-base transition-all duration-300 ml-4 ${
                       isActive
@@ -361,7 +361,21 @@ const Header = () => {
                   }
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
-                  News
+                  {t("newsLinkTitle")}
+                </NavLink>
+
+                <NavLink
+                  to={`/blog/${language}`}
+                  className={({ isActive }) =>
+                    `block   rounded-full text-base transition-all duration-300 ml-4 ${
+                      isActive
+                        ? "text-white bg-capybara-orange"
+                        : "text-gray-700 hover:text-capybara-orange hover:bg-capybara-cream"
+                    }`
+                  }
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  {t("blog")}
                 </NavLink>
 
                 <NavLink

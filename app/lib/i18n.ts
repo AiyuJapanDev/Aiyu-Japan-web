@@ -948,6 +948,7 @@ export const translations = {
     newsBlogReadMore: "Read More",
     newsBlogNoNewsFound: "No news found.",
 
+    newsLinkTitle: "News",
     featNewsTitle: "News & Anouncements",
     featNewsAll: "View All",
     newsBlog1Title: "New 1",
@@ -2132,6 +2133,7 @@ export const translations = {
     blog4Title: "¿Dónde comprar con Aiyu Japan?",
 
     //News Blog
+    newsLinkTitle: "Noticias",
     featNewsTitle: "Noticias y Anuncios",
     featNewsAll: "Ver Todo",
     newsBlog1Title: "New 1",
