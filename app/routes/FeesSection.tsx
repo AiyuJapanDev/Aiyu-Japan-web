@@ -86,11 +86,15 @@ export const FeesSection = () => {
           </p>
         </div>
 
-        <div className="px-4 mb-4 grid gap-8 md:grid-cols-3">
+        <div className="px-4 mb-4 grid gap-8 md:grid-cols-2 lg:grid-cols-3 grid-flow-row justify-items-center md:justify-items-stretch">
           {serviceFees.map((fee, index) => (
             <div
               key={index}
-              className="border-2 border-input relative overflow-hidden rounded-2xl border-gray-100 bg-white p-8 shadow-lg transition-shadow hover:shadow-xl"
+              className={`border-2 border-input relative overflow-hidden rounded-2xl border-gray-100 bg-white p-8 shadow-lg transition-shadow hover:shadow-xl ${
+                index === 2
+                  ? "md:col-span-2 lg:col-span-1 md:w-[calc(50%-1rem)] lg:w-auto md:justify-self-center lg:justify-self-stretch"
+                  : ""
+              }`}
             >
               <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-gray-50">
                 {fee.icon}
@@ -120,11 +124,11 @@ export const FeesSection = () => {
             {t("feesSubtitle")}
           </p> */}
         </div>
-        <div className="px-4 mb-20 flex gap-8 justify-center">
+        <div className="px-4 mb-20 flex flex-col md:flex-row gap-8 justify-center">
           {newServices.map((fee, index) => (
             <div
               key={index}
-              className="flex-1 relative overflow-hidden rounded-2xl border border-gray-100 bg-white p-8 shadow-lg transition-shadow hover:shadow-xl"
+              className="border-2 border-input flex-1 relative overflow-hidden rounded-2xl border-gray-100 bg-white p-8 shadow-lg transition-shadow hover:shadow-xl"
             >
               <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-gray-50">
                 {fee.icon}
