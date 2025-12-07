@@ -1166,7 +1166,7 @@ export const translations = {
     home: "Inicio",
     services: "Servicios",
     calculator: "Estimador de costos",
-    storeGuide: "Donde Comprar",
+    storeGuide: "¿Primera Vez?",
     simulator: "Calculadora Beta",
     dashboard: "Panel principal",
     login: "Iniciar Sesión",
@@ -1352,7 +1352,7 @@ export const translations = {
 
     // Hero Section Buttons
     makeOrderButton: "Realizar Pedido",
-    whereToShop: "Donde Comprar",
+    whereToShop: "¿Primera Vez?",
     seeJapaneseStores: "Ver Tiendas Japonesas",
     calculateEstimatedCost: "Calcular Costo Estimado",
 
@@ -1372,7 +1372,7 @@ export const translations = {
 
     // Footer
     footerMenu: "Menu",
-    whereToShopMenu: "Donde Comprar",
+    whereToShopMenu: "¿Primera Vez?",
     calculatorBeta: "Calculadoras",
     servicesFooter: "Servicios",
     contactFooter: "Contacto",
