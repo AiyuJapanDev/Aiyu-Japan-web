@@ -26,7 +26,7 @@ import {
 import React, { useEffect } from "react";
 import { useLoaderData } from "react-router";
 
-export async function loader() {
+export async function loader({ params }: Route.LoaderArgs) {
   const [
     homeDataEn,
     homeDataEs,

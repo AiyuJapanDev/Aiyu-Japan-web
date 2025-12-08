@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { useState, useEffect, useCallback } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 interface CurrencyRates {
   usd: number;
@@ -11,7 +11,7 @@ export const useCurrencyRates = () => {
   const [rates, setRates] = useState<CurrencyRates>({
     usd: 0.0069,
     mxn: 0.14,
-    clp: 6.56
+    clp: 6.56,
   });
   const [loading, setLoading] = useState(true);
 
@@ -22,8 +22,8 @@ export const useCurrencyRates = () => {
   const fetchRates = async () => {
     try {
       const { data, error } = await supabase
-        .from('currency_rates')
-        .select('currency_code, rate_to_jpy');
+        .from("currency_rates")
+        .select("currency_code, rate_to_jpy");
 
       if (error) throw error;
 
@@ -31,7 +31,7 @@ export const useCurrencyRates = () => {
         const ratesMap: CurrencyRates = {
           usd: 0.0069,
           mxn: 0.14,
-          clp: 6.56
+          clp: 6.56,
         };
 
         data.forEach((rate) => {
@@ -44,16 +44,19 @@ export const useCurrencyRates = () => {
         setRates(ratesMap);
       }
     } catch (error) {
-      console.error('Error fetching currency rates:', error);
+      console.error("Error fetching currency rates:", error);
     } finally {
       setLoading(false);
     }
   };
 
-  const convertCurrency = (amountJpy: number, currency: 'usd' | 'mxn' | 'clp'): string => {
-    const converted = amountJpy * rates[currency];
-    return converted.toFixed(2);
-  };
+  const convertCurrency = useCallback(
+    (amountJpy: number, currency: "usd" | "mxn" | "clp"): string => {
+      const converted = amountJpy * rates[currency];
+      return converted.toFixed(2);
+    },
+    [rates]
+  );
 
   return { rates, loading, convertCurrency };
 };
