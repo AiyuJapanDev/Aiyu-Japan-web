@@ -142,17 +142,19 @@ const Header = () => {
           isVisible ? "translate-y-0" : "-translate-y-full"
         }`}
       >
-        <div className="relative h-10 w-full">
-          <div className="w-full h-full bg-black/80 flex justify-center items-center text-sm z-2 gap-4">
-            <p className="font-bold text-white">{t("newUser")}</p>
-            <Link to="/store-guide/what-is">
-              <Button className="text-white" variant="breadcrumb" size="xs">
-                {t("moreInfo")}
-                <ArrowRight />
-              </Button>
-            </Link>
+        {!location.pathname.includes("dashboard") && (
+          <div className="relative h-10 w-full">
+            <div className="w-full h-full bg-black/80 flex justify-center items-center text-sm z-2 gap-4">
+              <p className="font-bold text-white">{t("newUser")}</p>
+              <Link to="/store-guide/what-is">
+                <Button className="text-white" variant="breadcrumb" size="xs">
+                  {t("moreInfo")}
+                  <ArrowRight />
+                </Button>
+              </Link>
+            </div>
           </div>
-        </div>
+        )}
 
         <nav className="px-2 pt-2 max-w-7xl mx-auto  sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-14">
@@ -438,10 +440,12 @@ const Header = () => {
               </div>
             </div>
           )}
-          <p
-            className="font-bold text-center max-w-[600px] mx-auto"
-            dangerouslySetInnerHTML={{ __html: t("headerParagraph") }}
-          ></p>
+          {!location.pathname.includes("dashboard") && (
+            <p
+              className="font-bold text-center max-w-[600px] mx-auto"
+              dangerouslySetInnerHTML={{ __html: t("headerParagraph") }}
+            ></p>
+          )}
         </nav>
       </header>
 
