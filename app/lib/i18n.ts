@@ -9,6 +9,7 @@ export const translations = {
 
     // Navigation
     newUser: "Are you new to Aiyu Japan?",
+    stores: "Stores",
     moreInfo: "More Info",
     home: "Home",
     services: "Services",
@@ -1170,6 +1171,7 @@ export const translations = {
 
     // Navigation
     newUser: "¿Eres Nuevo Usuario?",
+    stores: "Tiendas",
     moreInfo: "Más Info",
     home: "Inicio",
     services: "Servicios",

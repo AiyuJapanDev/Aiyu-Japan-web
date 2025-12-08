@@ -1,4 +1,3 @@
-import React from "react";
 import { useApp } from "@/contexts/AppContext";
 import { useAuth } from "@/contexts/useAuth";
 import { Button } from "@/components/ui/button";
@@ -21,6 +20,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
+import {
+  NavigationMenu,
+  NavigationMenuContent,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+  NavigationMenuTrigger,
+} from "@/components/ui/navigation-menu";
+import { cn } from "@/lib/utils";
 import MyAccountMenu from "../ui/custom/MyAccountMenu";
 import MobileAccountMenu from "../ui/custom/MobileAccountMenu";
 import LogOutBtn from "../ui/custom/LogOutBtn";
@@ -29,41 +37,11 @@ import LogoMobile from "/aiyu_logo_small.png";
 
 const Header = () => {
   const { language, setLanguage, t } = useApp();
-  const { user, isAdmin, profile } = useAuth();
+  const { user, isAdmin } = useAuth();
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { unreadCount } = useNotifications();
   const mobileMenuRef = useRef<HTMLDivElement>(null);
-  const [isVisible, setIsVisible] = useState(true);
-  const [lastScrollY, setLastScrollY] = useState(0);
-
-  // Scroll to top when location changes
-  /*   useEffect(() => {
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }, [location.pathname]); */
-
-  // Hide on scroll logic
-  useEffect(() => {
-    const controlNavbar = () => {
-      if (typeof window !== "undefined") {
-        if (window.scrollY > lastScrollY && window.scrollY > 200) {
-          // if scroll down hide the navbar
-          setIsVisible(false);
-          setIsMobileMenuOpen(false);
-        } else {
-          // if scroll up show the navbar
-          setIsVisible(true);
-        }
-        setLastScrollY(window.scrollY);
-      }
-    };
-
-    window.addEventListener("scroll", controlNavbar);
-
-    return () => {
-      window.removeEventListener("scroll", controlNavbar);
-    };
-  }, [lastScrollY]);
 
   // Close mobile menu when clicking outside
   useEffect(() => {
@@ -103,8 +81,11 @@ const Header = () => {
   const navLinks = [
     { to: "/", label: t("home") },
     { to: "/store-guide/what-is", label: t("storeGuide") },
-    { to: `/news/${language}`, label: t("newsLinkTitle") },
-    { to: `/blog/${language}`, label: t("blog") },
+    { to: "/store-guide/popular-markets", label: t("stores") },
+    [
+      { to: `/news/${language}`, label: t("newsLinkTitle") },
+      { to: `/blog/${language}`, label: t("blog") },
+    ],
     { to: "/contact", label: t("contact") },
     { to: "/calculator", label: t("calculator") },
   ];
@@ -138,10 +119,15 @@ const Header = () => {
   return (
     <>
       <header
-        className={`pb-2 bg-white/95 backdrop-blur-sm border-b-2 border-capybara-orange/20 sticky top-0 z-50 transition-transform duration-300 ${
-          isVisible ? "translate-y-0" : "-translate-y-full"
-        }`}
+        className={`pb-2 bg-white/95 backdrop-blur-sm border-b-2 border-capybara-orange/20 sticky top-0 z-50 transition-transform duration-300`}
       >
+        {/*
+         *
+         *
+         * NEW USER BANNER
+         *
+         *
+         * */}
         {!location.pathname.includes("dashboard") && (
           <div className="relative h-10 w-full">
             <div className="w-full h-full bg-black/80 flex justify-center items-center text-sm z-2 gap-4">
@@ -156,7 +142,19 @@ const Header = () => {
           </div>
         )}
 
+        {/*
+         *
+         *
+         * NAVIGATION
+         *
+         *
+         * */}
         <nav className="px-2 pt-2 max-w-7xl mx-auto  sm:px-6 lg:px-8">
+          {/*
+           *
+           * Centered Desktop Navigation
+           *
+           * */}
           <div className="flex justify-between items-center h-14">
             {/* Logo */}
             <Link to="/">
@@ -172,83 +170,72 @@ const Header = () => {
               />
             </Link>
 
-            {/* Centered Desktop Navigation */}
+            {/* Desktop Navigation Links */}
             <div className="hidden lg:flex items-center justify-center flex-1">
-              <div className="flex items-center space-x-1">
-                {/* <NavLink
-                  to="/services"
-                  className={({ isActive }) =>
-                    `px-3 py-2 text-sm font-semibold transition-all duration-300 ${
-                      isActive
-                        ? "text-capybara-orange"
-                        : "text-gray-700 hover:text-capybara-orange"
-                    }`
-                  }
-                >
-                  {t("services")}
-                </NavLink> */}
+              <NavigationMenu>
+                <NavigationMenuList className="space-x-4">
+                  {navLinks.map((link, index) => {
+                    if (Array.isArray(link)) {
+                      return (
+                        <NavigationMenuItem
+                          key={link[0].to}
+                          className="relative"
+                        >
+                          <NavigationMenuTrigger className="px-0">
+                            <div
+                              className={` py-2 text-sm font-semibold transition-all duration-300 text-gray-700 hover:text-capybara-orange`}
+                            >
+                              {link[0].label} & {link[1].label}
+                            </div>
+                          </NavigationMenuTrigger>
+                          <NavigationMenuContent>
+                            <ul className="grid gap-2 p-4">
+                              {link.map((subLink) => (
+                                <li key={subLink.to}>
+                                  <NavigationMenuLink asChild>
+                                    <NavLink
+                                      to={subLink.to}
+                                      className={({ isActive }) =>
+                                        cn(
+                                          "select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-capybara-orange focus:bg-accent focus:text-capybara-orange",
+                                          isActive
+                                            ? "text-capybara-orange"
+                                            : "text-gray-700"
+                                        )
+                                      }
+                                    >
+                                      {subLink.label}
+                                    </NavLink>
+                                  </NavigationMenuLink>
+                                </li>
+                              ))}
+                            </ul>
+                          </NavigationMenuContent>
+                        </NavigationMenuItem>
+                      );
+                    }
 
-                <NavLink
-                  to="/store-guide/what-is"
-                  className={({ isActive }) =>
-                    `px-3 py-2 text-sm font-semibold transition-all duration-300 ${
-                      isActive
-                        ? "text-capybara-orange"
-                        : "text-gray-700 hover:text-capybara-orange"
-                    }`
-                  }
-                >
-                  {t("storeGuide")}
-                </NavLink>
-                <NavLink
-                  to="/calculator"
-                  className={({ isActive }) =>
-                    `px-3 py-2 text-sm font-semibold transition-all duration-300 story-link ${
-                      isActive
-                        ? "text-capybara-orange"
-                        : "text-gray-700 hover:text-capybara-orange"
-                    }`
-                  }
-                >
-                  {t("calculator")}
-                </NavLink>
-                <NavLink
-                  to={"/blog/" + language}
-                  className={({ isActive }) =>
-                    `px-3 py-2 text-sm font-semibold transition-all duration-300 story-link ${
-                      isActive
-                        ? "text-capybara-orange"
-                        : "text-gray-700 hover:text-capybara-orange"
-                    }`
-                  }
-                >
-                  {t("blog")}
-                </NavLink>
-                <NavLink
-                  to={`/news/${language}`}
-                  className={({ isActive }) =>
-                    `px-3 py-2 text-sm font-semibold transition-all duration-300 ${
-                      isActive
-                        ? "text-capybara-orange"
-                        : "text-gray-700 hover:text-capybara-orange"
-                    }`
-                  }
-                >
-                  {t("newsLinkTitle")}
-                </NavLink>
-                <NavLink
-                  to="/contact"
-                  className={({ isActive }) =>
-                    `px-3 py-2 text-sm font-semibold transition-all duration-300 ${
-                      isActive
-                        ? "text-capybara-orange"
-                        : "text-gray-700 hover:text-capybara-orange"
-                    }`
-                  }
-                >
-                  {t("contact")}
-                </NavLink>
-              </div>
+                    if (link.to === "/") return null;
+
+                    return (
+                      <NavigationMenuItem key={link.to}>
+                        <NavigationMenuLink>
+                          <NavLink
+                            to={link.to}
+                            className={({ isActive }) =>
+                              `px-3 py-2 text-sm font-semibold transition-all duration-300 text-gray-700 hover:text-capybara-orange ${
+                                isActive ? "text-capybara-orange" : ""
+                              }`
+                            }
+                          >
+                            {link.label}
+                          </NavLink>
+                        </NavigationMenuLink>
+                      </NavigationMenuItem>
+                    );
+                  })}
+                </NavigationMenuList>
+              </NavigationMenu>
             </div>
 
             {/* Auth Actions - Desktop */}
@@ -366,7 +353,12 @@ const Header = () => {
             </div>
           </div>
 
-          {/* Mobile Navigation */}
+          {/*
+           *
+           *
+           * Mobile Navigation
+           *
+           * */}
           {isMobileMenuOpen && (
             <div
               className="px-4 lg:hidden animate-fade-in "
@@ -378,7 +370,16 @@ const Header = () => {
                   {t("information")}
                 </div>
 
-                {navLinks.map((link) => {
+                {navLinks.map((link, i) => {
+                  if (Array.isArray(link)) {
+                    return link.map((subLink) => (
+                      <Navlink
+                        key={subLink.to}
+                        to={subLink.to}
+                        label={subLink.label}
+                      />
+                    ));
+                  }
                   if (link.to !== "/" && link.to !== "/calculator") {
                     return (
                       <Navlink key={link.to} to={link.to} label={link.label} />
@@ -387,11 +388,9 @@ const Header = () => {
                 })}
 
                 <Navlink
-                  to={navLinks.find((link) => link.to === "/calculator")?.to}
+                  to="/calculator"
                   className={"font-semibold"}
-                  label={
-                    navLinks.find((link) => link.to === "/calculator")?.label
-                  }
+                  label={t("calculator")}
                 />
 
                 {user && (
@@ -440,6 +439,12 @@ const Header = () => {
               </div>
             </div>
           )}
+
+          {/* 
+          
+          Header Paragraph 
+          
+          */}
           {!location.pathname.includes("dashboard") && (
             <p
               className="font-bold text-center max-w-[600px] mx-auto"
@@ -449,7 +454,13 @@ const Header = () => {
         </nav>
       </header>
 
-      {/* Language Switcher - Bottom Left */}
+      {/*
+       *
+       *
+       * LANGUAGE SWITCHER - BOTTOM LEFT
+       *
+       *
+       * */}
       <div className="fixed bottom-4 left-3 z-50 hidden md:block mr-1 ">
         <div className=" px-3 flex items-center space-x-2 bg-white rounded-full  py-3 shadow-lg border border-capybara-orange/20">
           <Globe className="w-5 h-5 text-capybara-orange" />
