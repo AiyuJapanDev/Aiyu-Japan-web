@@ -1,5 +1,6 @@
 import { Route } from ".react-router/types/app/routes/+types/Home";
 import ChatAssistant from "@/components/ChatAssistant";
+import ComparisonTableSection from "@/components/sections/ComparisonTableSection";
 import FeaturedBlog from "@/components/sections/FeaturedBlog";
 import FeaturedNews from "@/components/sections/FeaturedNews";
 import HeroSection from "@/components/sections/HeroSection";
@@ -113,11 +114,11 @@ const Home = ({ loaderData }: Route.ComponentProps) => {
       </AnimatedSection>
 
       <AnimatedSection delay={300}>
-        <SimpleHowItWorks />
+        <ServiceFeatures />
       </AnimatedSection>
 
       <AnimatedSection delay={300}>
-        <ServiceFeatures />
+        <ComparisonTableSection />
       </AnimatedSection>
 
       <AnimatedSection delay={400}>

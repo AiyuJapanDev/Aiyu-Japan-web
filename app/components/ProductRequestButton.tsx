@@ -72,7 +72,6 @@ const ProductRequestButton = () => {
           transition-all duration-300 hover:scale-105 hover:shadow-lg active:scale-95`}
         aria-label={t("makeOrderButton")}
       >
-        <Plus className="text-white h-5 w-5" />
         <span className="text-sm font-medium text-white">
           {t("makeOrderButton")}
         </span>

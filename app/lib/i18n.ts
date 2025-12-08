@@ -113,6 +113,34 @@ export const translations = {
     estimatedShipping: "Estimated Shipping",
     total: "Total Estimate",
 
+    // Comparison Table
+    comparisonTitle: "Price and Service Comparison",
+    comparisonSubtitle:
+      "Aiyu Japan vs. Competitors - Find the best option for your shopping from Japan",
+    comparisonCategory: "Category",
+    comparisonCompanyB: "Company B",
+    comparisonCompanyC: "Company C",
+    compAspectFee: "Fee per purchase",
+    compAspectLocker: "Locker / JP address",
+    compAspectConsolidation: "Consolidation",
+    compAspectPackaging: "Packaging",
+    compAspectUnpacking: "Unpacking",
+    compAspectFreeStorage: "Free storage",
+    compAspectStorageLimit: "Storage limit",
+    compAspectPhotos: "Product photos",
+    compValFrom500: "From ¥500/item",
+    compVal1000PerPkg: "¥1,000 per package",
+    compValIncluded: "Included",
+    compValFree: "Free",
+    compValUnlimited: "Unlimited",
+    compValNoLimit: "No limit",
+    compValNo: "No",
+    compVal500Plus: "¥500 + ¥150/kg (from 2kg)",
+    compVal60Days: "60 days",
+    compVal45Days: "45 days",
+    compVal90Days: "90 days",
+    compValNoLimitExtra: "No limit (with extra charge)",
+
     // Store Categories
     animeStores: "Anime & Manga",
     fashionStores: "Fashion",
@@ -176,7 +204,7 @@ export const translations = {
       "Get full access to the most popular Japanese online shops and individual sellers",
 
     // Hero Section Buttons
-    makeOrderButton: "Make Order",
+    makeOrderButton: "Go to Dashboard",
     whereToShop: "Where To Shop",
     seeJapaneseStores: "See Japanese Stores",
     calculateEstimatedCost: "Calculate Estimated Cost",
@@ -1299,6 +1327,34 @@ export const translations = {
     estimatedShipping: "Envío Estimado",
     total: "Estimación Total",
 
+    // Tabla de Comparación
+    comparisonTitle: "Comparación de Precios y Servicios",
+    comparisonSubtitle:
+      "Aiyu Japan vs. Competidores - Encuentra la mejor opción para tus compras desde Japón",
+    comparisonCategory: "Categoría",
+    comparisonCompanyB: "Empresa B",
+    comparisonCompanyC: "Empresa C",
+    compAspectFee: "Tarifa por compra",
+    compAspectLocker: "Casillero / dirección JP",
+    compAspectConsolidation: "Consolidación",
+    compAspectPackaging: "Embalaje",
+    compAspectUnpacking: "Desempaque",
+    compAspectFreeStorage: "Almacenamiento gratis",
+    compAspectStorageLimit: "Límite de almacenamiento",
+    compAspectPhotos: "Fotos de producto",
+    compValFrom500: "Desde ¥500/item",
+    compVal1000PerPkg: "¥1,000 por paquete",
+    compValIncluded: "Incluida",
+    compValFree: "Gratis",
+    compValUnlimited: "Ilimitado",
+    compValNoLimit: "Sin límite",
+    compValNo: "No",
+    compVal500Plus: "¥500 + ¥150/kg (desde 2kg)",
+    compVal60Days: "60 días",
+    compVal45Days: "45 días",
+    compVal90Days: "90 días",
+    compValNoLimitExtra: "Sin límite (con cobro extra)",
+
     // Store Categories
     animeStores: "Anime y Manga",
     fashionStores: "Moda",
@@ -1362,7 +1418,7 @@ export const translations = {
       "Compra de las tiendas más populares de Japón y de vendedores individuales.",
 
     // Hero Section Buttons
-    makeOrderButton: "Realizar Pedido",
+    makeOrderButton: "Ir al Dashboard",
     whereToShop: "¿Primera Vez?",
     seeJapaneseStores: "Ver Tiendas Japonesas",
     calculateEstimatedCost: "Calcular Costo Estimado",
