@@ -2,7 +2,7 @@ import React from "react";
 import { Link } from "react-router";
 import { Article } from "@/types/blog";
 import { useApp } from "@/contexts/AppContext";
-import { getLangSlug } from "@/lib/utils";
+import { getImage, getLangSlug } from "@/lib/utils";
 import {
   Carousel,
   CarouselContent,
@@ -53,26 +53,10 @@ const FeaturedBlogSlider: React.FC<FeaturedBlogSliderProps> = ({
       >
         <CarouselContent className="-ml-4">
           {displayArticles.map((blog, index) => {
-            const imageUrl = blog.cover?.url ? `${blog.cover.url}` : "";
-
-            const slug = getLangSlug(blog, language);
-
-            // Construct srcset
-            const formats = blog.cover?.formats;
-            const srcset = formats
-              ? [
-                  formats.small ? `${formats.small.url} 500w` : "",
-                  formats.medium ? `${formats.medium.url} 750w` : "",
-                  formats.large ? `${formats.large.url} 1000w` : "",
-                  blog.cover?.width ? `${imageUrl} ${blog.cover.width}w` : "", // Original as fallback/highest quality
-                ]
-                  .filter(Boolean)
-                  .join(", ")
-              : undefined;
-
+            const slug = blog.slug;
+            const { src, srcset } = getImage(blog.cover);
             const sizes =
-              "(max-width: 640px) 100vw, (max-width: 1024px) 750px, 1000px";
-
+              "(min-width: 1280px) 525px, (min-width: 1040px) calc(30.45vw + 141px), (min-width: 780px) calc(63.33vw - 39px), calc(95vw - 43px)";
             return (
               <CarouselItem
                 key={`${blog.id}-${index}`}
@@ -83,19 +67,17 @@ const FeaturedBlogSlider: React.FC<FeaturedBlogSliderProps> = ({
                   className="block w-full aspect-video rounded-xl overflow-clip shadow-lg transition-transform hover:scale-105 hover:shadow-lg relative group"
                   draggable={false}
                 >
-                  {imageUrl && (
-                    <img
-                      src={imageUrl}
-                      srcSet={srcset}
-                      sizes={sizes}
-                      alt={blog.cover?.alternativeText || "Banner image"}
-                      width={blog.cover?.width}
-                      height={blog.cover?.height}
-                      className="w-full h-full object-cover pointer-events-none"
-                      draggable={false}
-                      loading={index < 5 ? "eager" : "lazy"}
-                    />
-                  )}
+                  <img
+                    src={src}
+                    srcSet={srcset}
+                    sizes={sizes}
+                    alt={blog.cover?.alternativeText || "Banner image"}
+                    /*                     width={blog.cover?.width}
+                    height={blog.cover?.height} */
+                    className="w-full h-full object-cover pointer-events-none"
+                    draggable={false}
+                    loading={index < 5 ? "eager" : "lazy"}
+                  />
                   <div className="absolute inset-0 bg-black/0 active:bg-black/10 transition-colors" />
                 </Link>
               </CarouselItem>

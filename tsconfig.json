@@ -8,7 +8,7 @@
     "verbatimModuleSyntax": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
+      "@app/*": ["./app/*"]
     },
     "noImplicitAny": false,
     "noUnusedParameters": false,

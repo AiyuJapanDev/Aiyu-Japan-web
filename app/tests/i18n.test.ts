@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { translations } from "./i18n";
+import { translations } from "../lib/i18n";
 
 describe("i18n", () => {
   it("should have the same keys for all languages", () => {

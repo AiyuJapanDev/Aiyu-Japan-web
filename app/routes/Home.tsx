@@ -7,7 +7,6 @@ import HeroSection from "@/components/sections/HeroSection";
 import RecommendedStoresSection from "@/components/sections/RecommendedStoresSection";
 import { ReviewsSection } from "@/components/sections/ReviewsSection";
 import ServiceFeatures from "@/components/sections/ServiceFeatures";
-import SimpleHowItWorks from "@/components/sections/SimpleHowItWorks";
 import SocialMediaSection from "@/components/sections/SocialMediaSection";
 import {
   Accordion,
@@ -19,46 +18,23 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useApp } from "@/contexts/AppContext";
 import { useIntersectionObserver } from "@/hooks/useIntersectionObserver";
 import {
-  getAllNewsPosts,
-  getFeaturedBlogArticles,
-  getHomeComponents,
-  getStoreMarkets,
-} from "@/lib/strapi";
+  allBlogPosts,
+  allNewsPosts,
+  homeData,
+  storeMarkets,
+} from "@/lib/data.server";
 import React, { useEffect } from "react";
-import { useLoaderData } from "react-router";
 
 export async function loader({ params }: Route.LoaderArgs) {
-  const [
-    homeDataEn,
-    homeDataEs,
-    featuredArticlesEn,
-    featuredArticlesEs,
-    newsPostsEn,
-    newsPostsEs,
-    storeMarkets,
-  ] = await Promise.all([
-    getHomeComponents("en"),
-    getHomeComponents("es"),
-    getFeaturedBlogArticles("en"),
-    getFeaturedBlogArticles("es"),
-    getAllNewsPosts("en"),
-    getAllNewsPosts("es"),
-    getStoreMarkets("en"),
-  ]);
+  const featuredArticles = allBlogPosts.posts.filter((post) => post.featured);
+
+  const newsPosts = allNewsPosts.posts.slice(0, 5);
 
   return {
-    en: {
-      home: homeDataEn,
-      featured: featuredArticlesEn,
-      news: newsPostsEn,
-      storeMarkets: storeMarkets,
-    },
-    es: {
-      home: homeDataEs,
-      featured: featuredArticlesEs,
-      news: newsPostsEs,
-      storeMarkets: storeMarkets,
-    },
+    featured: featuredArticles,
+    home: homeData,
+    news: newsPosts,
+    storeMarkets: storeMarkets,
   };
 }
 
@@ -90,8 +66,6 @@ const Home = ({ loaderData }: Route.ComponentProps) => {
   const { t, language } = useApp();
   const data = loaderData as Awaited<ReturnType<typeof loader>>;
 
-  const currentData = data[language as keyof typeof data] || data.en;
-
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
@@ -103,14 +77,11 @@ const Home = ({ loaderData }: Route.ComponentProps) => {
       </div>
 
       <AnimatedSection delay={100}>
-        <FeaturedBlog
-          homeData={currentData.home}
-          featuredArticles={currentData.featured}
-        />
+        <FeaturedBlog homeData={data.home} featuredArticles={data.featured} />
       </AnimatedSection>
 
       <AnimatedSection delay={200}>
-        <FeaturedNews newsPosts={currentData.news} />
+        <FeaturedNews newsPosts={data.news} />
       </AnimatedSection>
 
       <AnimatedSection delay={300}>
@@ -122,7 +93,7 @@ const Home = ({ loaderData }: Route.ComponentProps) => {
       </AnimatedSection>
 
       <AnimatedSection delay={400}>
-        <RecommendedStoresSection storeMarkets={currentData.storeMarkets} />
+        <RecommendedStoresSection storeMarkets={data.storeMarkets} />
       </AnimatedSection>
 
       <AnimatedSection delay={500}>

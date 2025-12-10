@@ -1,4 +1,5 @@
 import { useApp } from "@/contexts/AppContext";
+import { getMarketLogo } from "@/lib/utils";
 import { StoreMarket } from "@/types/strapi-stores";
 
 export default function RecommendedStoresSection({
@@ -30,7 +31,7 @@ export default function RecommendedStoresSection({
           >
             <img
               className="object-contain w-full h-full"
-              src={shop.logo.url ? shop.logo.url : ""}
+              src={getMarketLogo(shop)}
               alt={shop.title}
             />
           </a>

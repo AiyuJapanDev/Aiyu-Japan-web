@@ -1,4 +1,6 @@
-import { Article, ArticleLocalization } from "@/types/blog";
+import { Article, ArticleLocalization, StrapiImage } from "@/types/blog";
+import { New } from "@/types/strapi-news";
+import { StoreMarket } from "@/types/strapi-stores";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 
@@ -16,4 +18,54 @@ export const getLangSlug = (article: Article, language: string): string => {
     )?.slug;
   }
   return article.slug;
+};
+
+export const getImage = (
+  cover: StrapiImage
+): {
+  src: string;
+  srcset: string;
+  sizes: string;
+} => {
+  if (!cover) {
+    return {
+      src: "",
+      srcset: "",
+      sizes: "",
+    };
+  }
+  const baseURL =
+    import.meta.env.MODE === "development"
+      ? import.meta.env.VITE_STRAPI_URL
+      : "";
+  const formats = cover?.formats;
+  const fallbackUrl = formats?.large?.url;
+  // Construct srcset
+  const srcset = [
+    formats.large && `${baseURL}${formats.large.url} 1000w`,
+    formats.medium && `${baseURL}${formats.medium.url} 750w`,
+    formats.small && `${baseURL}${formats.small.url} 500w`,
+    formats.thumbnail && `${baseURL}${formats.thumbnail.url} 245w`,
+  ]
+    .filter(Boolean)
+    .join(", ");
+
+  const sizes = "(max-width: 640px) 100vw, (max-width: 1024px) 750px, 1000px";
+
+  return {
+    src: fallbackUrl,
+    srcset,
+    sizes,
+  };
+};
+
+export const getMarketLogo = (market: StoreMarket): string => {
+  if (!market) {
+    return "";
+  }
+  const baseURL =
+    import.meta.env.MODE === "development"
+      ? import.meta.env.VITE_STRAPI_URL
+      : "";
+  return `${baseURL}${market.logo.url}`;
 };

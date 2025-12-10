@@ -1,121 +1,33 @@
 import { Route } from ".react-router/types/app/routes/+types/ArticlePage";
 import RichTextBlockRenderer from "@/components/ui/custom/RichTextBlockRenderer";
 import { useApp } from "@/contexts/AppContext";
-import { getBlogArticle } from "@/lib/strapi";
+import { allBlogPosts } from "@/lib/data.server";
+import { getImage } from "@/lib/utils";
 import { Article } from "@/types/blog";
-import { BlocksRenderer } from "@strapi/blocks-react-renderer";
-import { ArrowLeft, Calendar, Clock } from "lucide-react";
-import { Link } from "react-router";
+import { ArrowLeft, Calendar } from "lucide-react";
+import { Link, useNavigate } from "react-router";
+
+const getBlogArticle = async (slug: string) => {
+  return allBlogPosts.posts.find((article) => article.slug === slug);
+};
 
 export async function loader({ params }: Route.LoaderArgs) {
-  const article = await getBlogArticle(params.articleSlug, params.lang);
+  const article = await getBlogArticle(params.articleSlug);
   if (!article) {
     throw new Response("Not Found", { status: 404 });
   }
+
   return article;
 }
 
-/* // Block renderers
-function RichTextBlockRenderer({ block }: { block: RichTextBlock }) {
-  return (
-    <div className="prose prose-lg prose-blue max-w-none prose-headings:font-bold prose-a:text-blue-600 hover:prose-a:text-blue-800 prose-img:rounded-xl prose-img:shadow-lg">
-      <ReactMarkdown>{block.body}</ReactMarkdown>
-    </div>
-  );
-}
-
-function QuoteBlockRenderer({ block }: { block: QuoteBlock }) {
-  return (
-    <blockquote className="relative border-l-4 border-blue-500 bg-blue-50 p-6 my-8 rounded-r-lg">
-      <Quote className="absolute top-4 left-4 w-8 h-8 text-blue-300 opacity-50" />
-      <p className="text-lg italic text-gray-700 mb-2 pl-8">{block.body}</p>
-      {block.title && (
-        <cite className="block text-sm font-semibold text-blue-600 pl-8">
-          — {block.title}
-        </cite>
-      )}
-    </blockquote>
-  );
-}
-
-function MediaBlockRenderer({ block }: { block: MediaBlock }) {
-  if (!block.file) return null;
-
-  const imageUrl = `${block.file.url}`;
-
-  return (
-    <figure className="my-8">
-      <img
-        src={imageUrl}
-        alt={block.file.alternativeText || "Article image"}
-        className="w-full rounded-xl shadow-lg"
-      />
-      {block.file.caption && (
-        <figcaption className="text-center text-sm text-gray-600 mt-2 italic">
-          {block.file.caption}
-        </figcaption>
-      )}
-    </figure>
-  );
-}
-
-function SliderBlockRenderer({ block }: { block: SliderBlock }) {
-  if (!block.files || block.files.length === 0) return null;
-
-  return (
-    <div className="my-8 grid grid-cols-1 md:grid-cols-2 gap-4">
-      {block.files.map((file) => {
-        const imageUrl = `${file.url}`;
-        return (
-          <figure key={file.id}>
-            <img
-              src={imageUrl}
-              alt={file.alternativeText || "Slider image"}
-              className="w-full rounded-xl shadow-lg "
-            />
-            {file.caption && (
-              <figcaption className="text-center text-sm text-gray-600 mt-2 italic">
-                {file.caption}
-              </figcaption>
-            )}
-          </figure>
-        );
-      })}
-    </div>
-  );
-}
-
-function BlockRenderer({ block }: { block: ArticleBlock }) {
-  switch (block.__component) {
-    case "shared.rich-text":
-      return <RichTextBlockRenderer block={block} />;
-    case "shared.quote":
-      return <QuoteBlockRenderer block={block} />;
-    case "shared.media":
-      return <MediaBlockRenderer block={block} />;
-    case "shared.slider":
-      return <SliderBlockRenderer block={block} />;
-    default:
-      return null;
-  }
-} */
-
 export default function ArticlePage({ loaderData }: Route.ComponentProps) {
+  let navigate = useNavigate();
   if (!loaderData) return null;
 
-  const {
-    title,
-    description,
-    content,
-    cover,
-    publishedAt,
-    locale,
-    author,
-    category,
-  } = loaderData as Article;
+  const { title, content, cover, publishedAt, locale, author, category } =
+    loaderData as Article;
 
   const { language, t } = useApp();
-  const imageUrl = cover?.url ? `${cover.url}` : null;
 
   const formattedDate = new Date(publishedAt).toLocaleDateString(
     locale || "en-US",
@@ -126,27 +38,20 @@ export default function ArticlePage({ loaderData }: Route.ComponentProps) {
     }
   );
 
-  // Estimate reading time from all rich text blocks
-  /*   const wordCount =
-    content
-      ?.filter(
-        (block): block is BlocksContent =>
-          block.__component === "shared.rich-text"
-      )
-      .reduce(
-        (count, block) => count + (block.body?.split(/\s+/).length || 0),
-        0
-      ) || 0;
-  const readingTime = Math.ceil(wordCount / 200); */
+  // Get image
+  const { src, srcset } = getImage(cover);
+  const sizes = "(min-width: 1260px) 1153px, 94.04vw";
 
   return (
     <div className="min-h-screen bg-gray-50 pb-20 w-full">
       {/* Hero Section */}
       <div className="relative w-full h-[60vh] min-h-[400px] bg-gray-900 overflow-hidden">
-        {imageUrl && (
+        {src && (
           <>
             <img
-              src={imageUrl}
+              src={src}
+              srcSet={srcset}
+              sizes={sizes}
               alt={cover?.alternativeText || title}
               className="absolute inset-0 w-full h-full object-cover md:object-top opacity-60 object-left"
             />
@@ -155,13 +60,13 @@ export default function ArticlePage({ loaderData }: Route.ComponentProps) {
         )}
 
         <div className="absolute inset-0 flex flex-col justify-end px-4 sm:px-6 lg:px-8 pb-16 max-w-7xl mx-auto w-full">
-          <Link
-            to={`/blog/${language}`}
+          <button
+            onClick={() => navigate(-1)}
             className="inline-flex items-center text-white/80 hover:text-white mb-6 transition-colors w-fit"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
             {t("backToBlogs")}
-          </Link>
+          </button>
 
           {category && (
             <span className="inline-block px-3 py-1 bg-blue-500 text-white text-sm font-semibold rounded-full mb-4 w-fit">
