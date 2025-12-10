@@ -63,7 +63,7 @@ const FeaturedBlogSlider: React.FC<FeaturedBlogSliderProps> = ({
                 className="pl-4 basis-1/2 md:basis-1/3 lg:basis-1/4 mb-6"
               >
                 <Link
-                  to={`/blog/${language}/${slug}`}
+                  to={`/blog/${slug}`}
                   className="block w-full aspect-video rounded-xl overflow-clip shadow-lg transition-transform hover:scale-105 hover:shadow-lg relative group"
                   draggable={false}
                 >

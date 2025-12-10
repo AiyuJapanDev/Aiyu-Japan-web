@@ -421,7 +421,7 @@ const Header = () => {
 
                 {/* language selector & logout button */}
                 <div className="relative flex items-center justify-center gap-2 px-1  border-b-2 border-capybara-orange/20">
-                  <Select value={language} onValueChange={setLanguage}>
+                  {/* <Select value={language} onValueChange={setLanguage}>
                     <SelectTrigger
                       aria-label="Language"
                       className=" relative flex items-center justify-normal gap-2 w-auto border border-input bg-background hover:bg-accent hover:text-accent-foreground"
@@ -433,7 +433,7 @@ const Header = () => {
                       <SelectItem value="en">English</SelectItem>
                       <SelectItem value="es">Español</SelectItem>
                     </SelectContent>
-                  </Select>
+                  </Select> */}
                   {user && <LogOutBtn />}
                 </div>
               </div>
