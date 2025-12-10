@@ -33,7 +33,10 @@ export const getImage = (
       sizes: "",
     };
   }
-  const baseURL = import.meta.env.VITE_STRAPI_URL;
+  const baseURL =
+    import.meta.env.MODE === "development"
+      ? import.meta.env.VITE_STRAPI_URL
+      : "";
   const formats = cover?.formats;
   const fallbackUrl = formats?.large?.url;
   // Construct srcset
