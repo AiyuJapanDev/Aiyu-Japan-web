@@ -11,8 +11,8 @@ import {
 import { supportedLocales } from "./app/lib/i18n";
 import { calculateTotalPages, POSTS_PER_PAGE } from "./app/lib/pagination";
 
-const blogSlugs: Article[] = await getAllBlogArticles();
-const newsSlugs: New[] = await getAllNewsPosts();
+const allBlogs: Article[] = await getAllBlogArticles();
+const allNews: New[] = await getAllNewsPosts();
 
 // Generate paginated blog routes for each locale
 const paginatedBlogRoutes: string[] = [];
@@ -45,14 +45,10 @@ for (const locale of supportedLocales) {
 
 export default {
   ssr: true,
-  // return a list of URLs to prerender at build time
+  // return a list of RELEVANT STATIC URLs to prerender at build time
+  // Each blog or news entry is rendered at runtime to save API calls and reduce build time
   prerender: [
     "/",
-    "/services",
-    "/auth",
-    "/forgot-password",
-    "/auth/reset-password",
-    "/email-verification",
     "/calculator",
     /* Store Guide Routes */
     "/store-guide/what-is",
@@ -61,26 +57,11 @@ export default {
     "/store-guide/commission",
     "/store-guide/popular-markets",
     "/store-guide/restrictions",
-    /* Dashboard Routes */
-    "/dashboard",
-    "/user-dashboard",
-    "/admin-dashboard",
     /* Contact Routes */
     "/contact",
-    /* Terms and Privacy Routes */
-    "/terms-of-service",
-    "/privacy-policy",
+    /* Blog Routes */
     ...paginatedBlogRoutes,
-    ...blogSlugs.map((blogEntry: Article) => {
-      /* Maps all blogSlugs to prerender articles */
-      /* return each entry slug with locale */
-      return `/blog/${blogEntry.locale}/${blogEntry.slug}`;
-    }),
+    /* News Routes */
     ...paginatedNewsRoutes,
-    ...newsSlugs.map((newsEntry: New) => {
-      /* Maps all newsSlugs to prerender articles */
-      /* return each entry slug with locale */
-      return `/news/${newsEntry.locale}/${newsEntry.slug}`;
-    }),
   ],
 } satisfies Config;
