@@ -21,7 +21,12 @@ export default [
     route("how-it-works", "./routes/HowItWorksSection.tsx"),
     route("fees", "./routes/FeesSection.tsx"),
     route("commission", "./routes/CommissionSection.tsx"),
-    route("popular-markets", "./routes/PopularMarketsSection.tsx"),
+    route("popular-markets", "./routes/PopularMarketsSection.tsx", {
+      id: "markets-index",
+    }),
+    route("popular-markets/page/:page", "./routes/PopularMarketsSection.tsx", {
+      id: "markets-paginated",
+    }),
     route("restrictions", "./routes/RestrictionsSection.tsx"),
   ]),
 
@@ -32,11 +37,11 @@ export default [
   route("terms-of-service", "routes/TermsOfService.tsx"),
   route("privacy-policy", "routes/PrivacyPolicy.tsx"),
   /* Blog Routes */
-  route("blog/:lang/page/:page", "routes/Blog.tsx", { id: "blog-paginated" }),
-  route("blog/:lang/:articleSlug", "routes/ArticlePage.tsx"),
-  route("blog/:lang", "routes/Blog.tsx", { id: "blog-index" }),
+  route("blog", "routes/Blog.tsx", { id: "blog-index" }),
+  route("blog/page/:page", "routes/Blog.tsx", { id: "blog-paginated" }),
+  route("blog/:articleSlug", "routes/ArticlePage.tsx", { id: "blog-article" }),
   /* News Routes */
-  route("news/:lang/page/:page", "routes/News.tsx", { id: "news-paginated" }),
-  route("news/:lang/:newsSlug", "routes/NewsPage.tsx"),
-  route("news/:lang", "routes/News.tsx", { id: "news-index" }),
+  route("news", "routes/News.tsx", { id: "news-index" }),
+  route("news/page/:page", "routes/News.tsx", { id: "news-paginated" }),
+  route("news/:newsSlug", "routes/NewsPage.tsx", { id: "news-article" }),
 ] satisfies RouteConfig;

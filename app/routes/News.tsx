@@ -1,6 +1,6 @@
 import type { Route } from ".react-router/types/app/routes/+types/Blog";
 import { POSTS_PER_PAGE, calculateTotalPages } from "@/lib/pagination";
-import { getNewsPosts } from "@/lib/strapi";
+import { getNewsPosts } from "@/lib/strapi.server";
 import type { New } from "@/types/strapi-news";
 import { format } from "date-fns";
 import { enUS, es } from "date-fns/locale";
@@ -8,14 +8,15 @@ import { Calendar, Newspaper } from "lucide-react";
 import { Link } from "react-router";
 
 import { useApp } from "@/contexts/AppContext";
+import { allNewsPosts } from "@/lib/data.server";
 
 export async function loader({ params }: Route.LoaderArgs) {
   const page = params.page ? parseInt(params.page, 10) : 1;
-  const { news, total } = await getNewsPosts(params.lang, page, POSTS_PER_PAGE);
+  const { posts, total } = allNewsPosts;
   const totalPages = calculateTotalPages(total, POSTS_PER_PAGE);
 
   return {
-    news,
+    posts,
     currentPage: page,
     totalPages,
     total,
@@ -23,11 +24,11 @@ export async function loader({ params }: Route.LoaderArgs) {
   };
 }
 
-export default function Blog({ loaderData }: Route.ComponentProps) {
+export default function News({ loaderData }: Route.ComponentProps) {
   const { t } = useApp();
   if (!loaderData) return null;
-  const { news, currentPage, totalPages, locale } = loaderData as {
-    news: New[];
+  const { posts, currentPage, totalPages, locale } = loaderData as {
+    posts: New[];
     currentPage: number;
     totalPages: number;
     total: number;
@@ -45,7 +46,7 @@ export default function Blog({ loaderData }: Route.ComponentProps) {
     className?: string;
   }) => (
     <Link
-      to={`/news/${locale}/${news.slug}`}
+      to={`/news/${news.slug}`}
       className={`relative px-6 py-2 group flex flex-row gap-6 h-full items-center bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 ${className}`}
     >
       <div className="absolute w-2 h-full inset-0 bg-capybara-blue" />
@@ -106,11 +107,11 @@ export default function Blog({ loaderData }: Route.ComponentProps) {
             <span className="bg-gray-900 w-2 h-8 rounded-full inline-block"></span>
             {t("newsBlogAllNews")}
           </h2>
-          {news.length > 0 ? (
+          {posts.length > 0 ? (
             <>
               <div className="flex flex-col gap-4 mb-12">
-                {news.map((news) => (
-                  <NewsCard key={news.id} news={news} />
+                {posts.map((post) => (
+                  <NewsCard key={post.id} news={post} />
                 ))}
               </div>
 
@@ -120,7 +121,7 @@ export default function Blog({ loaderData }: Route.ComponentProps) {
                   {/* Previous Button */}
                   {hasPrevPage ? (
                     <Link
-                      to={`/blog/${locale}${currentPage - 1 === 1 ? "" : `/page/${currentPage - 1}`}`}
+                      to={`/blog/${currentPage - 1 === 1 ? "" : `/page/${currentPage - 1}`}`}
                       className="px-4 py-2 rounded-lg bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors font-medium"
                     >
                       {t("previous")}
@@ -144,7 +145,7 @@ export default function Blog({ loaderData }: Route.ComponentProps) {
                         return (
                           <Link
                             key={page}
-                            to={`/blog/${locale}${isFirstPage ? "" : `/page/${page}`}`}
+                            to={`/blog/${isFirstPage ? "" : `/page/${page}`}`}
                             className={`min-w-[40px] h-10 flex items-center justify-center rounded-lg font-medium transition-colors ${
                               isCurrentPage
                                 ? "bg-blue-600 text-white"
@@ -161,7 +162,7 @@ export default function Blog({ loaderData }: Route.ComponentProps) {
                   {/* Next Button */}
                   {hasNextPage ? (
                     <Link
-                      to={`/blog/${locale}/page/${currentPage + 1}`}
+                      to={`/blog/page/${currentPage + 1}`}
                       className="px-4 py-2 rounded-lg bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors font-medium"
                     >
                       {t("next")}

@@ -83,8 +83,8 @@ const Header = () => {
     { to: "/store-guide/what-is", label: t("storeGuide") },
     { to: "/store-guide/popular-markets", label: t("stores") },
     [
-      { to: `/news/${language}`, label: t("newsLinkTitle") },
-      { to: `/blog/${language}`, label: t("blog") },
+      { to: `/news/`, label: t("newsLinkTitle") },
+      { to: `/blog/`, label: t("blog") },
     ],
     { to: "/contact", label: t("contact") },
     { to: "/calculator", label: t("calculator") },
@@ -461,7 +461,7 @@ const Header = () => {
        *
        *
        * */}
-      <div className="fixed bottom-4 left-3 z-50 hidden md:block mr-1 ">
+      {/*  <div className="fixed bottom-4 left-3 z-50 hidden md:block mr-1 ">
         <div className=" px-3 flex items-center space-x-2 bg-white rounded-full  py-3 shadow-lg border border-capybara-orange/20">
           <Globe className="w-5 h-5 text-capybara-orange" />
           <select
@@ -473,7 +473,7 @@ const Header = () => {
             <option value="en">EN</option>
           </select>
         </div>
-      </div>
+      </div> */}
     </>
   );
 };

@@ -28,7 +28,8 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     return translations[language][key] || key;
   };
 
-  useEffect(() => {
+  // Set language to user browser language
+  /*   useEffect(() => {
     if (typeof window !== "undefined") {
       const userLang = navigator.language.split("-")[0] as Language;
       // Check if the detected user language is one of the supported languages
@@ -36,16 +37,17 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         setLanguage(userLang);
       }
     }
-  }, []); // Empty dependency array ensures this runs only once on mount
+  }, []);  */
 
-  useEffect(() => {
+  /* Navigate to blog and news pages in current lang */
+  /*   useEffect(() => {
     if (window.location.pathname.includes("/blog")) {
       navigate("/blog/" + language);
     }
     if (window.location.pathname.includes("/news")) {
       navigate("/news/" + language);
     }
-  }, [language]);
+  }, [language]); */
 
   return (
     <AppContext.Provider

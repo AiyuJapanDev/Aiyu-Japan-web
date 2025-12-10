@@ -26,6 +26,13 @@ export const getImage = (
   srcset: string;
   sizes: string;
 } => {
+  if (!cover) {
+    return {
+      src: "",
+      srcset: "",
+      sizes: "",
+    };
+  }
   const baseURL = import.meta.env.VITE_STRAPI_URL;
   const formats = cover?.formats;
   const fallbackUrl = formats?.large?.url;

@@ -1,47 +1,40 @@
-import "dotenv/config";
 import type { Config } from "@react-router/dev/config";
-import { New } from "./app/types/strapi-news";
-import { Article } from "./app/types/blog";
-import {
-  getAllBlogArticles,
-  getBlogPosts,
-  getAllNewsPosts,
-  getNewsPosts,
-} from "./app/lib/strapi";
-import { supportedLocales } from "./app/lib/i18n";
+import "dotenv/config";
+import { allBlogPosts, allNewsPosts } from "./app/lib/data.server";
 import { calculateTotalPages, POSTS_PER_PAGE } from "./app/lib/pagination";
+import { Article } from "./app/types/blog";
+import { New } from "./app/types/strapi-news";
 
-const allBlogs: Article[] = await getAllBlogArticles();
-const allNews: New[] = await getAllNewsPosts();
+console.count("TIMES react-router.config.ts is run: ");
 
-// Generate paginated blog routes for each locale
-const paginatedBlogRoutes: string[] = [];
-const paginatedNewsRoutes: string[] = [];
-for (const locale of supportedLocales) {
-  const { total } = await getBlogPosts(locale);
+const generateRoutes = (
+  base: string,
+  allPosts: { posts: Article[] | New[]; total: number }
+) => {
+  const paginatedRoutes: string[] = [];
+  const entriesRoutes: string[] = [];
+  const { total } = allPosts;
   const totalPages = calculateTotalPages(total, POSTS_PER_PAGE);
+
+  console.log("totalPages", totalPages);
 
   // Add base blog route for page 1
-  paginatedBlogRoutes.push(`/blog/${locale}`);
+  paginatedRoutes.push(base);
 
   // Add routes for pages 2, 3, 4, etc. with /page/ prefix
   for (let page = 2; page <= totalPages; page++) {
-    paginatedBlogRoutes.push(`/blog/${locale}/page/${page}`);
+    paginatedRoutes.push(`${base}/page/${page}`);
   }
-}
 
-for (const locale of supportedLocales) {
-  const { total } = await getNewsPosts(locale);
-  const totalPages = calculateTotalPages(total, POSTS_PER_PAGE);
-
-  // Add base news route for page 1
-  paginatedNewsRoutes.push(`/news/${locale}`);
-
-  // Add routes for pages 2, 3, 4, etc. with /page/ prefix
-  for (let page = 2; page <= totalPages; page++) {
-    paginatedNewsRoutes.push(`/news/${locale}/page/${page}`);
+  for (const entry of allPosts.posts) {
+    entriesRoutes.push(`${base}/${entry.slug}`);
   }
-}
+
+  return [...paginatedRoutes, ...entriesRoutes];
+};
+
+console.log(generateRoutes("/blog", allBlogPosts));
+console.log(generateRoutes("/news", allNewsPosts));
 
 export default {
   ssr: true,
@@ -50,6 +43,7 @@ export default {
   prerender: [
     "/",
     "/calculator",
+    "/contact",
     /* Store Guide Routes */
     "/store-guide/what-is",
     "/store-guide/how-it-works",
@@ -57,11 +51,9 @@ export default {
     "/store-guide/commission",
     "/store-guide/popular-markets",
     "/store-guide/restrictions",
-    /* Contact Routes */
-    "/contact",
     /* Blog Routes */
-    ...paginatedBlogRoutes,
+    ...generateRoutes("/blog", allBlogPosts),
     /* News Routes */
-    ...paginatedNewsRoutes,
+    ...generateRoutes("/news", allNewsPosts),
   ],
 } satisfies Config;

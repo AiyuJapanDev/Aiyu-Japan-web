@@ -8,29 +8,36 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useApp } from "@/contexts/AppContext";
-import { getStoreCategories, getStoreMarkets } from "@/lib/strapi";
-import { getImage } from "@/lib/utils";
+import { storeCategories, storeMarkets } from "@/lib/data.server";
 import { StoreCategory, StoreMarket } from "@/types/strapi-stores";
 import { ExternalLink } from "lucide-react";
-import { useState } from "react";
-import { Link } from "react-router";
+import { Link, useNavigate, useSearchParams } from "react-router";
+
+const MARKETS_PER_PAGE = 12;
 
 export async function loader({ params }: Route.LoaderArgs) {
-  const storeCategories = await getStoreCategories();
-  const storeMarkets = await getStoreMarkets();
-  if (!storeCategories) {
-    throw new Response("Not Found", { status: 404 });
-  }
-  return { storeCategories, storeMarkets };
+  const page = params.page ? parseInt(params.page, 10) : 1;
+
+  return {
+    storeCategories,
+    storeMarkets,
+    currentPage: page,
+  };
 }
 
 export const PopularMarketsSection = ({ loaderData }: Route.ComponentProps) => {
   const { t, language } = useApp();
-  const [selectedCategory, setSelectedCategory] = useState<string>("all");
-  const { storeCategories, storeMarkets } = loaderData as {
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const selectedCategory = searchParams.get("category") || "all";
+
+  const { storeCategories, storeMarkets, currentPage } = loaderData as {
     storeCategories: StoreCategory[];
     storeMarkets: StoreMarket[];
+    currentPage: number;
   };
+
+  //store categories
   const allCategories = {
     all: {
       en: "All Categories",
@@ -73,13 +80,27 @@ export const PopularMarketsSection = ({ loaderData }: Route.ComponentProps) => {
     );
   };
 
-  const StoreCard = (market: StoreMarket, index: number) => {
+  const filteredMarkets = getFilteredMarkets();
+  const totalFiltered = filteredMarkets.length;
+  const totalPages = Math.ceil(totalFiltered / MARKETS_PER_PAGE);
+
+  const hasPrevPage = currentPage > 1;
+  const hasNextPage = currentPage < totalPages;
+
+  const currentMarkets = filteredMarkets.slice(
+    (currentPage - 1) * MARKETS_PER_PAGE,
+    currentPage * MARKETS_PER_PAGE
+  );
+
+  const handleCategoryChange = (value: string) => {
+    // Navigate to page 1 with new category
+    navigate(`/store-guide/popular-markets?category=${value}`);
+  };
+
+  const StoreCard = ({ market }: { market: StoreMarket }) => {
     const src = `${import.meta.env.VITE_STRAPI_URL}${market.logo.url}`;
     return (
-      <div
-        key={index}
-        className="overflow-clip border group relative rounded-2xl bg-white  shadow-lg transition-all hover:-translate-y-1 hover:shadow-xl col-span-1"
-      >
+      <div className="overflow-clip border group relative rounded-2xl bg-white  shadow-lg transition-all hover:-translate-y-1 hover:shadow-xl col-span-1">
         <div className=" mb-4 flex items-center justify-between bg-capybara-blue px-4 py-2">
           <div className="rounded-full border overflow-clip w-20 p-1 ">
             <img
@@ -111,7 +132,10 @@ export const PopularMarketsSection = ({ loaderData }: Route.ComponentProps) => {
             <div className="flex flex-wrap gap-2">
               {market.store_categories.length > 1 &&
                 market.store_categories.map((category) => (
-                  <span className="rounded-md bg-gray-50 px-2 py-1 text-xs font-medium text-gray-600 ring-1 ring-inset ring-gray-500/10">
+                  <span
+                    key={category.name_en}
+                    className="rounded-md bg-gray-50 px-2 py-1 text-xs font-medium text-gray-600 ring-1 ring-inset ring-gray-500/10"
+                  >
                     {category.name_en}
                   </span>
                 ))}
@@ -138,15 +162,15 @@ export const PopularMarketsSection = ({ loaderData }: Route.ComponentProps) => {
           <div className="max-w-md mx-auto">
             <Select
               value={selectedCategory}
-              onValueChange={setSelectedCategory}
+              onValueChange={handleCategoryChange}
             >
               <SelectTrigger className="w-full">
                 <SelectValue placeholder={t("selectCategory")} />
               </SelectTrigger>
               <SelectContent>
                 {Object.entries(categoryLabels).map(([key, label]) => (
-                  <SelectItem key={key} value={key}>
-                    {label[language]}
+                  <SelectItem key={label["en"]} value={key}>
+                    {label["en"]}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -160,11 +184,72 @@ export const PopularMarketsSection = ({ loaderData }: Route.ComponentProps) => {
             : allCategories?.[language]}
         </h3>
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {getFilteredMarkets().map((market, index) =>
-            StoreCard(market, index)
-          )}
+          {currentMarkets.map((market, index) => (
+            <StoreCard key={market.title + index} market={market} />
+          ))}
         </div>
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-center gap-2 mt-12 pb-16">
+            {/* Previous Button */}
+            {hasPrevPage ? (
+              <Link
+                to={`/store-guide/popular-markets/${currentPage - 1 === 1 ? "" : `page/${currentPage - 1}`}?${searchParams.toString()}`}
+                className="px-4 py-2 rounded-lg bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors font-medium"
+              >
+                {t("previous")}
+              </Link>
+            ) : (
+              <button
+                disabled
+                className="px-4 py-2 rounded-lg bg-gray-100 border border-gray-200 text-gray-400 cursor-not-allowed font-medium"
+              >
+                {t("previous")}
+              </button>
+            )}
 
+            {/* Page Numbers */}
+            <div className="flex items-center gap-1">
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                (page) => {
+                  const isCurrentPage = page === currentPage;
+                  const isFirstPage = page === 1;
+
+                  return (
+                    <Link
+                      key={page}
+                      to={`/store-guide/popular-markets/${isFirstPage ? "" : `page/${page}`}?${searchParams.toString()}`}
+                      className={`min-w-[40px] h-10 flex items-center justify-center rounded-lg font-medium transition-colors ${
+                        isCurrentPage
+                          ? "bg-blue-600 text-white"
+                          : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-50"
+                      }`}
+                    >
+                      {page}
+                    </Link>
+                  );
+                }
+              )}
+            </div>
+
+            {/* Next Button */}
+            {hasNextPage ? (
+              <Link
+                to={`/store-guide/popular-markets/page/${currentPage + 1}?${searchParams.toString()}`}
+                className="px-4 py-2 rounded-lg bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors font-medium"
+              >
+                {t("next")}
+              </Link>
+            ) : (
+              <button
+                disabled
+                className="px-4 py-2 rounded-lg bg-gray-100 border border-gray-200 text-gray-400 cursor-not-allowed font-medium"
+              >
+                {t("next")}
+              </button>
+            )}
+          </div>
+        )}
         <div className="mt-16 rounded-3xl bg-white p-8 shadow-lg md:p-12">
           <div className="flex flex-col items-center justify-between gap-8 md:flex-row">
             <div>
