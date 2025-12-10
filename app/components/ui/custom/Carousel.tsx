@@ -1,7 +1,7 @@
 import React, { useMemo } from "react";
 import { Link } from "react-router";
 import { useApp } from "@/contexts/AppContext";
-import { getLangSlug } from "@/lib/utils";
+import { getImage, getLangSlug } from "@/lib/utils";
 import { Article } from "@/types/blog";
 import { HomePageData, FeaturedBannerBlock } from "@/types/home";
 import {
@@ -56,23 +56,9 @@ const FeaturedBannerCarousel: React.FC<FeaturedBannerCarouselProps> = ({
       >
         <CarouselContent className="ml-0">
           {carouselData.map((banner, index) => {
-            const imageUrl = `${banner.cover?.url}`;
-            const slug = getLangSlug(banner, language);
-            // Construct srcset
-            const formats = banner.cover?.formats;
-            const srcset = formats
-              ? [
-                  formats.small ? `${formats.small.url} 500w` : "",
-                  formats.medium ? `${formats.medium.url} 750w` : "",
-                  formats.large ? `${formats.large.url} 1000w` : "",
-                  `${imageUrl} ${banner.cover?.width}w`, // Original as fallback/highest quality
-                ]
-                  .filter(Boolean)
-                  .join(", ")
-              : undefined;
-
-            const sizes =
-              "(max-width: 640px) 100vw, (max-width: 1024px) 750px, 1000px";
+            const { src, srcset } = getImage(banner.cover);
+            const sizes = "(min-width: 1260px) 1153px, 94.04vw";
+            const slug = banner.slug;
 
             return (
               <CarouselItem key={`${banner.id}-${index}`} className="pl-0">
@@ -83,7 +69,7 @@ const FeaturedBannerCarousel: React.FC<FeaturedBannerCarouselProps> = ({
                     draggable={false}
                   >
                     <img
-                      src={imageUrl}
+                      src={src}
                       srcSet={srcset}
                       sizes={sizes}
                       alt={banner.cover?.alternativeText || "Banner image"}

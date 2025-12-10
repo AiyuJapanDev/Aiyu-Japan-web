@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/select";
 import { useApp } from "@/contexts/AppContext";
 import { getStoreCategories, getStoreMarkets } from "@/lib/strapi";
+import { getImage } from "@/lib/utils";
 import { StoreCategory, StoreMarket } from "@/types/strapi-stores";
 import { ExternalLink } from "lucide-react";
 import { useState } from "react";
@@ -72,49 +73,54 @@ export const PopularMarketsSection = ({ loaderData }: Route.ComponentProps) => {
     );
   };
 
-  const StoreCard = (market: StoreMarket, index: number) => (
-    <div
-      key={index}
-      className="overflow-clip border group relative rounded-2xl bg-white  shadow-lg transition-all hover:-translate-y-1 hover:shadow-xl col-span-1"
-    >
-      <div className=" mb-4 flex items-center justify-between bg-capybara-blue px-4 py-2">
-        <div className="rounded-full border overflow-clip w-20 p-1 ">
-          <img
-            src={`${market.logo.url}`}
-            alt={market.title}
-            className="w-full h-full rounded-full"
-          />
+  const StoreCard = (market: StoreMarket, index: number) => {
+    const src = `${import.meta.env.VITE_STRAPI_URL}${market.logo.url}`;
+    return (
+      <div
+        key={index}
+        className="overflow-clip border group relative rounded-2xl bg-white  shadow-lg transition-all hover:-translate-y-1 hover:shadow-xl col-span-1"
+      >
+        <div className=" mb-4 flex items-center justify-between bg-capybara-blue px-4 py-2">
+          <div className="rounded-full border overflow-clip w-20 p-1 ">
+            <img
+              src={src}
+              alt={market.title}
+              className="w-full h-full rounded-full"
+            />
+          </div>
+          <Button
+            asChild
+            className="flex p-6 items-center justify-center gap-2 rounded-xl bg-gray-800  py-3 font-medium text-white transition-colors hover:bg-gray-700"
+          >
+            <Link to={market.link} target="_blank">
+              {t("marketsExplore")}
+              <ExternalLink className="h-4 w-4" />
+            </Link>
+          </Button>
         </div>
-        <Button
-          asChild
-          className="flex p-6 items-center justify-center gap-2 rounded-xl bg-gray-800  py-3 font-medium text-white transition-colors hover:bg-gray-700"
-        >
-          <Link to={market.link} target="_blank">
-            {t("marketsExplore")}
-            <ExternalLink className="h-4 w-4" />
-          </Link>
-        </Button>
-      </div>
 
-      <div className="px-4 pb-6">
-        <h3 className="mb-2 text-xl font-bold text-gray-900">{market.title}</h3>
-        <p className="mb-4 text-gray-600">{market.description}</p>
-        <div className=" space-y-2">
-          <p className="text-xs font-semibold uppercase tracking-wider text-gray-400">
-            {t("marketsMainCategory")}
-          </p>
-          <div className="flex flex-wrap gap-2">
-            {market.store_categories.length > 1 &&
-              market.store_categories.map((category) => (
-                <span className="rounded-md bg-gray-50 px-2 py-1 text-xs font-medium text-gray-600 ring-1 ring-inset ring-gray-500/10">
-                  {category.name_en}
-                </span>
-              ))}
+        <div className="px-4 pb-6">
+          <h3 className="mb-2 text-xl font-bold text-gray-900">
+            {market.title}
+          </h3>
+          <p className="mb-4 text-gray-600">{market.description}</p>
+          <div className=" space-y-2">
+            <p className="text-xs font-semibold uppercase tracking-wider text-gray-400">
+              {t("marketsMainCategory")}
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {market.store_categories.length > 1 &&
+                market.store_categories.map((category) => (
+                  <span className="rounded-md bg-gray-50 px-2 py-1 text-xs font-medium text-gray-600 ring-1 ring-inset ring-gray-500/10">
+                    {category.name_en}
+                  </span>
+                ))}
+            </div>
           </div>
         </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   return (
     <section className="bg-gray-50 py-16 md:py-24">
