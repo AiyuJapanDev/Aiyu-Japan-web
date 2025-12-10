@@ -24,14 +24,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const isAdmin = userRole === "admin";
 
-  console.log(
+  /*   console.log(
     "AuthProvider - user:",
     user?.id,
     "userRole:",
     userRole,
     "isAdmin:",
     isAdmin
-  );
+  ); */
 
   // Listen to auth changes and initial session
   useEffect(() => {
