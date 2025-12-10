@@ -1,5 +1,6 @@
 import { Article, ArticleLocalization, StrapiImage } from "@/types/blog";
 import { New } from "@/types/strapi-news";
+import { StoreMarket } from "@/types/strapi-stores";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 
@@ -56,4 +57,15 @@ export const getImage = (
     srcset,
     sizes,
   };
+};
+
+export const getMarketLogo = (market: StoreMarket): string => {
+  if (!market) {
+    return "";
+  }
+  const baseURL =
+    import.meta.env.MODE === "development"
+      ? import.meta.env.VITE_STRAPI_URL
+      : "";
+  return `${baseURL}${market.logo.url}`;
 };

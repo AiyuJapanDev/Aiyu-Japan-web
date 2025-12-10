@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/select";
 import { useApp } from "@/contexts/AppContext";
 import { storeCategories, storeMarkets } from "@/lib/data.server";
+import { getMarketLogo } from "@/lib/utils";
 import { StoreCategory, StoreMarket } from "@/types/strapi-stores";
 import { ExternalLink } from "lucide-react";
 import { Link, useNavigate, useSearchParams } from "react-router";
@@ -98,7 +99,7 @@ export const PopularMarketsSection = ({ loaderData }: Route.ComponentProps) => {
   };
 
   const StoreCard = ({ market }: { market: StoreMarket }) => {
-    const src = `${import.meta.env.VITE_STRAPI_URL}${market.logo.url}`;
+    const src = getMarketLogo(market);
     return (
       <div className="overflow-clip border group relative rounded-2xl bg-white  shadow-lg transition-all hover:-translate-y-1 hover:shadow-xl col-span-1">
         <div className=" mb-4 flex items-center justify-between bg-capybara-blue px-4 py-2">
