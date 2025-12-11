@@ -210,19 +210,24 @@ export function ProductRequestsManagement({ orderId }: ProductRequestsManagement
         });
       });
 
-      // Fetch all product requests
-      const { data: allRequests, error: requestsError } = await supabase
-        .from("product_requests")
-        .select("*")
-        .in("id", Array.from(allProductRequestIds));
-
-      if (requestsError) throw requestsError;
-
-      // Create a map for quick lookup
+      const productRequestIdsArray = Array.from(allProductRequestIds);
+      const BATCH_SIZE = 100;
+      
       const requestsMap = new Map<string, ProductRequestWithIssue>();
-      (allRequests || []).forEach((request) => {
-        requestsMap.set(request.id, request);
-      });
+    
+      for (let i = 0; i < productRequestIdsArray.length; i += BATCH_SIZE) {
+        const batch = productRequestIdsArray.slice(i, i + BATCH_SIZE);
+        const { data: batchRequests, error: requestsError } = await supabase
+          .from("product_requests")
+          .select("*")
+          .in("id", batch);
+
+        if (requestsError) throw requestsError;
+        
+        (batchRequests || []).forEach((request) => {
+          requestsMap.set(request.id, request);
+        });
+      }
 
       // Fetch user profiles and combine data
       // Get all unique user IDs
