@@ -44,4 +44,7 @@ export default [
   route("news", "routes/News.tsx", { id: "news-index" }),
   route("news/page/:page", "routes/News.tsx", { id: "news-paginated" }),
   route("news/:newsSlug", "routes/NewsPage.tsx", { id: "news-article" }),
+
+  /* Orders */
+  route("edit-order/:orderId", "routes/EditOrder.tsx"),
 ] satisfies RouteConfig;
