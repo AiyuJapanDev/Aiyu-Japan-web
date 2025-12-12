@@ -5,8 +5,6 @@ import { calculateTotalPages, POSTS_PER_PAGE } from "./app/lib/pagination";
 import { Article } from "./app/types/blog";
 import { New } from "./app/types/strapi-news";
 
-console.count("TIMES react-router.config.ts is run: ");
-
 const generateRoutes = (
   base: string,
   allPosts: { posts: Article[] | New[]; total: number }

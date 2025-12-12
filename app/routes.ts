@@ -47,4 +47,7 @@ export default [
 
   /* Orders */
   route("edit-order/:orderId", "routes/EditOrder.tsx"),
+
+  /* Paraguay Delivery */
+  route("paraguay-delivery/:loadId", "routes/ParaguayDeliveryPage.tsx"),
 ] satisfies RouteConfig;
