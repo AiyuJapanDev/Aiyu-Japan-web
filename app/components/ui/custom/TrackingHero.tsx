@@ -1,6 +1,6 @@
 import { motion } from "motion/react";
 import { Package, Plane } from "lucide-react";
-import bannerImage from "/paraguay_banner.png";
+import bannerImage from "/paraguay-env-int.jpg";
 import capybaraPlaneImage from "/KapyPlane.png";
 
 import { formatDate } from "date-fns";
