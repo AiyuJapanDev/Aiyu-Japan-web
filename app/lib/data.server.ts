@@ -4,6 +4,7 @@ import {
   getAllBlogArticles,
   getAllNewsPosts,
   getHomeComponents,
+  getParaguayDeliveryData,
   getStoreCategories,
   getStoreMarkets,
 } from "./strapi.server";
@@ -21,6 +22,7 @@ interface CachedData {
   homeData: any;
   storeMarkets: any;
   storeCategories: any;
+  paraguayDeliveries: any;
 }
 
 async function getPrerenderData(): Promise<CachedData> {
@@ -37,14 +39,21 @@ async function getPrerenderData(): Promise<CachedData> {
   }
 
   console.log("Fetching data from Strapi...");
-  const [allBlogPosts, allNewsPosts, homeData, storeMarkets, storeCategories] =
-    await Promise.all([
-      getAllBlogArticles("en", 100),
-      getAllNewsPosts("en", 100),
-      getHomeComponents("en"),
-      getStoreMarkets("en"),
-      getStoreCategories(),
-    ]);
+  const [
+    allBlogPosts,
+    allNewsPosts,
+    homeData,
+    storeMarkets,
+    storeCategories,
+    paraguayDeliveries,
+  ] = await Promise.all([
+    getAllBlogArticles("en", 100),
+    getAllNewsPosts("en", 100),
+    getHomeComponents("en"),
+    getStoreMarkets("en"),
+    getStoreCategories(),
+    getParaguayDeliveryData(),
+  ]);
 
   const data = {
     allBlogPosts,
@@ -52,6 +61,7 @@ async function getPrerenderData(): Promise<CachedData> {
     homeData,
     storeMarkets,
     storeCategories,
+    paraguayDeliveries,
   };
 
   // Write to cache (Best effort - ignore errors on read-only filesystems like Vercel)
@@ -68,7 +78,20 @@ async function getPrerenderData(): Promise<CachedData> {
   return data;
 }
 
-const { allBlogPosts, allNewsPosts, homeData, storeMarkets, storeCategories } =
-  await getPrerenderData();
+const {
+  allBlogPosts,
+  allNewsPosts,
+  homeData,
+  storeMarkets,
+  storeCategories,
+  paraguayDeliveries,
+} = await getPrerenderData();
 
-export { allBlogPosts, allNewsPosts, homeData, storeMarkets, storeCategories };
+export {
+  allBlogPosts,
+  allNewsPosts,
+  homeData,
+  storeMarkets,
+  storeCategories,
+  paraguayDeliveries,
+};

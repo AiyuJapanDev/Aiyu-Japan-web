@@ -66,7 +66,6 @@ async function strapiFetchAPI<T>(
       );
     }
 
-    console.count("STRAPI API CALL");
     return data;
   } catch (error) {
     console.error(`Error fetching from ${requestUrl}:`);
@@ -141,6 +140,13 @@ const getStoreCategories = async (locale: string = "*") => {
   return data.data;
 };
 
+const getParaguayDeliveryData = async () => {
+  const data = await strapiFetchAPI<StrapiResponse<StoreCategory[]>>(
+    `/api/paraguay-deliveries`
+  );
+  return data.data;
+};
+
 export {
   getAllBlogArticles,
   getHomeBannerCarousel,
@@ -148,5 +154,6 @@ export {
   getAllNewsPosts,
   getStoreCategories,
   getStoreMarkets,
+  getParaguayDeliveryData,
   StrapiError,
 };
