@@ -18,23 +18,41 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useApp } from "@/contexts/AppContext";
 import { useIntersectionObserver } from "@/hooks/useIntersectionObserver";
 import {
-  allBlogPosts,
-  allNewsPosts,
-  homeData,
-  storeMarkets,
+  allBlogPostsEn,
+  allBlogPostsEs,
+  allNewsPostsEn,
+  allNewsPostsEs,
+  homeDataEn,
+  homeDataEs,
+  storeMarketsEn,
+  storeMarketsEs,
 } from "@/lib/data.server";
 import React, { useEffect } from "react";
 
 export async function loader({ params }: Route.LoaderArgs) {
-  const featuredArticles = allBlogPosts.posts.filter((post) => post.featured);
+  const featuredArticlesEs = allBlogPostsEs.posts.filter(
+    (post) => post.featured
+  );
+  const featuredArticlesEn = allBlogPostsEn.posts.filter(
+    (post) => post.featured
+  );
 
-  const newsPosts = allNewsPosts.posts.slice(0, 5);
+  const newsPostsEn = allNewsPostsEn.posts.slice(0, 5);
+  const newsPostsEs = allNewsPostsEs.posts.slice(0, 5);
 
   return {
-    featured: featuredArticles,
-    home: homeData,
-    news: newsPosts,
-    storeMarkets: storeMarkets,
+    en: {
+      home: homeDataEn,
+      featured: featuredArticlesEn,
+      news: newsPostsEn,
+      storeMarkets: storeMarketsEn,
+    },
+    es: {
+      home: homeDataEs,
+      featured: featuredArticlesEs,
+      news: newsPostsEs,
+      storeMarkets: storeMarketsEs,
+    },
   };
 }
 
@@ -66,6 +84,8 @@ const Home = ({ loaderData }: Route.ComponentProps) => {
   const { t, language } = useApp();
   const data = loaderData as Awaited<ReturnType<typeof loader>>;
 
+  const currentData = data[language as keyof typeof data] || data.en;
+
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
@@ -77,11 +97,14 @@ const Home = ({ loaderData }: Route.ComponentProps) => {
       </div>
 
       <AnimatedSection delay={100}>
-        <FeaturedBlog homeData={data.home} featuredArticles={data.featured} />
+        <FeaturedBlog
+          homeData={currentData.home}
+          featuredArticles={currentData.featured}
+        />
       </AnimatedSection>
 
       <AnimatedSection delay={200}>
-        <FeaturedNews newsPosts={data.news} />
+        <FeaturedNews newsPosts={currentData.news} />
       </AnimatedSection>
 
       <AnimatedSection delay={300}>
@@ -93,7 +116,7 @@ const Home = ({ loaderData }: Route.ComponentProps) => {
       </AnimatedSection>
 
       <AnimatedSection delay={400}>
-        <RecommendedStoresSection storeMarkets={data.storeMarkets} />
+        <RecommendedStoresSection storeMarkets={currentData.storeMarkets} />
       </AnimatedSection>
 
       <AnimatedSection delay={500}>

@@ -17,10 +17,14 @@ const CACHE_FILE_PATH = path.resolve(
 );
 
 interface CachedData {
-  allBlogPosts: { posts: Article[]; total: number };
-  allNewsPosts: { posts: New[]; total: number };
-  homeData: any;
-  storeMarkets: any;
+  allBlogPostsEs: any;
+  allBlogPostsEn: any;
+  allNewsPostsEs: any;
+  allNewsPostsEn: any;
+  homeDataEs: any;
+  homeDataEn: any;
+  storeMarketsEs: any;
+  storeMarketsEn: any;
   storeCategories: any;
   paraguayDeliveries: any;
 }
@@ -40,26 +44,38 @@ async function getPrerenderData(): Promise<CachedData> {
 
   console.log("Fetching data from Strapi...");
   const [
-    allBlogPosts,
-    allNewsPosts,
-    homeData,
-    storeMarkets,
+    allBlogPostsEs,
+    allBlogPostsEn,
+    allNewsPostsEs,
+    allNewsPostsEn,
+    homeDataEs,
+    homeDataEn,
+    storeMarketsEs,
+    storeMarketsEn,
     storeCategories,
     paraguayDeliveries,
   ] = await Promise.all([
-    getAllBlogArticles("en", 100),
-    getAllNewsPosts("en", 100),
+    getAllBlogArticles("es", 999),
+    getAllBlogArticles("en", 999),
+    getAllNewsPosts("es", 999),
+    getAllNewsPosts("en", 999),
+    getHomeComponents("es"),
     getHomeComponents("en"),
+    getStoreMarkets("es"),
     getStoreMarkets("en"),
     getStoreCategories(),
     getParaguayDeliveryData(),
   ]);
 
   const data = {
-    allBlogPosts,
-    allNewsPosts,
-    homeData,
-    storeMarkets,
+    allBlogPostsEs,
+    allBlogPostsEn,
+    allNewsPostsEs,
+    allNewsPostsEn,
+    homeDataEs,
+    homeDataEn,
+    storeMarketsEs,
+    storeMarketsEn,
     storeCategories,
     paraguayDeliveries,
   };
@@ -79,19 +95,27 @@ async function getPrerenderData(): Promise<CachedData> {
 }
 
 const {
-  allBlogPosts,
-  allNewsPosts,
-  homeData,
-  storeMarkets,
+  allBlogPostsEs,
+  allBlogPostsEn,
+  allNewsPostsEs,
+  allNewsPostsEn,
+  homeDataEs,
+  homeDataEn,
+  storeMarketsEs,
+  storeMarketsEn,
   storeCategories,
   paraguayDeliveries,
 } = await getPrerenderData();
 
 export {
-  allBlogPosts,
-  allNewsPosts,
-  homeData,
-  storeMarkets,
+  allBlogPostsEs,
+  allBlogPostsEn,
+  allNewsPostsEs,
+  allNewsPostsEn,
+  homeDataEs,
+  homeDataEn,
+  storeMarketsEs,
+  storeMarketsEn,
   storeCategories,
   paraguayDeliveries,
 };

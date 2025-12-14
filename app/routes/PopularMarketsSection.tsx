@@ -8,10 +8,15 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useApp } from "@/contexts/AppContext";
-import { storeCategories, storeMarkets } from "@/lib/data.server";
+import {
+  storeCategories,
+  storeMarketsEn,
+  storeMarketsEs,
+} from "@/lib/data.server";
 import { getMarketLogo } from "@/lib/utils";
 import { StoreCategory, StoreMarket } from "@/types/strapi-stores";
 import { ExternalLink } from "lucide-react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router";
 
 const MARKETS_PER_PAGE = 12;
@@ -21,22 +26,36 @@ export async function loader({ params }: Route.LoaderArgs) {
 
   return {
     storeCategories,
-    storeMarkets,
+    storeMarketsEs,
+    storeMarketsEn,
     currentPage: page,
   };
 }
 
 export const PopularMarketsSection = ({ loaderData }: Route.ComponentProps) => {
   const { t, language } = useApp();
+  const { storeCategories, storeMarketsEs, storeMarketsEn, currentPage } =
+    loaderData as {
+      storeCategories: StoreCategory[];
+      storeMarketsEs: StoreMarket[];
+      storeMarketsEn: StoreMarket[];
+      currentPage: number;
+    };
+
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const selectedCategory = searchParams.get("category") || "all";
+  const [marketsByLanguage, setMarketsByLanguage] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
 
-  const { storeCategories, storeMarkets, currentPage } = loaderData as {
-    storeCategories: StoreCategory[];
-    storeMarkets: StoreMarket[];
-    currentPage: number;
-  };
+  useEffect(() => {
+    // Filter by language first
+
+    if (language === "es") {
+      setMarketsByLanguage(storeMarketsEs);
+    } else if (language === "en") {
+      setMarketsByLanguage(storeMarketsEn);
+    }
+  }, [language]);
 
   //store categories
   const allCategories = {
@@ -63,11 +82,6 @@ export const PopularMarketsSection = ({ loaderData }: Route.ComponentProps) => {
   };
 
   const getFilteredMarkets = () => {
-    // Filter by language first
-    const marketsByLanguage = storeMarkets.filter(
-      (market) => market.locale === language
-    );
-
     // If "all" is selected, return all markets for the current language
     if (selectedCategory === "all") {
       return marketsByLanguage;
@@ -163,15 +177,15 @@ export const PopularMarketsSection = ({ loaderData }: Route.ComponentProps) => {
           <div className="max-w-md mx-auto">
             <Select
               value={selectedCategory}
-              onValueChange={handleCategoryChange}
+              onValueChange={setSelectedCategory}
             >
               <SelectTrigger className="w-full">
                 <SelectValue placeholder={t("selectCategory")} />
               </SelectTrigger>
               <SelectContent>
                 {Object.entries(categoryLabels).map(([key, label]) => (
-                  <SelectItem key={label["en"]} value={key}>
-                    {label["en"]}
+                  <SelectItem key={label[language]} value={key}>
+                    {label[language]}
                   </SelectItem>
                 ))}
               </SelectContent>

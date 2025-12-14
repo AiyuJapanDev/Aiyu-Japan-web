@@ -1,18 +1,16 @@
 import { Route } from ".react-router/types/app/routes/+types/ArticlePage";
 import RichTextBlockRenderer from "@/components/ui/custom/RichTextBlockRenderer";
 import { useApp } from "@/contexts/AppContext";
-import { allBlogPosts } from "@/lib/data.server";
+import { allBlogPostsEn, allBlogPostsEs } from "@/lib/data.server";
 import { getImage } from "@/lib/utils";
 import { Article } from "@/types/blog";
 import { ArrowLeft, Calendar } from "lucide-react";
 import { Link, useNavigate } from "react-router";
 
-const getBlogArticle = async (slug: string) => {
-  return allBlogPosts.posts.find((article) => article.slug === slug);
-};
-
 export async function loader({ params }: Route.LoaderArgs) {
-  const article = await getBlogArticle(params.articleSlug);
+  const { posts, total } =
+    params.lang === "es" ? allBlogPostsEs : allBlogPostsEn;
+  const article = posts.find((article) => article.slug === params.articleSlug);
   if (!article) {
     throw new Response("Not Found", { status: 404 });
   }
@@ -100,7 +98,7 @@ export default function ArticlePage({ loaderData }: Route.ComponentProps) {
 
       {/* Content Section */}
       <article className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 -mt-10 relative z-10">
-        <div className="bg-white rounded-xl shadow-xl p-8 md:p-12 prose mx-auto border max-w-none">
+        <div className="bg-white rounded-xl shadow-xl p-8 md:p-12 prose mx-auto border max-w-none overflow-clip">
           <RichTextBlockRenderer content={content} />
         </div>
       </article>

@@ -12,14 +12,15 @@ import { ArrowRight, Calendar, User } from "lucide-react";
 import { Link } from "react-router";
 
 import { useApp } from "@/contexts/AppContext";
-import { allBlogPosts } from "@/lib/data.server";
+import { allBlogPostsEn, allBlogPostsEs } from "@/lib/data.server";
 import { getImage } from "@/lib/utils";
 import Autoplay from "embla-carousel-autoplay";
 
 export async function loader({ params }: Route.LoaderArgs) {
   const page = params.page ? parseInt(params.page, 10) : 1;
-  const { posts, total } = allBlogPosts;
-  const featuredPosts = allBlogPosts.posts.filter((post) => post.featured);
+  const { posts, total } =
+    params.lang === "es" ? allBlogPostsEs : allBlogPostsEn;
+  const featuredPosts = posts.filter((post) => post.featured);
   const totalPages = calculateTotalPages(total, POSTS_PER_PAGE);
 
   return {
@@ -33,7 +34,7 @@ export async function loader({ params }: Route.LoaderArgs) {
 }
 
 export default function Blog({ loaderData }: Route.ComponentProps) {
-  const { t } = useApp();
+  const { t, language } = useApp();
   if (!loaderData) return null;
   const { posts, featuredPosts, currentPage, totalPages } = loaderData as {
     posts: Article[];
@@ -60,7 +61,7 @@ export default function Blog({ loaderData }: Route.ComponentProps) {
 
     return (
       <Link
-        to={`/blog/${post.slug}`}
+        to={`/blog/${language}/${post.slug}`}
         className={`group bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 flex flex-col h-full border border-gray-100 ${className}`}
       >
         <div className="relative h-48 overflow-hidden">
@@ -200,8 +201,8 @@ export default function Blog({ loaderData }: Route.ComponentProps) {
                     <Link
                       to={
                         currentPage - 1 === 1
-                          ? "/blog"
-                          : `/blog/page/${currentPage - 1}`
+                          ? `/blog/${language}`
+                          : `/blog/${language}/page/${currentPage - 1}`
                       }
                       className="px-4 py-2 rounded-lg bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors font-medium"
                     >
@@ -226,7 +227,11 @@ export default function Blog({ loaderData }: Route.ComponentProps) {
                         return (
                           <Link
                             key={page}
-                            to={isFirstPage ? "/blog" : `/blog/page/${page}`}
+                            to={
+                              isFirstPage
+                                ? `/blog/${language}`
+                                : `/blog/${language}/page/${page}`
+                            }
                             className={`min-w-[40px] h-10 flex items-center justify-center rounded-lg font-medium transition-colors ${
                               isCurrentPage
                                 ? "bg-blue-600 text-white"
@@ -243,7 +248,7 @@ export default function Blog({ loaderData }: Route.ComponentProps) {
                   {/* Next Button */}
                   {hasNextPage ? (
                     <Link
-                      to={`/blog/page/${currentPage + 1}`}
+                      to={`/blog/${language}/page/${currentPage + 1}`}
                       className="px-4 py-2 rounded-lg bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors font-medium"
                     >
                       {t("next")}

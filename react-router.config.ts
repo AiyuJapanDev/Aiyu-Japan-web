@@ -1,9 +1,16 @@
 import type { Config } from "@react-router/dev/config";
 import "dotenv/config";
-import { allBlogPosts, allNewsPosts } from "./app/lib/data.server";
+import {
+  allBlogPostsEs,
+  allBlogPostsEn,
+  allNewsPostsEs,
+  allNewsPostsEn,
+} from "./app/lib/data.server";
 import { calculateTotalPages, POSTS_PER_PAGE } from "./app/lib/pagination";
 import { Article } from "./app/types/blog";
 import { New } from "./app/types/strapi-news";
+
+const languages = ["es", "en"];
 
 const generateRoutes = (
   base: string,
@@ -14,25 +21,22 @@ const generateRoutes = (
   const { total } = allPosts;
   const totalPages = calculateTotalPages(total, POSTS_PER_PAGE);
 
-  console.log("totalPages", totalPages);
+  for (const lang in languages) {
+    // Add base blog route for page 1
+    paginatedRoutes.push(`${base}/${lang}`);
 
-  // Add base blog route for page 1
-  paginatedRoutes.push(base);
+    // Add routes for pages 2, 3, 4, etc. with /page/ prefix
+    for (let page = 2; page <= totalPages; page++) {
+      paginatedRoutes.push(`${base}/${lang}/page/${page}`);
+    }
 
-  // Add routes for pages 2, 3, 4, etc. with /page/ prefix
-  for (let page = 2; page <= totalPages; page++) {
-    paginatedRoutes.push(`${base}/page/${page}`);
-  }
-
-  for (const entry of allPosts.posts) {
-    entriesRoutes.push(`${base}/${entry.slug}`);
+    for (const entry of allPosts.posts) {
+      entriesRoutes.push(`${base}/${lang}/${entry.slug}`);
+    }
   }
 
   return [...paginatedRoutes, ...entriesRoutes];
 };
-
-console.log(generateRoutes("/blog", allBlogPosts));
-console.log(generateRoutes("/news", allNewsPosts));
 
 export default {
   ssr: true,
@@ -50,8 +54,10 @@ export default {
     "/store-guide/popular-markets",
     "/store-guide/restrictions",
     /* Blog Routes */
-    ...generateRoutes("/blog", allBlogPosts),
+    ...generateRoutes("/blog", allBlogPostsEs),
+    ...generateRoutes("/blog", allBlogPostsEn),
     /* News Routes */
-    ...generateRoutes("/news", allNewsPosts),
+    ...generateRoutes("/news", allNewsPostsEs),
+    ...generateRoutes("/news", allNewsPostsEn),
   ],
 } satisfies Config;

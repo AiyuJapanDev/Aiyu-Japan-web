@@ -1,6 +1,5 @@
 import type { Route } from ".react-router/types/app/routes/+types/Blog";
 import { POSTS_PER_PAGE, calculateTotalPages } from "@/lib/pagination";
-import { getNewsPosts } from "@/lib/strapi.server";
 import type { New } from "@/types/strapi-news";
 import { format } from "date-fns";
 import { enUS, es } from "date-fns/locale";
@@ -8,11 +7,13 @@ import { Calendar, Newspaper } from "lucide-react";
 import { Link } from "react-router";
 
 import { useApp } from "@/contexts/AppContext";
-import { allNewsPosts } from "@/lib/data.server";
+import { allNewsPostsEn, allNewsPostsEs } from "@/lib/data.server";
 
 export async function loader({ params }: Route.LoaderArgs) {
   const page = params.page ? parseInt(params.page, 10) : 1;
-  const { posts, total } = allNewsPosts;
+  const { posts, total } =
+    params.lang === "es" ? allNewsPostsEs : allNewsPostsEn;
+
   const totalPages = calculateTotalPages(total, POSTS_PER_PAGE);
 
   return {
@@ -25,7 +26,7 @@ export async function loader({ params }: Route.LoaderArgs) {
 }
 
 export default function News({ loaderData }: Route.ComponentProps) {
-  const { t } = useApp();
+  const { t, language } = useApp();
   if (!loaderData) return null;
   const { posts, currentPage, totalPages, locale } = loaderData as {
     posts: New[];
@@ -46,7 +47,7 @@ export default function News({ loaderData }: Route.ComponentProps) {
     className?: string;
   }) => (
     <Link
-      to={`/news/${news.slug}`}
+      to={`/news/${language}/${news.slug}`}
       className={`relative px-6 py-2 group flex flex-row gap-6 h-full items-center bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 ${className}`}
     >
       <div className="absolute w-2 h-full inset-0 bg-capybara-blue" />
