@@ -16,7 +16,7 @@ const FeaturedNews = ({ newsPosts }: { newsPosts: New[] }) => {
             <Newspaper size={16} />
             <p>{t("featNewsTitle")}</p>
           </div>
-          <Link to={`/news`}>
+          <Link to={`/news/${language}`}>
             <span className="inline-flex gap-2 items-center">
               {t("featNewsAll")}
               <MoveRight size={16} />
@@ -31,7 +31,7 @@ const FeaturedNews = ({ newsPosts }: { newsPosts: New[] }) => {
             {newsPosts.map((entry) => (
               <Link
                 key={entry.id}
-                to={`/news/${entry.slug}`}
+                to={`/news/${language}/${entry.slug}`}
                 className="flex flex-col transition-transform transform hover:translate-x-1"
               >
                 <span className="text-black inline-flex gap-2 items-center">

@@ -84,7 +84,7 @@ const getAllBlogArticles = async (
   pageSize: number = 25
 ): Promise<{ posts: Article[]; total: number }> => {
   const data = await strapiFetchAPI<StrapiResponse<Article[]>>(
-    `/api/articles?locale=&populate[0]=cover&populate[1]=author&pagination[pageSize]=${pageSize}`
+    `/api/articles?locale=${locale}&populate[0]=cover&populate[1]=author&pagination[pageSize]=${pageSize}`
   );
   return {
     posts: data.data,
@@ -97,7 +97,7 @@ const getAllNewsPosts = async (
   pageSize: number = 25
 ): Promise<{ posts: New[]; total: number }> => {
   const data = await strapiFetchAPI<StrapiResponse<New[]>>(
-    `/api/news?locale=&populate[0]=image&pagination[pageSize]=${pageSize}&sort[0]=date:desc`
+    `/api/news?locale=${locale}&populate[0]=image&pagination[pageSize]=${pageSize}&sort[0]=date:desc`
   );
   return {
     posts: data.data,
@@ -107,14 +107,14 @@ const getAllNewsPosts = async (
 
 const getHomeComponents = async (language: string): Promise<HomePageData> => {
   const featuredBanner = await strapiFetchAPI<StrapiResponse<HomePageData>>(
-    `/api/home?populate[blocks][on][components.featured-banner][populate][blog_posts][populate][0]=cover&locale=${language}`
+    `/api/home?locale=${language}&populate[blocks][on][components.featured-banner][populate][blog_posts][populate][0]=cover`
   );
   return featuredBanner.data;
 };
 
-const getHomeBannerCarousel = async () => {
+const getHomeBannerCarousel = async (locale: string) => {
   const data = await strapiFetchAPI<StrapiResponse<any>>(
-    `/api/banner?populate[0]=carousell&populate[1]=carousell.image&populate[2]=carousell.article`,
+    `/api/banner?locale=${locale}populate[0]=carousell&populate[1]=carousell.image&populate[2]=carousell.article`,
     {
       headers: {
         Authorization: `Bearer ${import.meta.env.VITE_STRAPI_API_KEY}`,
@@ -128,14 +128,14 @@ const getHomeBannerCarousel = async () => {
 
 const getStoreMarkets = async (locale: string = "*") => {
   const data = await strapiFetchAPI<StrapiResponse<StoreMarket[]>>(
-    `/api/recommended-stores?sort=sortOrder&locale=&populate=*`
+    `/api/recommended-stores?locale=${locale}&sort=sortOrder&locale=&populate=*`
   );
   return data.data;
 };
 
 const getStoreCategories = async (locale: string = "*") => {
   const data = await strapiFetchAPI<StrapiResponse<StoreCategory[]>>(
-    `/api/store-categories?locale=`
+    `/api/store-categories`
   );
   return data.data;
 };

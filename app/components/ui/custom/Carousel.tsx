@@ -64,7 +64,7 @@ const FeaturedBannerCarousel: React.FC<FeaturedBannerCarouselProps> = ({
               <CarouselItem key={`${banner.id}-${index}`} className="pl-0">
                 <div className="relative flex-shrink-0 w-full">
                   <Link
-                    to={`/blog/${slug}` || "#"}
+                    to={`/blog/${language}/${slug}` || "#"}
                     className="relative block w-full transition-transform hover:scale-105 overflow-hidden"
                     draggable={false}
                   >

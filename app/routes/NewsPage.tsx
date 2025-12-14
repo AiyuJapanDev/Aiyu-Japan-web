@@ -1,22 +1,23 @@
 import { Route } from ".react-router/types/app/routes/+types/NewsPage";
-import { allNewsPosts } from "@/lib/data.server";
-import { useNavigate } from "react-router";
-import { ArrowLeft } from "lucide-react";
-import { New } from "@/types/strapi-news";
-import { useApp } from "@/contexts/AppContext";
 import RichTextBlockRenderer from "@/components/ui/custom/RichTextBlockRenderer";
+import { useApp } from "@/contexts/AppContext";
+import { allNewsPostsEn, allNewsPostsEs } from "@/lib/data.server";
 import { getImage } from "@/lib/utils";
-
-const getNewPost = (slug: string) => {
-  return allNewsPosts.posts.find((post) => post.slug === slug);
-};
+import { New } from "@/types/strapi-news";
+import { ArrowLeft } from "lucide-react";
+import { useNavigate } from "react-router";
 
 export async function loader({ params }: Route.LoaderArgs) {
-  const news = getNewPost(params.newsSlug);
-  if (!news) {
+  const { posts, total } =
+    params.lang === "es" ? allNewsPostsEs : allNewsPostsEn;
+
+  const newPost = posts.find((news) => news.slug === params.newsSlug);
+
+  if (!newPost) {
     throw new Response("Not Found", { status: 404 });
   }
-  return news;
+
+  return newPost;
 }
 
 export default function NewsPage({ loaderData }: Route.ComponentProps) {
@@ -65,7 +66,7 @@ export default function NewsPage({ loaderData }: Route.ComponentProps) {
 
       {/* Content Section */}
       <article className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 -mt-10 relative z-10">
-        <div className="bg-white rounded-xl shadow-xl p-8 md:p-12">
+        <div className="bg-white rounded-xl shadow-xl p-8 md:p-12 overflow-clip">
           <RichTextBlockRenderer content={content} />
         </div>
       </article>
