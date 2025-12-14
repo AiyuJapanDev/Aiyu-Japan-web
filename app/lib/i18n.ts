@@ -744,7 +744,7 @@ export const translations = {
     japaneseAddresslabelsphone: "Phone number",
 
     japaneseAddressexplanation:
-      "This is your Japanese address! Every item received at our warehouse is charged 500 yen (~$3 USD), with up to 30 days of free storage.",
+      "This is your Japanese address! ------- Every box received at our warehouse is FREE of charge!",
 
     japaneseAddresswarningsTitle: "⚠️ Warnings:",
     japaneseAddresswarnings0:
@@ -1961,7 +1961,7 @@ export const translations = {
     japaneseAddresslabelsphone: "Número de teléfono",
 
     japaneseAddressexplanation:
-      "¡Esta es tu dirección japonesa! Cada ítem recibido tiene un cargo de 500 yenes (~$3 USD) e incluye hasta 30 días de almacenamiento gratuito.",
+      "¡Esta es tu dirección japonesa! ------- Cada caja recibida en nuestro depósito es LIBRE de cargo!",
 
     japaneseAddresswarningsTitle: "⚠️ Advertencias:",
 
