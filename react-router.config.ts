@@ -14,6 +14,7 @@ const languages = ["es", "en"];
 
 const generateRoutes = (
   base: string,
+  lang: string,
   allPosts: { posts: Article[] | New[]; total: number }
 ) => {
   const paginatedRoutes: string[] = [];
@@ -21,18 +22,16 @@ const generateRoutes = (
   const { total } = allPosts;
   const totalPages = calculateTotalPages(total, POSTS_PER_PAGE);
 
-  for (const lang in languages) {
-    // Add base blog route for page 1
-    paginatedRoutes.push(`${base}/${lang}`);
+  // Add base blog route for page 1
+  paginatedRoutes.push(`${base}/${lang}`);
 
-    // Add routes for pages 2, 3, 4, etc. with /page/ prefix
-    for (let page = 2; page <= totalPages; page++) {
-      paginatedRoutes.push(`${base}/${lang}/page/${page}`);
-    }
+  // Add routes for pages 2, 3, 4, etc. with /page/ prefix
+  for (let page = 2; page <= totalPages; page++) {
+    paginatedRoutes.push(`${base}/${lang}/page/${page}`);
+  }
 
-    for (const entry of allPosts.posts) {
-      entriesRoutes.push(`${base}/${lang}/${entry.slug}`);
-    }
+  for (const entry of allPosts.posts) {
+    entriesRoutes.push(`${base}/${lang}/${entry.slug}`);
   }
 
   return [...paginatedRoutes, ...entriesRoutes];
@@ -54,10 +53,10 @@ export default {
     "/store-guide/popular-markets",
     "/store-guide/restrictions",
     /* Blog Routes */
-    ...generateRoutes("/blog", allBlogPostsEs),
-    ...generateRoutes("/blog", allBlogPostsEn),
+    ...generateRoutes("/blog", "es", allBlogPostsEs),
+    ...generateRoutes("/blog", "en", allBlogPostsEn),
     /* News Routes */
-    ...generateRoutes("/news", allNewsPostsEs),
-    ...generateRoutes("/news", allNewsPostsEn),
+    ...generateRoutes("/news", "es", allNewsPostsEs),
+    ...generateRoutes("/news", "en", allNewsPostsEn),
   ],
 } satisfies Config;
