@@ -1,13 +1,11 @@
 import { Route } from ".react-router/types/app/routes/+types/ArticlePage";
-import RichTextBlockRenderer from "@/components/ui/custom/RichTextBlockRenderer";
 import { useApp } from "@/contexts/AppContext";
 import { allBlogPostsEn, allBlogPostsEs } from "@/lib/data.server";
 import { getImage } from "@/lib/utils";
 import { Article } from "@/types/blog";
 import { ArrowLeft, Calendar } from "lucide-react";
-import { Link, useNavigate } from "react-router";
+import { useNavigate } from "react-router";
 
-import DOMPurify from "isomorphic-dompurify";
 import "ckeditor5/ckeditor5-content.css";
 
 export async function loader({ params }: Route.LoaderArgs) {
@@ -63,7 +61,6 @@ export default function ArticlePage({ loaderData }: Route.ComponentProps) {
     loaderData as Article;
 
   const { language, t } = useApp();
-  const sanitizedContent = DOMPurify.sanitize(content);
 
   const formattedDate = new Date(publishedAt).toLocaleDateString(
     locale || "en-US",
@@ -136,10 +133,10 @@ export default function ArticlePage({ loaderData }: Route.ComponentProps) {
 
       {/* Content Section */}
       <article className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 -mt-10 relative z-10">
-        {sanitizedContent && (
+        {content && (
           <div
             className="bg-white rounded-xl shadow-xl p-8 md:p-12 prose border max-w-none overflow-clip ck-content relative"
-            dangerouslySetInnerHTML={{ __html: sanitizedContent }}
+            dangerouslySetInnerHTML={{ __html: content }}
           />
         )}
       </article>
