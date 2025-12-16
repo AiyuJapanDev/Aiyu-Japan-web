@@ -744,7 +744,7 @@ export const translations = {
     japaneseAddresslabelsphone: "Phone number",
 
     japaneseAddressexplanation:
-      "This is your Japanese address! ------- Every box received at our warehouse is FREE of charge!",
+      "This is your Japanese address! Each box that arrives to our warehouse is charged ¥1000 JPY with unlimited time storage!",
 
     japaneseAddresswarningsTitle: "⚠️ Warnings:",
     japaneseAddresswarnings0:
@@ -1961,7 +1961,7 @@ export const translations = {
     japaneseAddresslabelsphone: "Número de teléfono",
 
     japaneseAddressexplanation:
-      "¡Esta es tu dirección japonesa! ------- Cada caja recibida en nuestro depósito es LIBRE de cargo!",
+      "¡Esta es tu dirección japonesa! Cada caja que llega a nuestro almacén se cobra ¥1000 JPY con almacenamiento de tiempo ilimitado.",
 
     japaneseAddresswarningsTitle: "⚠️ Advertencias:",
 
