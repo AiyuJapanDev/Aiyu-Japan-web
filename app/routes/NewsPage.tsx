@@ -18,8 +18,9 @@ export async function loader({ params }: Route.LoaderArgs) {
   if (!newPost) {
     throw new Response("Not Found", { status: 404 });
   }
+  const sanitizedContent = DOMPurify.sanitize(posts.content);
 
-  return newPost;
+  return { ...newPost, content: sanitizedContent };
 }
 
 export default function NewsPage({ loaderData }: Route.ComponentProps) {
@@ -27,7 +28,6 @@ export default function NewsPage({ loaderData }: Route.ComponentProps) {
   if (!loaderData) return null;
 
   const { title, image, content } = loaderData as New;
-  const sanitizedContent = DOMPurify.sanitize(content);
   const { t } = useApp();
 
   // Get image
@@ -68,10 +68,10 @@ export default function NewsPage({ loaderData }: Route.ComponentProps) {
 
       {/* Content Section */}
       <article className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 -mt-10 relative z-10">
-        {sanitizedContent && (
+        {content && (
           <div
             className="bg-white rounded-xl shadow-xl p-8 md:p-12 prose border max-w-none overflow-clip ck-content relative"
-            dangerouslySetInnerHTML={{ __html: sanitizedContent }}
+            dangerouslySetInnerHTML={{ __html: content }}
           />
         )}
       </article>
