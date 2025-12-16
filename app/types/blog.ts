@@ -125,7 +125,7 @@ export interface Article {
   cover: StrapiImage | null;
   author?: Author;
   category?: Category;
-  content: BlocksContent;
+  content: string;
   localizations?: ArticleLocalization[];
 }
 

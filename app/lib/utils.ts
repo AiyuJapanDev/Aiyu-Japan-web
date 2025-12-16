@@ -39,7 +39,7 @@ export const getImage = (
       ? import.meta.env.VITE_STRAPI_URL
       : "";
   const formats = cover?.formats;
-  const fallbackUrl = formats?.large?.url;
+  const fallbackUrl = `${baseURL}${cover.url}`;
   // Construct srcset
   const srcset = [
     formats.large && `${baseURL}${formats.large.url} 1000w`,

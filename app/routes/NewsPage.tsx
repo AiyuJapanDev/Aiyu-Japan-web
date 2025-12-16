@@ -6,6 +6,8 @@ import { getImage } from "@/lib/utils";
 import { New } from "@/types/strapi-news";
 import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router";
+import DOMPurify from "isomorphic-dompurify";
+import "ckeditor5/ckeditor5-content.css";
 
 export async function loader({ params }: Route.LoaderArgs) {
   const { posts, total } =
@@ -25,7 +27,7 @@ export default function NewsPage({ loaderData }: Route.ComponentProps) {
   if (!loaderData) return null;
 
   const { title, image, content } = loaderData as New;
-
+  const sanitizedContent = DOMPurify.sanitize(content);
   const { t } = useApp();
 
   // Get image
@@ -66,9 +68,12 @@ export default function NewsPage({ loaderData }: Route.ComponentProps) {
 
       {/* Content Section */}
       <article className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 -mt-10 relative z-10">
-        <div className="bg-white rounded-xl shadow-xl p-8 md:p-12 prose mx-auto border max-w-none overflow-clip">
-          <RichTextBlockRenderer content={content} />
-        </div>
+        {sanitizedContent && (
+          <div
+            className="bg-white rounded-xl shadow-xl p-8 md:p-12 prose border max-w-none overflow-clip ck-content relative"
+            dangerouslySetInnerHTML={{ __html: sanitizedContent }}
+          />
+        )}
       </article>
     </div>
   );

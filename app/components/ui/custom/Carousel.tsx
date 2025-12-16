@@ -60,6 +60,8 @@ const FeaturedBannerCarousel: React.FC<FeaturedBannerCarouselProps> = ({
             const sizes = "(min-width: 1260px) 1153px, 94.04vw";
             const slug = banner.slug;
 
+            console.log(src);
+
             return (
               <CarouselItem key={`${banner.id}-${index}`} className="pl-0">
                 <div className="relative flex-shrink-0 w-full">
@@ -69,7 +71,6 @@ const FeaturedBannerCarousel: React.FC<FeaturedBannerCarouselProps> = ({
                     draggable={false}
                   >
                     <img
-                      src={src}
                       srcSet={srcset}
                       sizes={sizes}
                       alt={banner.cover?.alternativeText || "Banner image"}
