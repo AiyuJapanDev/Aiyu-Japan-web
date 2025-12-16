@@ -83,8 +83,8 @@ const Header = () => {
     { to: "/store-guide/what-is", label: t("storeGuide") },
     { to: "/store-guide/popular-markets", label: t("stores") },
     [
-      { to: `/news/`, label: t("newsLinkTitle") },
-      { to: `/blog/`, label: t("blog") },
+      { to: `/news/${language}`, label: t("newsLinkTitle") },
+      { to: `/blog/${language}`, label: t("blog") },
     ],
     { to: "/contact", label: t("contact") },
     { to: "/calculator", label: t("calculator") },
