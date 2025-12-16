@@ -1,14 +1,13 @@
 import { Route } from ".react-router/types/app/routes/+types/ArticlePage";
-import RichTextBlockRenderer from "@/components/ui/custom/RichTextBlockRenderer";
 import { useApp } from "@/contexts/AppContext";
 import { allBlogPostsEn, allBlogPostsEs } from "@/lib/data.server";
 import { getImage } from "@/lib/utils";
 import { Article } from "@/types/blog";
 import { ArrowLeft, Calendar } from "lucide-react";
-import { Link, useNavigate } from "react-router";
+import { useNavigate } from "react-router";
 
-import DOMPurify from "isomorphic-dompurify";
 import "ckeditor5/ckeditor5-content.css";
+import DOMPurify from "isomorphic-dompurify";
 
 export async function loader({ params }: Route.LoaderArgs) {
   const { posts, total } =

@@ -9,12 +9,14 @@ export default defineConfig(() => ({
     host: "::",
     port: 8080,
   },
+  ssr: {
+    // This forces Vite to bundle these packages, resolving the ESM/CJS conflict
+    noExternal: ["isomorphic-dompurify", "jsdom"],
+  },
   plugins: [reactRouter(), tsconfigPaths()],
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./app"),
     },
   },
-  // This forces Vite to bundle these packages, resolving the ESM/CJS conflict
-  noExternal: ["isomorphic-dompurify", "jsdom"],
 }));
