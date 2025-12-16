@@ -6,7 +6,7 @@ import { getImage } from "@/lib/utils";
 import { New } from "@/types/strapi-news";
 import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router";
-import DOMPurify from "isomorphic-dompurify";
+
 import "ckeditor5/ckeditor5-content.css";
 
 export async function loader({ params }: Route.LoaderArgs) {
@@ -18,9 +18,8 @@ export async function loader({ params }: Route.LoaderArgs) {
   if (!newPost) {
     throw new Response("Not Found", { status: 404 });
   }
-  const sanitizedContent = DOMPurify.sanitize(posts.content);
 
-  return { ...newPost, content: sanitizedContent };
+  return newPost;
 }
 
 export default function NewsPage({ loaderData }: Route.ComponentProps) {

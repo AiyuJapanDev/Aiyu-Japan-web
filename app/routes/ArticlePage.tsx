@@ -7,7 +7,6 @@ import { ArrowLeft, Calendar } from "lucide-react";
 import { useNavigate } from "react-router";
 
 import "ckeditor5/ckeditor5-content.css";
-import DOMPurify from "isomorphic-dompurify";
 
 export async function loader({ params }: Route.LoaderArgs) {
   const { posts, total } =
@@ -16,9 +15,8 @@ export async function loader({ params }: Route.LoaderArgs) {
   if (!article) {
     throw new Response("Not Found", { status: 404 });
   }
-  const sanitizedContent = DOMPurify.sanitize(article.content);
 
-  return { ...article, contentent: sanitizedContent };
+  return article;
 }
 
 export function meta({ loaderData }: Route.ComponentProps) {
