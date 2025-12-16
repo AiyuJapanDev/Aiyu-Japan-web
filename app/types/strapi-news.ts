@@ -5,7 +5,7 @@ export interface New {
   id: number;
   documentId: string;
   title: string;
-  content: BlocksContent;
+  content: string;
   slug: string;
   date: Date;
   createdAt: Date;

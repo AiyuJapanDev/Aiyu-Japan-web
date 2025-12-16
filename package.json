@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "react-router dev",
+    "dev": "rm -rf node_modules/.cache && react-router dev",
     "build": "rm -rf node_modules/.cache && react-router build",
     "start": "react-router-serve build/server/index.js",
     "lint": "eslint .",
@@ -13,6 +13,7 @@
     "test": "vitest"
   },
   "dependencies": {
+    "@ckeditor/ckeditor5-react": "^11.0.0",
     "@hookform/resolvers": "^5.2.2",
     "@radix-ui/react-accordion": "^1.2.12",
     "@radix-ui/react-alert-dialog": "^1.1.15",
@@ -46,8 +47,9 @@
     "@react-router/serve": "^7.9.6",
     "@strapi/blocks-react-renderer": "^1.0.2",
     "@supabase/supabase-js": "^2.84.0",
-    "@tanstack/react-query": "^5.90.10",
-    "autoprefixer": "^10.4.22",
+    "@tanstack/react-query": "^5.90.12",
+    "autoprefixer": "^10.4.23",
+    "ckeditor5": "^47.3.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
@@ -62,9 +64,9 @@
     "motion": "^12.23.26",
     "next-themes": "^0.4.6",
     "postcss": "^8.5.6",
-    "react": "^19.2.0",
+    "react": "^19.2.3",
     "react-day-picker": "^9.11.1",
-    "react-dom": "^19.2.0",
+    "react-dom": "^19.2.3",
     "react-hook-form": "^7.66.1",
     "react-markdown": "^10.1.0",
     "react-resizable-panels": "^3.0.6",
@@ -78,15 +80,15 @@
     "zod": "^4.1.12"
   },
   "devDependencies": {
-    "@eslint/js": "^9.39.1",
+    "@eslint/js": "^9.39.2",
     "@react-router/dev": "^7.9.6",
     "@tailwindcss/typography": "^0.5.19",
-    "@tailwindcss/vite": "^4.1.17",
+    "@tailwindcss/vite": "^4.1.18",
     "@types/node": "^24.10.1",
     "@types/react": "^19.2.6",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react-swc": "^4.2.2",
-    "eslint": "^9.39.1",
+    "eslint": "^9.39.2",
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-react-refresh": "^0.4.24",
     "globals": "^16.5.0",
@@ -94,6 +96,6 @@
     "typescript-eslint": "^8.47.0",
     "vite": "^7.2.4",
     "vite-tsconfig-paths": "^5.1.4",
-    "vitest": "^4.0.14"
+    "vitest": "^4.0.16"
   }
 }
