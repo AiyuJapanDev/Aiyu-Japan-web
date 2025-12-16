@@ -29,6 +29,21 @@ import {
 } from "@/lib/data.server";
 import React, { useEffect } from "react";
 
+export function meta() {
+  return [
+    { title: "Aiyu Japan" },
+    {
+      property: "og:title",
+      content: "Aiyu Japan | From Japan to Your Home Anyday",
+    },
+    {
+      name: "description",
+      content:
+        "We are passionate about connecting different cultures and building great services. Login to use our service and find out more!.",
+    },
+  ];
+}
+
 export async function loader({ params }: Route.LoaderArgs) {
   const featuredArticlesEs = allBlogPostsEs.posts.filter(
     (post) => post.featured

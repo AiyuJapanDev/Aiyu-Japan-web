@@ -18,6 +18,40 @@ export async function loader({ params }: Route.LoaderArgs) {
   return article;
 }
 
+export function meta({ loaderData }: Route.ComponentProps) {
+  const {
+    title,
+    content,
+    cover,
+    publishedAt,
+    locale,
+    author,
+    category,
+    description,
+  } = loaderData as Article;
+
+  const { src, srcset } = getImage(cover);
+  return [
+    { title: "Aiyu Japan" },
+    {
+      property: "og:title",
+      content: title,
+    },
+    {
+      property: "og:image",
+      content: src,
+    },
+    {
+      name: "description",
+      content: description,
+    },
+    {
+      name: "og:type",
+      content: "article",
+    },
+  ];
+}
+
 export default function ArticlePage({ loaderData }: Route.ComponentProps) {
   let navigate = useNavigate();
   if (!loaderData) return null;
