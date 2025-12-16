@@ -9,6 +9,9 @@ export default defineConfig(() => ({
     host: "::",
     port: 8080,
   },
+  ssr: {
+    external: ["jsdom", "isomorphic-dompurify"],
+  },
   plugins: [reactRouter(), tsconfigPaths()],
   resolve: {
     alias: {
