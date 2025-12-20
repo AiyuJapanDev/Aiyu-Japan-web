@@ -79,6 +79,17 @@ async function strapiFetchAPI<T>(
   }
 }
 
+const getHomepage = async (
+  locale: string = "en"
+): Promise<{ posts: Article[]; total: number }> => {
+  const data = await strapiFetchAPI<StrapiResponse<Article[]>>(
+    `/api/home?locale=${locale}&populate=*`
+  );
+  return {
+    posts: data.data,
+    total: data.meta?.pagination?.total || 0,
+  };
+};
 const getAllBlogArticles = async (
   locale: string = "en",
   pageSize: number = 25

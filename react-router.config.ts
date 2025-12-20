@@ -10,53 +10,76 @@ import { calculateTotalPages, POSTS_PER_PAGE } from "./app/lib/pagination";
 import { Article } from "./app/types/blog";
 import { New } from "./app/types/strapi-news";
 
-const languages = ["es", "en"];
-
+// Helper to generate correct paths: /:lang/:base/:slug
 const generateRoutes = (
-  base: string,
+  basePath: string, // e.g., "blog" (no slash)
   lang: string,
   allPosts: { posts: Article[] | New[]; total: number }
 ) => {
-  const paginatedRoutes: string[] = [];
-  const entriesRoutes: string[] = [];
-  const { total } = allPosts;
+  const routes: string[] = [];
+  const { total, posts } = allPosts;
+
+  // 1. Index Route: /es/blog
+  routes.push(`/${lang}/${basePath}`);
+
+  // 2. Pagination Routes: /es/blog/page/2
   const totalPages = calculateTotalPages(total, POSTS_PER_PAGE);
-
-  // Add base blog route for page 1
-  paginatedRoutes.push(`${base}/${lang}`);
-
-  // Add routes for pages 2, 3, 4, etc. with /page/ prefix
   for (let page = 2; page <= totalPages; page++) {
-    paginatedRoutes.push(`${base}/${lang}/page/${page}`);
+    routes.push(`/${lang}/${basePath}/page/${page}`);
   }
 
-  for (const entry of allPosts.posts) {
-    entriesRoutes.push(`${base}/${lang}/${entry.slug}`);
+  // 3. Detail Routes: /es/blog/my-slug
+  for (const entry of posts) {
+    routes.push(`/${lang}/${basePath}/${entry.slug}`);
   }
 
-  return [...paginatedRoutes, ...entriesRoutes];
+  return routes;
 };
 
 export default {
   ssr: true,
-  // return a list of RELEVANT STATIC URLs to prerender at build time
-  // Each blog or news entry is rendered at runtime to save API calls and reduce build time
-  prerender: [
-    "/",
-    "/calculator",
-    "/contact",
-    /* Store Guide Routes */
-    "/store-guide/what-is",
-    "/store-guide/how-it-works",
-    "/store-guide/fees",
-    "/store-guide/commission",
-    "/store-guide/popular-markets",
-    "/store-guide/restrictions",
-    /* Blog Routes */
-    ...generateRoutes("/blog", "es", allBlogPostsEs),
-    ...generateRoutes("/blog", "en", allBlogPostsEn),
-    /* News Routes */
-    ...generateRoutes("/news", "es", allNewsPostsEs),
-    ...generateRoutes("/news", "en", allNewsPostsEn),
-  ],
+
+  // Using async function is safer for data handling
+  async prerender() {
+    const paths: string[] = [];
+    const langs = ["es", "en"];
+
+    // ---------------------------------------------------------
+    // 1. STATIC PAGES (Auto-generated for both langs)
+    // ---------------------------------------------------------
+    // Define your pages without lang prefix
+    const staticPages = [
+      "", // Represents the root inside the lang (e.g., /es)
+      "calculator",
+      "contact",
+      "store-guide/what-is",
+      "store-guide/how-it-works",
+      "store-guide/fees",
+      "store-guide/commission",
+      "store-guide/popular-markets",
+      "store-guide/restrictions",
+    ];
+
+    // Loop to create /es/contact, /en/contact, etc.
+    langs.forEach((lang) => {
+      staticPages.forEach((page) => {
+        // Avoid double slashes if page is empty string
+        const path = page ? `/${lang}/${page}` : `/${lang}`;
+        paths.push(path);
+      });
+    });
+
+    // ---------------------------------------------------------
+    // 2. DYNAMIC CONTENT (Blog & News)
+    // ---------------------------------------------------------
+    // We spread the results of our helper directly into the array
+    paths.push(
+      ...generateRoutes("blog", "es", allBlogPostsEs),
+      ...generateRoutes("blog", "en", allBlogPostsEn),
+      ...generateRoutes("news", "es", allNewsPostsEs),
+      ...generateRoutes("news", "en", allNewsPostsEn)
+    );
+
+    return paths;
+  },
 } satisfies Config;

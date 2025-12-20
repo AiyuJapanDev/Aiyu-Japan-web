@@ -1,4 +1,4 @@
-import { Route } from ".react-router/types/app/routes/+types/Home";
+import { Route } from ".react-router/types/app/+types/root";
 import ChatAssistant from "@/components/ChatAssistant";
 import ComparisonTableSection from "@/components/sections/ComparisonTableSection";
 import FeaturedBlog from "@/components/sections/FeaturedBlog";
@@ -45,6 +45,8 @@ export function meta() {
 }
 
 export async function loader({ params }: Route.LoaderArgs) {
+  const { lang } = params;
+
   const featuredArticlesEs = allBlogPostsEs.posts.filter(
     (post) => post.featured
   );

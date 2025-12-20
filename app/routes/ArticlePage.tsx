@@ -1,4 +1,3 @@
-import { Route } from ".react-router/types/app/routes/+types/ArticlePage";
 import { useApp } from "@/contexts/AppContext";
 import { allBlogPostsEn, allBlogPostsEs } from "@/lib/data.server";
 import { getImage } from "@/lib/utils";
@@ -7,11 +6,17 @@ import { ArrowLeft, Calendar } from "lucide-react";
 import { useNavigate } from "react-router";
 
 import "ckeditor5/ckeditor5-content.css";
+import type { Route } from ".react-router/types/app/routes/+types/ArticlePage";
 
 export async function loader({ params }: Route.LoaderArgs) {
-  const { posts, total } =
-    params.lang === "es" ? allBlogPostsEs : allBlogPostsEn;
-  const article = posts.find((article) => article.slug === params.articleSlug);
+  const { lang, articleSlug } = params;
+
+  const { posts, total } = lang === "es" ? allBlogPostsEs : allBlogPostsEn;
+
+  const article: Article = posts.find(
+    (article: Article) => article.slug === articleSlug
+  );
+
   if (!article) {
     throw new Response("Not Found", { status: 404 });
   }
