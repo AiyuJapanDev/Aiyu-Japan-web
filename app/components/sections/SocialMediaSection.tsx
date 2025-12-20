@@ -33,6 +33,7 @@ const SocialMediaSection = () => {
                     scrolling="no"
                     className="w-full h-[400px] border-none"
                     allowFullScreen
+                    loading="lazy"
                   ></iframe>
                 </div>
               </CardContent>

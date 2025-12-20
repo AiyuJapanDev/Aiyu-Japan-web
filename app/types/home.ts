@@ -1,12 +1,8 @@
-import { Article } from "./blog";
+import { BlockData, FeaturedBannerBlock } from "./blocks";
 
-export interface FeaturedBannerBlock {
-  __component: "components.featured-banner";
-  id: number;
-  blog_posts: Article[];
-}
+export type { FeaturedBannerBlock };
 
-export type HomeBlock = FeaturedBannerBlock;
+export type HomeBlock = BlockData;
 
 export interface HomePageData {
   id: number;
