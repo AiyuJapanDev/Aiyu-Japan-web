@@ -1,47 +1,30 @@
-import React, { useMemo } from "react";
-import { Link } from "react-router";
-import { useApp } from "@/contexts/AppContext";
-import { getImage, getLangSlug } from "@/lib/utils";
-import { Article } from "@/types/blog";
-import { HomePageData, FeaturedBannerBlock } from "@/types/home";
 import {
   Carousel,
   CarouselContent,
   CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
 } from "@/components/ui/carousel";
+import { getImage } from "@/lib/utils";
 import Autoplay from "embla-carousel-autoplay";
+import React from "react";
+import { Link } from "react-router";
 
 interface FeaturedBannerCarouselProps {
-  data: HomePageData;
+  data: any;
+  lang: string;
 }
 
 const FeaturedBannerCarousel: React.FC<FeaturedBannerCarouselProps> = ({
   data,
+  lang,
 }) => {
-  const { language } = useApp();
-
-  const carouselData = useMemo(() => {
-    const featuredBannerBlock = data.blocks.find(
-      (block): block is FeaturedBannerBlock =>
-        block.__component === "components.featured-banner"
-    );
-
-    if (featuredBannerBlock && featuredBannerBlock.blog_posts) {
-      return featuredBannerBlock.blog_posts.filter(
-        (item) => item.cover !== null && item.cover !== undefined
-      );
-    }
-    return [];
-  }, [data]);
+  const carouselData = data.articles;
 
   if (carouselData.length === 0) {
     return null;
   }
 
   return (
-    <div className="relative w-full max-w-6xl mx-auto rounded-xl overflow-hidden shadow-xl">
+    <div className="relative w-full max-w-7xl mx-auto rounded-xl overflow-hidden shadow-xl ">
       <Carousel
         opts={{
           align: "start",
@@ -60,13 +43,11 @@ const FeaturedBannerCarousel: React.FC<FeaturedBannerCarouselProps> = ({
             const sizes = "(min-width: 1260px) 1153px, 94.04vw";
             const slug = banner.slug;
 
-            console.log(src);
-
             return (
               <CarouselItem key={`${banner.id}-${index}`} className="pl-0">
                 <div className="relative flex-shrink-0 w-full">
                   <Link
-                    to={`/blog/${language}/${slug}` || "#"}
+                    to={`blog/${slug}`}
                     className="relative block w-full transition-transform hover:scale-105 overflow-hidden"
                     draggable={false}
                   >

@@ -1,7 +1,7 @@
 import { Route } from ".react-router/types/app/routes/+types/NewsPage";
 import RichTextBlockRenderer from "@/components/ui/custom/RichTextBlockRenderer";
 import { useApp } from "@/contexts/AppContext";
-import { allNewsPostsEn, allNewsPostsEs } from "@/lib/data.server";
+import contentData from "@/lib/data.server";
 import { getImage } from "@/lib/utils";
 import { New } from "@/types/strapi-news";
 import { ArrowLeft } from "lucide-react";
@@ -10,8 +10,7 @@ import { useNavigate } from "react-router";
 import "ckeditor5/ckeditor5-content.css";
 
 export async function loader({ params }: Route.LoaderArgs) {
-  const { posts, total } =
-    params.lang === "es" ? allNewsPostsEs : allNewsPostsEn;
+  const { posts, total } = contentData[params.lang].newsPosts;
 
   const newPost = posts.find((news) => news.slug === params.newsSlug);
 

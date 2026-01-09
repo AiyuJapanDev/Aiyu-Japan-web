@@ -127,6 +127,7 @@ export interface Article {
   category?: Category;
   content: string;
   localizations?: ArticleLocalization[];
+  blocks: any;
 }
 
 // --- Legacy Support (for backward compatibility) ---

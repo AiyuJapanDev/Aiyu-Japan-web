@@ -1,12 +1,7 @@
 import type { Config } from "@react-router/dev/config";
 import "dotenv/config";
-import {
-  allBlogPostsEs,
-  allBlogPostsEn,
-  allNewsPostsEs,
-  allNewsPostsEn,
-} from "./app/lib/data.server";
 import { calculateTotalPages, POSTS_PER_PAGE } from "./app/lib/pagination";
+import contentData from "./app/lib/data.server";
 import { Article } from "./app/types/blog";
 import { New } from "./app/types/strapi-news";
 
@@ -38,7 +33,6 @@ const generateRoutes = (
 
 export default {
   ssr: true,
-
   // Using async function is safer for data handling
   async prerender() {
     const paths: string[] = [];
@@ -74,10 +68,10 @@ export default {
     // ---------------------------------------------------------
     // We spread the results of our helper directly into the array
     paths.push(
-      ...generateRoutes("blog", "es", allBlogPostsEs),
-      ...generateRoutes("blog", "en", allBlogPostsEn),
-      ...generateRoutes("news", "es", allNewsPostsEs),
-      ...generateRoutes("news", "en", allNewsPostsEn)
+      ...generateRoutes("blog", "es", contentData.es.blogPosts),
+      ...generateRoutes("blog", "en", contentData.en.blogPosts),
+      ...generateRoutes("news", "es", contentData.es.newsPosts),
+      ...generateRoutes("news", "en", contentData.en.newsPosts)
     );
 
     return paths;

@@ -57,7 +57,7 @@ export interface GlobalPageFooter {
 
 export type ComponentType =
   | "blocks.content-with-image"
-  | "components.featured-banner"
+  | "blocks.featured-banner"
   | "blocks.featured-articles-carousel"
   | "blocks.latest-news"
   | "blocks.heading-section"
@@ -71,7 +71,13 @@ export type ComponentType =
   | "blocks.markdown"
   | "blocks.newsletter"
   | "blocks.person-card"
-  | "blocks.featured-articles";
+  | "blocks.featured-articles"
+  | "blocks.content-section";
+
+interface BackgroundProps {
+  background: boolean;
+  transparentBackground: boolean;
+}
 
 export interface Base<
   T extends ComponentType,
@@ -83,6 +89,8 @@ export interface Base<
   createdAt?: string;
   updatedAt?: string;
   publishedAt?: string;
+  background?: BackgroundProps;
+  animate?: boolean;
   data?: D; // Kept for compatibility, but flattened props are preferred
 }
 
@@ -111,8 +119,8 @@ export interface FaqsBlock extends Base<"blocks.faqs"> {
   faq: ComponentFaq[];
 }
 
-export interface FeaturedBannerBlock extends Base<"components.featured-banner"> {
-  blog_posts: Article[];
+export interface FeaturedBannerBlock extends Base<"blocks.featured-banner"> {
+  articles: Article[];
 }
 
 export interface FeaturedArticlesCarouselBlock extends Base<"blocks.featured-articles-carousel"> {

@@ -3,12 +3,12 @@ import { Card, CardContent } from '@/components/ui/card';
 import { ShoppingCart, BadgePercent, PackagePlus, Globe } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useApp } from '@/contexts/AppContext';
-import { 
-  Carousel, 
-  CarouselContent, 
-  CarouselItem, 
-  CarouselPrevious, 
-  CarouselNext 
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselPrevious,
+  CarouselNext
 } from '@/components/ui/carousel';
 
 const WhyChooseSection = () => {
@@ -47,8 +47,8 @@ const WhyChooseSection = () => {
     return (
       <Card key={index} className="bg-white/90 backdrop-blur-sm border-blue-200 shadow-lg overflow-hidden h-full flex flex-col">
         <div className="aspect-video relative overflow-hidden">
-          <img 
-            src={reason.image} 
+          <img
+            src={reason.image}
             alt={reason.title}
             className="w-full h-full object-cover"
           />
@@ -70,38 +70,27 @@ const WhyChooseSection = () => {
   };
 
   return (
-    <section className="py-20 bg-white/50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-            {t('whyChooseTitle')}
-          </h2>
-          <p className="text-lg text-gray-600">
-            {t('whyChooseSubtitle')}
-          </p>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {isMobile ? (
+        <Carousel className="w-full max-w-xs mx-auto" opts={{ align: "start" }}>
+          <CarouselContent>
+            {reasons.map((reason, index) => (
+              <CarouselItem key={index}>
+                <div className="p-1 h-full">
+                  {renderCard(reason, index)}
+                </div>
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+          <CarouselPrevious className="left-[-1rem]" />
+          <CarouselNext className="right-[-1rem]" />
+        </Carousel>
+      ) : (
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+          {reasons.map((reason, index) => renderCard(reason, index))}
         </div>
-        
-        {isMobile ? (
-          <Carousel className="w-full max-w-xs mx-auto" opts={{ align: "start" }}>
-            <CarouselContent>
-              {reasons.map((reason, index) => (
-                <CarouselItem key={index}>
-                  <div className="p-1 h-full">
-                    {renderCard(reason, index)}
-                  </div>
-                </CarouselItem>
-              ))}
-            </CarouselContent>
-            <CarouselPrevious className="left-[-1rem]" />
-            <CarouselNext className="right-[-1rem]" />
-          </Carousel>
-        ) : (
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {reasons.map((reason, index) => renderCard(reason, index))}
-          </div>
-        )}
-      </div>
-    </section>
+      )}
+    </div>
   );
 };
 

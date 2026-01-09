@@ -1,17 +1,17 @@
 import { useApp } from "@/contexts/AppContext";
-import { allBlogPostsEn, allBlogPostsEs } from "@/lib/data.server";
+import contentData from "@/lib/data.server";
 import { getImage } from "@/lib/utils";
 import { Article } from "@/types/blog";
 import { ArrowLeft, Calendar } from "lucide-react";
 import { useNavigate } from "react-router";
 
-import "ckeditor5/ckeditor5-content.css";
 import type { Route } from ".react-router/types/app/routes/+types/ArticlePage";
+import BlockRenderer from "@/components/blocks/Blockrenderer";
 
 export async function loader({ params }: Route.LoaderArgs) {
   const { lang, articleSlug } = params;
 
-  const { posts, total } = lang === "es" ? allBlogPostsEs : allBlogPostsEn;
+  const { posts, total } = contentData[params.lang].blogPosts;
 
   const article: Article = posts.find(
     (article: Article) => article.slug === articleSlug
@@ -21,7 +21,7 @@ export async function loader({ params }: Route.LoaderArgs) {
     throw new Response("Not Found", { status: 404 });
   }
 
-  return article;
+  return { article, lang };
 }
 
 export function meta({ loaderData }: Route.ComponentProps) {
@@ -62,10 +62,12 @@ export default function ArticlePage({ loaderData }: Route.ComponentProps) {
   let navigate = useNavigate();
   if (!loaderData) return null;
 
-  const { title, content, cover, publishedAt, locale, author, category } =
-    loaderData as Article;
+  const { article, lang } = loaderData;
 
-  const { language, t } = useApp();
+  const { title, content, cover, publishedAt, locale, author, blocks } =
+    article;
+
+  const { t } = useApp();
 
   const formattedDate = new Date(publishedAt).toLocaleDateString(
     locale || "en-US",
@@ -106,22 +108,22 @@ export default function ArticlePage({ loaderData }: Route.ComponentProps) {
             {t("backToBlogs")}
           </button>
 
-          {category && (
+          {/*           {category && (
             <span className="inline-block px-3 py-1 bg-blue-500 text-white text-sm font-semibold rounded-full mb-4 w-fit">
               {category.name}
             </span>
-          )}
+          )} */}
 
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4 max-w-4xl leading-tight">
             {title}
           </h1>
 
           <div className="flex flex-wrap items-center gap-6 text-white/90 text-sm md:text-base">
-            {author && (
+            {/*             {author && (
               <div className="flex items-center">
                 <span className="font-semibold">{author.name}</span>
               </div>
-            )}
+            )} */}
             <div className="flex items-center">
               <Calendar className="w-4 h-4 mr-2" />
               {formattedDate}
@@ -138,12 +140,9 @@ export default function ArticlePage({ loaderData }: Route.ComponentProps) {
 
       {/* Content Section */}
       <article className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 -mt-10 relative z-10">
-        {content && (
-          <div
-            className="bg-white rounded-xl shadow-xl p-8 md:p-12 prose border max-w-none overflow-clip ck-content relative"
-            dangerouslySetInnerHTML={{ __html: content }}
-          />
-        )}
+        <div className="bg-white rounded-xl shadow-xl p-8 md:p-12 prose border max-w-none overflow-clip ck-content relative">
+          <BlockRenderer blocks={blocks} lang={lang} contentData={blocks} />
+        </div>
       </article>
     </div>
   );

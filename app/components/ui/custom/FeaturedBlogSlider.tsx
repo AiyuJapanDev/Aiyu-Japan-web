@@ -1,42 +1,36 @@
-import React from "react";
-import { Link } from "react-router";
-import { Article } from "@/types/blog";
-import { useApp } from "@/contexts/AppContext";
-import { getImage, getLangSlug } from "@/lib/utils";
 import {
   Carousel,
   CarouselContent,
   CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
 } from "@/components/ui/carousel";
+import { getImage } from "@/lib/utils";
 import AutoScroll from "embla-carousel-auto-scroll";
+import React from "react";
+import { Link } from "react-router";
 
 interface FeaturedBlogSliderProps {
-  articles: Article[] | undefined;
+  lang: string;
+  data: any;
+  contentData: any;
 }
 
 const FeaturedBlogSlider: React.FC<FeaturedBlogSliderProps> = ({
-  articles,
+  lang,
+  data,
+  contentData,
 }) => {
-  const { language } = useApp();
+  const articles = contentData.articles.posts.filter(
+    (post) => post.featured === true
+  );
+  if (!articles || articles.length === 0) return [];
 
-  const displayArticles = React.useMemo(() => {
-    if (!articles || articles.length === 0) return [];
-
-    let items = [...articles];
-    while (items.length < 6) {
-      items = [...items, ...articles];
-    }
-    return items;
-  }, [articles]);
-
-  if (!articles || articles.length === 0) {
-    return null;
+  let items = [...articles];
+  while (items.length < 6) {
+    items = [...items, ...articles];
   }
 
   return (
-    <section className="max-w-6xl mx-auto xl:px-0 rounded-lg overflow-clip">
+    <div className="max-w-7xl mx-auto">
       <Carousel
         opts={{
           loop: true,
@@ -49,10 +43,10 @@ const FeaturedBlogSlider: React.FC<FeaturedBlogSliderProps> = ({
             speed: 1,
           }),
         ]}
-        className="w-full"
+        className="w-full "
       >
         <CarouselContent className="-ml-4">
-          {displayArticles.map((blog, index) => {
+          {items.map((blog, index) => {
             const slug = blog.slug;
             const { src, srcset } = getImage(blog.cover);
             const sizes =
@@ -63,7 +57,7 @@ const FeaturedBlogSlider: React.FC<FeaturedBlogSliderProps> = ({
                 className="pl-4 basis-1/2 md:basis-1/3 lg:basis-1/4 mb-6"
               >
                 <Link
-                  to={`/blog/${language}/${slug}`}
+                  to={`blog/${slug}`}
                   className="block w-full aspect-video rounded-xl overflow-clip shadow-lg transition-transform hover:scale-105 hover:shadow-lg relative group"
                   draggable={false}
                 >
@@ -85,7 +79,8 @@ const FeaturedBlogSlider: React.FC<FeaturedBlogSliderProps> = ({
           })}
         </CarouselContent>
       </Carousel>
-    </section>
+    </div>
+
   );
 };
 

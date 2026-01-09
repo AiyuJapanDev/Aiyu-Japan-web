@@ -25,9 +25,9 @@
     "allowJs": true,
     "verbatimModuleSyntax": false,
 
-    "baseUrl": ".",
+    "baseUrl": "./",
     "paths": {
-      "@/*": ["./app/*"]
+      "@/*": ["app/*"]
     }
   },
   "include": ["app", ".react-router/types/**/*"]

@@ -7,12 +7,11 @@ import { Calendar, Newspaper } from "lucide-react";
 import { Link } from "react-router";
 
 import { useApp } from "@/contexts/AppContext";
-import { allNewsPostsEn, allNewsPostsEs } from "@/lib/data.server";
+import contentData from "@/lib/data.server";
 
 export async function loader({ params }: Route.LoaderArgs) {
   const page = params.page ? parseInt(params.page, 10) : 1;
-  const { posts, total } =
-    params.lang === "es" ? allNewsPostsEs : allNewsPostsEn;
+  const { posts, total } = contentData[params.lang].newsPosts;
 
   const totalPages = calculateTotalPages(total, POSTS_PER_PAGE);
 
@@ -47,7 +46,7 @@ export default function News({ loaderData }: Route.ComponentProps) {
     className?: string;
   }) => (
     <Link
-      to={`/news/${language}/${news.slug}`}
+      to={`${news.slug}`}
       className={`relative px-6 py-2 group flex flex-row gap-6 h-full items-center bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 ${className}`}
     >
       <div className="absolute w-2 h-full inset-0 bg-capybara-blue" />
@@ -122,7 +121,7 @@ export default function News({ loaderData }: Route.ComponentProps) {
                   {/* Previous Button */}
                   {hasPrevPage ? (
                     <Link
-                      to={`/blog/${currentPage - 1 === 1 ? "" : `/page/${currentPage - 1}`}`}
+                      to={`${language}/news/${currentPage - 1 === 1 ? "" : `/page/${currentPage - 1}`}`}
                       className="px-4 py-2 rounded-lg bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors font-medium"
                     >
                       {t("previous")}
@@ -146,12 +145,11 @@ export default function News({ loaderData }: Route.ComponentProps) {
                         return (
                           <Link
                             key={page}
-                            to={`/blog/${isFirstPage ? "" : `/page/${page}`}`}
-                            className={`min-w-[40px] h-10 flex items-center justify-center rounded-lg font-medium transition-colors ${
-                              isCurrentPage
-                                ? "bg-blue-600 text-white"
-                                : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-50"
-                            }`}
+                            to={`${language}/news/${isFirstPage ? "" : `/page/${page}`}`}
+                            className={`min-w-[40px] h-10 flex items-center justify-center rounded-lg font-medium transition-colors ${isCurrentPage
+                              ? "bg-blue-600 text-white"
+                              : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-50"
+                              }`}
                           >
                             {page}
                           </Link>
@@ -163,7 +161,7 @@ export default function News({ loaderData }: Route.ComponentProps) {
                   {/* Next Button */}
                   {hasNextPage ? (
                     <Link
-                      to={`/blog/page/${currentPage + 1}`}
+                      to={`${language}/news/page/${currentPage + 1}`}
                       className="px-4 py-2 rounded-lg bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors font-medium"
                     >
                       {t("next")}

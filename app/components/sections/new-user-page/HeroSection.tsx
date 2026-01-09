@@ -1,6 +1,6 @@
 import { useApp } from "@/contexts/AppContext";
 
-export const HeroSection = () => {
+export function HeroSection() {
   const { t } = useApp();
 
   return (
@@ -16,4 +16,4 @@ export const HeroSection = () => {
       </div>
     </div>
   );
-};
+}

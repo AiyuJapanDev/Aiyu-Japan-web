@@ -1,33 +1,30 @@
 import { Route } from ".react-router/types/app/+types/root";
-import ChatAssistant from "@/components/ChatAssistant";
-import ComparisonTableSection from "@/components/sections/ComparisonTableSection";
-import FeaturedBlog from "@/components/sections/FeaturedBlog";
-import FeaturedNews from "@/components/sections/FeaturedNews";
+import BlockRenderer from "@/components/blocks/Blockrenderer";
 import HeroSection from "@/components/sections/HeroSection";
-import RecommendedStoresSection from "@/components/sections/RecommendedStoresSection";
-import { ReviewsSection } from "@/components/sections/ReviewsSection";
-import ServiceFeatures from "@/components/sections/ServiceFeatures";
-import SocialMediaSection from "@/components/sections/SocialMediaSection";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
-import { Card, CardContent } from "@/components/ui/card";
 import { useApp } from "@/contexts/AppContext";
-import { useIntersectionObserver } from "@/hooks/useIntersectionObserver";
-import {
-  allBlogPostsEn,
-  allBlogPostsEs,
-  allNewsPostsEn,
-  allNewsPostsEs,
-  homeDataEn,
-  homeDataEs,
-  storeMarketsEn,
-  storeMarketsEs,
-} from "@/lib/data.server";
-import React, { useEffect } from "react";
+import contentData from "@/lib/data.server";
+import { useEffect } from "react";
+
+export async function loader({ params }: Route.LoaderArgs) {
+  const { lang } = params;
+
+  // contentData is keyed by locale code (e.g. "en", "es")
+  // Fallback to "en" if "lang" is not found in contentData (or handle 404)
+  const currentLangData = contentData[lang] || contentData["en"];
+
+  const homeBlcoks = currentLangData?.homePage?.blocks || [];
+  const homeData = {
+    articles: currentLangData?.blogPosts || [],
+    news: currentLangData?.newsPosts || [],
+    markets: currentLangData?.markets || [],
+  };
+
+  return {
+    homeBlcoks,
+    homeData,
+    lang,
+  };
+}
 
 export function meta() {
   return [
@@ -44,64 +41,13 @@ export function meta() {
   ];
 }
 
-export async function loader({ params }: Route.LoaderArgs) {
-  const { lang } = params;
-
-  const featuredArticlesEs = allBlogPostsEs.posts.filter(
-    (post) => post.featured
-  );
-  const featuredArticlesEn = allBlogPostsEn.posts.filter(
-    (post) => post.featured
-  );
-
-  const newsPostsEn = allNewsPostsEn.posts.slice(0, 5);
-  const newsPostsEs = allNewsPostsEs.posts.slice(0, 5);
-
-  return {
-    en: {
-      home: homeDataEn,
-      featured: featuredArticlesEn,
-      news: newsPostsEn,
-      storeMarkets: storeMarketsEn,
-    },
-    es: {
-      home: homeDataEs,
-      featured: featuredArticlesEs,
-      news: newsPostsEs,
-      storeMarkets: storeMarketsEs,
-    },
-  };
-}
-
-const AnimatedSection = ({
-  children,
-  delay = 0,
-}: {
-  children: React.ReactNode;
-  delay?: number;
-}) => {
-  const { ref, hasIntersected } = useIntersectionObserver();
-
-  return (
-    <div
-      ref={ref}
-      className={`transition-all duration-700 ease-out ${
-        hasIntersected ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
-      }`}
-      style={{
-        transitionDelay: hasIntersected ? `${delay}ms` : "0ms",
-      }}
-    >
-      {children}
-    </div>
-  );
-};
-
 const Home = ({ loaderData }: Route.ComponentProps) => {
   const { t, language } = useApp();
-  const data = loaderData as Awaited<ReturnType<typeof loader>>;
+  const { homeBlcoks, homeData, lang } = loaderData as Awaited<
+    ReturnType<typeof loader>
+  >;
 
-  const currentData = data[language as keyof typeof data] || data.en;
+  const { articles, news } = homeData;
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -113,7 +59,9 @@ const Home = ({ loaderData }: Route.ComponentProps) => {
         <HeroSection />
       </div>
 
-      <AnimatedSection delay={100}>
+      <BlockRenderer blocks={homeBlcoks} lang={lang} contentData={homeData} />
+
+      {/*       <AnimatedSection delay={100}>
         <FeaturedBlog
           homeData={currentData.home}
           featuredArticles={currentData.featured}
@@ -145,7 +93,6 @@ const Home = ({ loaderData }: Route.ComponentProps) => {
       </AnimatedSection>
 
       <AnimatedSection delay={600}>
-        {/* FAQ Section */}
         <div className="mt-10">
           <div className="text-center mb-8">
             <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4">
@@ -189,7 +136,7 @@ const Home = ({ loaderData }: Route.ComponentProps) => {
 
       <AnimatedSection delay={800}>
         <ChatAssistant />
-      </AnimatedSection>
+      </AnimatedSection> */}
     </div>
   );
 };

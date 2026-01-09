@@ -2,12 +2,11 @@ import {
   type RouteConfig,
   index,
   layout,
-  prefix,
   route,
 } from "@react-router/dev/routes";
 
 export default [
-  ...prefix(":lang", [
+  route("/:lang?", "routes/LocaleLayout.tsx", [
     index("routes/Home.tsx"),
     route("services", "routes/Services.tsx"),
     route("auth", "routes/Auth.tsx"),

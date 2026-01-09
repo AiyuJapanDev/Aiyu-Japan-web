@@ -6,11 +6,18 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Card, CardContent } from "../ui/card";
+import { FaqsBlock } from "@/types/blocks";
 
-function Faqs() {
+interface FaqsProps {
+  data: FaqsBlock;
+}
+
+function Faqs({ data }: FaqsProps) {
   const { t } = useApp();
+  const faqItems = data.faq || [];
+
   return (
-    <div className="mt-10">
+    <div className="mt-10 max-w-7xl mx-auto">
       <div className="text-center mb-8">
         <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4">
           {t("faqTitle")}
@@ -20,27 +27,17 @@ function Faqs() {
         <Card className="bg-white/90 backdrop-blur-sm border-blue-200 shadow-lg max-w-4xl mx-auto">
           <CardContent className="p-8 space-y-4">
             <Accordion type="single" collapsible>
-              {[
-                [t("faq1Question"), t("faq1Answer")],
-                [t("faq2Question"), t("faq2Answer")],
-                [t("faq3Question"), t("faq3Answer")],
-                [t("faq4Question"), t("faq4Answer")],
-                [t("faq5Question"), t("faq5Answer")],
-                [t("faq6Question"), t("faq6Answer")],
-                [t("faq7Question"), t("faq7Answer")],
-                [t("faq8Question"), t("faq8Answer")],
-                [t("faq9Question"), t("faq9Answer")],
-              ].map(([question, answer], index) => (
+              {faqItems.map((item, index) => (
                 <AccordionItem
-                  key={index}
+                  key={item.id || index}
                   value={`item-${index}`}
                   className="border-b border-blue-200"
                 >
                   <AccordionTrigger className="text-left hover:no-underline">
-                    {question}
+                    {item.question}
                   </AccordionTrigger>
-                  <AccordionContent className="text-gray-600 whitespace-pre-line">
-                    {answer}
+                  <AccordionContent className="text-gray-600 space-y-2">
+                    <div dangerouslySetInnerHTML={{ __html: item.answer }} />
                   </AccordionContent>
                 </AccordionItem>
               ))}

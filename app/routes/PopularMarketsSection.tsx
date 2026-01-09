@@ -8,11 +8,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useApp } from "@/contexts/AppContext";
-import {
-  storeCategories,
-  storeMarketsEn,
-  storeMarketsEs,
-} from "@/lib/data.server";
+import contentData from "@/lib/data.server";
 import { getMarketLogo } from "@/lib/utils";
 import { StoreCategory, StoreMarket } from "@/types/strapi-stores";
 import { ExternalLink } from "lucide-react";
@@ -23,39 +19,26 @@ const MARKETS_PER_PAGE = 12;
 
 export async function loader({ params }: Route.LoaderArgs) {
   const page = params.page ? parseInt(params.page, 10) : 1;
+  const { storeCategories, markets } = contentData[params.lang];
 
   return {
     storeCategories,
-    storeMarketsEs,
-    storeMarketsEn,
+    markets,
     currentPage: page,
   };
 }
 
 export const PopularMarketsSection = ({ loaderData }: Route.ComponentProps) => {
   const { t, language } = useApp();
-  const { storeCategories, storeMarketsEs, storeMarketsEn, currentPage } =
-    loaderData as {
-      storeCategories: StoreCategory[];
-      storeMarketsEs: StoreMarket[];
-      storeMarketsEn: StoreMarket[];
-      currentPage: number;
-    };
+  const { storeCategories, markets, currentPage } = loaderData as {
+    storeCategories: StoreCategory[];
+    markets: StoreMarket[];
+    currentPage: number;
+  };
 
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const [marketsByLanguage, setMarketsByLanguage] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
-
-  useEffect(() => {
-    // Filter by language first
-
-    if (language === "es") {
-      setMarketsByLanguage(storeMarketsEs);
-    } else if (language === "en") {
-      setMarketsByLanguage(storeMarketsEn);
-    }
-  }, [language]);
 
   //store categories
   const allCategories = {
@@ -84,11 +67,11 @@ export const PopularMarketsSection = ({ loaderData }: Route.ComponentProps) => {
   const getFilteredMarkets = () => {
     // If "all" is selected, return all markets for the current language
     if (selectedCategory === "all") {
-      return marketsByLanguage;
+      return markets;
     }
 
     // Filter by selected category
-    return marketsByLanguage.filter((market) =>
+    return markets.filter((market) =>
       market.store_categories.some(
         (category) => category.slug === selectedCategory
       )

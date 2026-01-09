@@ -11,10 +11,10 @@ import { PickupInfo } from "@/components/ui/custom/PickupInfo";
 import { ShipmentStatus } from "@/components/ui/custom/ShipmentStatus";
 import { TrackingHero } from "@/components/ui/custom/TrackingHero";
 import ProtectedRoute from "@/components/ProtectedRoute";
-import { paraguayDeliveries } from "@/lib/data.server";
+import contentData from "@/lib/data.server";
 
 export async function loader({ params }: LoaderFunctionArgs) {
-  const data = await paraguayDeliveries.find(
+  const data = await contentData[params.lang].paraguayDeliveries.find(
     (deliery) => deliery.loadNumber === params.loadId
   );
 
