@@ -13,4 +13,5 @@ export interface New {
   publishedAt: Date;
   image: StrapiImage;
   locale: string;
+  blocks: any;
 }

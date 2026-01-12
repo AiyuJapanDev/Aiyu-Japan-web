@@ -24,7 +24,11 @@ const ServiceFeatures: React.FC<ServiceFeaturesProps> = ({ data }) => {
             <CardContent className="p-8 text-center">
               <div className="w-16 h-16 bg-gradient-to-br from-blue-300 to-blue-400 rounded-full flex items-center justify-center mx-auto mb-6 overflow-hidden">
                 {src ? (
-                  <img src={`${import.meta.env.VITE_STRAPI_URL}${src}`} alt={feature.heading} className="w-8 h-8 object-contain brightness-0 invert" />
+                  <img
+                    src={`${import.meta.env.VITE_STRAPI_URL}${src}`}
+                    alt={feature.heading}
+                    className="w-8 h-8 object-contain brightness-0 invert"
+                  />
                 ) : (
                   <div className="w-8 h-8" />
                 )}
@@ -54,7 +58,6 @@ const ServiceFeatures: React.FC<ServiceFeaturesProps> = ({ data }) => {
         );
       })}
     </div>
-
   );
 };
 

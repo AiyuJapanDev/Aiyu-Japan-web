@@ -1,13 +1,11 @@
 import { Route } from ".react-router/types/app/routes/+types/NewsPage";
-import RichTextBlockRenderer from "@/components/ui/custom/RichTextBlockRenderer";
+import BlockRenderer from "@/components/blocks/Blockrenderer";
 import { useApp } from "@/contexts/AppContext";
 import contentData from "@/lib/data.server";
 import { getImage } from "@/lib/utils";
 import { New } from "@/types/strapi-news";
 import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router";
-
-import "ckeditor5/ckeditor5-content.css";
 
 export async function loader({ params }: Route.LoaderArgs) {
   const { posts, total } = contentData[params.lang].newsPosts;
@@ -18,14 +16,17 @@ export async function loader({ params }: Route.LoaderArgs) {
     throw new Response("Not Found", { status: 404 });
   }
 
-  return newPost;
+  return { newPost, lang: params.lang };
 }
 
 export default function NewsPage({ loaderData }: Route.ComponentProps) {
   let navigate = useNavigate();
   if (!loaderData) return null;
 
-  const { title, image, content } = loaderData as New;
+  const { newPost, lang } = loaderData;
+
+  const { title, image, blocks } = newPost as New;
+  console.log(newPost);
   const { t } = useApp();
 
   // Get image
@@ -66,12 +67,9 @@ export default function NewsPage({ loaderData }: Route.ComponentProps) {
 
       {/* Content Section */}
       <article className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 -mt-10 relative z-10">
-        {content && (
-          <div
-            className="bg-white rounded-xl shadow-xl p-8 md:p-12 prose border max-w-none overflow-clip ck-content relative"
-            dangerouslySetInnerHTML={{ __html: content }}
-          />
-        )}
+        <div className="bg-white rounded-xl shadow-xl p-8 md:p-12 prose border max-w-none overflow-clip ck-content relative">
+          <BlockRenderer blocks={blocks} lang={lang} contentData={blocks} />
+        </div>
       </article>
     </div>
   );

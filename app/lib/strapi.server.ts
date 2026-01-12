@@ -107,7 +107,7 @@ const getAllNewsPosts = async (
   pageSize: number = 25
 ): Promise<{ posts: New[]; total: number }> => {
   const data = await strapiFetchAPI<StrapiResponse<New[]>>(
-    `/api/news?locale=${locale}&populate[0]=image&pagination[pageSize]=${pageSize}&sort[0]=date:desc`
+    `/api/news?locale=${locale}&populate[0]=image&pagination[pageSize]=${pageSize}&sort[0]=date:desc&populate[blocks][populate]=*`
   );
   return {
     posts: data.data,

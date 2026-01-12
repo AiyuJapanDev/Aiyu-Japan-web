@@ -1,4 +1,4 @@
-import { Article } from "./blog";
+import { Article, StrapiImage } from "./blog";
 
 export interface Image {
   id: number;
@@ -111,7 +111,7 @@ export interface ContentWithImageBlock extends Base<"blocks.content-with-image">
   heading: string;
   text: string; // RichText
   link: Link;
-  image: Image;
+  image: StrapiImage;
   reversed: boolean;
 }
 

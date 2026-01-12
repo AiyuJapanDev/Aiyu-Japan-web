@@ -1,13 +1,11 @@
-import React from "react";
-import type { ContentWithImageBlock } from "@/types/blocks";
 import { getImage } from "@/lib/utils";
+import type { ContentWithImageBlock } from "@/types/blocks";
 
 const BASE_URL =
   import.meta.env.VITE_STRAPI_BASE_URL ?? "http://localhost:1337";
 
 function ContentWithImage({ data }: { data: ContentWithImageBlock }) {
   const { heading, text, image, link, reversed } = data;
-  console.log("HEREEE", data);
 
   function getStrapiMedia(url: string | null) {
     if (url == null) return null;

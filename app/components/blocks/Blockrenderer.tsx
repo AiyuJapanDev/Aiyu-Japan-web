@@ -1,10 +1,9 @@
 import FeaturedBannerCarousel from "../ui/custom/FeaturedBannerCarousel";
 
 import { BlockData, ComponentType } from "@/types/blocks";
-import React from "react";
-import { AnimatedSection } from "../ui/custom/AnimatedComponent";
 import { ComparisonTable } from "../ui/custom/ComparisonTable";
 import FeaturedBlogSlider from "../ui/custom/FeaturedBlogSlider";
+import { BlockSection } from "./BlockSection";
 import ContentSection from "./ContentSection";
 import ContentWithImage from "./ContentWithImage";
 import Faqs from "./Faqs";
@@ -36,17 +35,6 @@ const componentMap: Record<ComponentType, any> = {
   "blocks.featured-articles": null,
 };
 
-const Section = ({
-  children,
-  classStyle,
-}: {
-  children: React.ReactNode;
-  classStyle?: string;
-  delay?: number;
-}) => {
-  return <section className={classStyle}>{children}</section>;
-};
-
 function BlockRenderer({
   blocks,
   lang,
@@ -64,16 +52,15 @@ function BlockRenderer({
       {blocks.map((block: BlockData) => {
         const Component = componentMap[block.__component];
 
-        const background = `${block.background?.background ? "bg-white" : ""} ${block.background?.transparentBackground ? "bg-white/50" : ""} `;
         return Component ? (
-          <Section
-            classStyle={` mx-auto px-4 sm:px-6 lg:px-8 ${background} ${block.__component === "blocks.heading-section" ? "pt-16" : "py-12"} `}
+          <BlockSection
             key={block.__component}
+            component={block.__component}
+            blockBackground={block.background}
+            isAnimated={block.animate}
           >
-            <AnimatedSection delay={block.animate ? 100 : 0}>
-              <Component data={block} lang={lang} contentData={contentData} />
-            </AnimatedSection>
-          </Section>
+            <Component data={block} lang={lang} contentData={contentData} />
+          </BlockSection>
         ) : null;
       })}
     </div>

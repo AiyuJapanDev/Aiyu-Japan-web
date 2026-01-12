@@ -250,3 +250,122 @@
 .capybara-loading {
   animation: capybara-loading 1.5s ease-in-out infinite;
 }
+
+/* Targeting standard HTML tags inside the wrapper 
+   to handle clean HTML coming from Strapi 
+*/
+
+/* 1. Container & Table Reset */
+.strapi-comparison-wrapper .table {
+  display: block;
+  width: 100%;
+  border: 2px solid #e5e7eb;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  margin-bottom: 1rem;
+  max-width: 80rem /* 1280px */;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.strapi-comparison-wrapper table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+/* 2. Standard Cell Styling */
+.strapi-comparison-wrapper td {
+  padding: 0.75rem;
+  border-bottom: 1px solid #e5e7eb;
+  vertical-align: middle;
+}
+
+/* 3. THE HEADER ROW (Gradient Background) */
+.strapi-comparison-wrapper table tbody tr:first-child {
+  background: linear-gradient(to right, #367cb1, #2c669a);
+}
+
+.strapi-comparison-wrapper table tbody tr:first-child td {
+  color: white;
+  font-weight: 700;
+  border-bottom: none;
+  font-size: 1rem;
+  letter-spacing: 0.05em;
+}
+
+/* 4. THE "CHIP" TRICK (2nd Column Header) */
+.strapi-comparison-wrapper table tbody tr:first-child td:nth-child(2) {
+  /* Position relative allows us to place the ::before element absolutely inside */
+  position: relative;
+  z-index: 1;
+
+  /* Text styling for the chip */
+  color: #367cb1; /* Blue text */
+  text-align: center;
+}
+
+/* Creating the White Pill Background behind the text */
+.strapi-comparison-wrapper table tbody tr:first-child td:nth-child(2)::before {
+  content: "";
+  position: absolute;
+  z-index: -1; /* Send behind text */
+
+  /* Create the pill shape */
+  background-color: white;
+  border-radius: 9999px;
+
+  /* Sizing: This creates margins inside the cell, forming the chip look */
+  top: 6px;
+  bottom: 6px;
+  left: 4px;
+  right: 4px;
+
+  /* Optional shadow for pop */
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* Add the star (★) via CSS since it's not in the HTML */
+.strapi-comparison-wrapper table tbody tr:first-child td:nth-child(2)::after {
+  content: " ★";
+  font-size: 0.8em;
+  color: #fbbf24; /* Amber/Gold star color */
+  margin-left: 2px;
+}
+
+/* 5. BODY COLUMN HIGHLIGHTS */
+
+/* First Column (Labels) */
+.strapi-comparison-wrapper table tbody tr:not(:first-child) td:first-child {
+  color: #0f172a; /* slate-900 */
+}
+
+/* Second Column (Aiyu Body) - Light Blue Background */
+.strapi-comparison-wrapper table tbody tr:not(:first-child) td:nth-child(2) {
+  background-color: rgba(54, 124, 177, 0.12);
+  color: #0f172a;
+  font-weight: 600;
+  text-align: center; /* Center the data in this column usually looks better */
+}
+
+/* 6. RESPONSIVE TWEAKS */
+@media (min-width: 640px) {
+  .strapi-comparison-wrapper table tbody tr:first-child td {
+    font-size: 0.875rem;
+  }
+
+  .strapi-comparison-wrapper td {
+    padding: 1rem 1.5rem;
+  }
+
+  /* Adjust chip size for larger screens */
+  .strapi-comparison-wrapper
+    table
+    tbody
+    tr:first-child
+    td:nth-child(2)::before {
+    top: 10px;
+    bottom: 10px;
+    left: 10px;
+    right: 10px;
+  }
+}

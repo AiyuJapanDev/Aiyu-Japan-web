@@ -1,7 +1,13 @@
 import { useApp } from "@/contexts/AppContext";
 import { useAuth } from "@/contexts/useAuth";
 import { Button } from "@/components/ui/button";
-import { Link, NavLink, useLocation, useNavigate, useParams } from "react-router";
+import {
+  Link,
+  NavLink,
+  useLocation,
+  useNavigate,
+  useParams,
+} from "react-router";
 import {
   Globe,
   Menu,
@@ -49,6 +55,25 @@ const Header = () => {
 
     if (parts.length === 0) {
       navigate(`/${newLang}`);
+      return;
+    }
+
+    // Check if we are on a blog article page (e.g. /:lang/blog/:slug)
+    // We want to avoid redirecting for paginated lists (e.g. /:lang/blog/page/:page)
+    const isBlogArticle =
+      parts[1] === "blog" && parts.length > 2 && parts[2] !== "page";
+
+    // Check if we are on a news article page (e.g. /:lang/news/:slug)
+    const isNewsArticle =
+      parts[1] === "news" && parts.length > 2 && parts[2] !== "page";
+
+    if (isBlogArticle) {
+      navigate(`/${newLang}/blog`);
+      return;
+    }
+
+    if (isNewsArticle) {
+      navigate(`/${newLang}/news`);
       return;
     }
 
@@ -120,9 +145,10 @@ const Header = () => {
       <NavLink
         to={`${root}${to}`}
         className={({ isActive }) =>
-          `max-w-xs  block rounded-full text-base transition-all duration-300 ml-4 ${className} ${isActive
-            ? "text-white bg-capybara-orange py-2 px-4"
-            : "text-gray-700 hover:text-capybara-orange hover:bg-capybara-cream py-2 hover:px-4"
+          `max-w-xs  block rounded-full text-base transition-all duration-300 ml-4 ${className} ${
+            isActive
+              ? "text-white bg-capybara-orange py-2 px-4"
+              : "text-gray-700 hover:text-capybara-orange hover:bg-capybara-cream py-2 hover:px-4"
           }`
         }
         onClick={() => setIsMobileMenuOpen(false)}
@@ -195,11 +221,11 @@ const Header = () => {
                       return (
                         <NavigationMenuItem
                           key={link[0].to}
-                          className="relative"
+                          className="relative bg-none"
                         >
-                          <NavigationMenuTrigger className="px-0">
+                          <NavigationMenuTrigger className="px-0 bg-none">
                             <div
-                              className={` py-2 text-sm font-semibold transition-all duration-300 text-gray-700 hover:text-capybara-orange`}
+                              className={` py-2 text-sm font-semibold transition-all duration-300 text-gray-700 hover:text-capybara-orange bg-none`}
                             >
                               {link[0].label} & {link[1].label}
                             </div>
@@ -213,7 +239,7 @@ const Header = () => {
                                       to={`${root}${subLink.to}`}
                                       className={({ isActive }) =>
                                         cn(
-                                          "select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-capybara-orange focus:bg-accent focus:text-capybara-orange",
+                                          "select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors  hover:text-capybara-orange focus:text-capybara-orange",
                                           isActive
                                             ? "text-capybara-orange"
                                             : "text-gray-700"
@@ -239,7 +265,8 @@ const Header = () => {
                           <NavLink
                             to={`${root}${link.to}`}
                             className={({ isActive }) =>
-                              `px-3 py-2 text-sm font-semibold transition-all duration-300 text-gray-700 hover:text-capybara-orange ${isActive ? "text-capybara-orange" : ""
+                              `px-3 py-2 text-sm font-semibold transition-all duration-300 text-gray-700 hover:text-capybara-orange ${
+                                isActive ? "text-capybara-orange" : ""
                               }`
                             }
                           >
@@ -481,7 +508,9 @@ const Header = () => {
           <Globe className="w-5 h-5 text-capybara-orange" />
           <select
             value={language}
-            onChange={(e) => handleLanguageChange(e.target.value as "en" | "es")}
+            onChange={(e) =>
+              handleLanguageChange(e.target.value as "en" | "es")
+            }
             className="bg-transparent text-sm text-gray-700 border-none focus:outline-none cursor-pointer font-body"
           >
             <option value="es">ES</option>
