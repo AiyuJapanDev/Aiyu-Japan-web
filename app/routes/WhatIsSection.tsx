@@ -9,10 +9,10 @@ import {
 } from "lucide-react";
 
 export async function loader({ params }: Route.LoaderArgs) {
-  return null;
+  return {};
 }
 
-export const WhatIsSection = ({ loaderData }: Route.ComponentProps) => {
+export default function WhatIsSection({ loaderData }: Route.ComponentProps) {
   const { t } = useApp();
   const data = loaderData;
 
@@ -108,6 +108,4 @@ export const WhatIsSection = ({ loaderData }: Route.ComponentProps) => {
       </div>
     </section>
   );
-};
-
-export default WhatIsSection;
+}

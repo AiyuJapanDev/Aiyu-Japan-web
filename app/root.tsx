@@ -13,17 +13,33 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
+  data,
   isRouteErrorResponse,
+  useLoaderData,
   useRouteError,
 } from "react-router";
 import "./index.css";
 import NotFound from "./routes/NotFound";
+import { Route } from ".react-router/types/app/+types/root";
+import { Language } from "./lib/i18n";
 
 const queryClient = new QueryClient();
 
+export async function loader({ params }: Route.LoaderArgs) {
+  const locale = params.lang;
+
+  if (!locale) {
+    throw data("Language not supported", { status: 404 });
+  }
+
+  return { locale };
+}
+
 export function Layout({ children }: { children: React.ReactNode }) {
+  const { locale } = useLoaderData<typeof loader>();
+
   return (
-    <html lang="en">
+    <html lang={locale}>
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -34,7 +50,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         {/* <div className='fixed z-99 w-[200px] h-[2px] bg-green-500 bottom-[100px] left-[25%]'></div> */}
         <QueryClientProvider client={queryClient}>
           <TooltipProvider>
-            <AppProvider>
+            <AppProvider language={locale as Language}>
               <AuthProvider>
                 <Toaster />
                 <Sonner />

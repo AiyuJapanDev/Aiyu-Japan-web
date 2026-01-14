@@ -1,7 +1,13 @@
 import { useApp } from "@/contexts/AppContext";
 import { useAuth } from "@/contexts/useAuth";
 import { Button } from "@/components/ui/button";
-import { Link, NavLink, useLocation } from "react-router";
+import {
+  Link,
+  NavLink,
+  useLocation,
+  useNavigate,
+  useParams,
+} from "react-router";
 import {
   Globe,
   Menu,
@@ -36,9 +42,45 @@ import Logo from "/aiyu-japan-logo-typography.png";
 import LogoMobile from "/aiyu_logo_small.png";
 
 const Header = () => {
-  const { language, setLanguage, t } = useApp();
+  const { language, t } = useApp();
+  const params = useParams();
+  const navigate = useNavigate();
   const { user, isAdmin } = useAuth();
+  const root = params.lang;
   const location = useLocation();
+
+  const handleLanguageChange = (newLang: string) => {
+    const currentPath = location.pathname;
+    const parts = currentPath.split("/").filter(Boolean);
+
+    if (parts.length === 0) {
+      navigate(`/${newLang}`);
+      return;
+    }
+
+    // Check if we are on a blog article page (e.g. /:lang/blog/:slug)
+    // We want to avoid redirecting for paginated lists (e.g. /:lang/blog/page/:page)
+    const isBlogArticle =
+      parts[1] === "blog" && parts.length > 2 && parts[2] !== "page";
+
+    // Check if we are on a news article page (e.g. /:lang/news/:slug)
+    const isNewsArticle =
+      parts[1] === "news" && parts.length > 2 && parts[2] !== "page";
+
+    if (isBlogArticle) {
+      navigate(`/${newLang}/blog`);
+      return;
+    }
+
+    if (isNewsArticle) {
+      navigate(`/${newLang}/news`);
+      return;
+    }
+
+    parts[0] = newLang;
+    const newPath = "/" + parts.join("/");
+    navigate(newPath + location.search + location.hash);
+  };
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { unreadCount } = useNotifications();
   const mobileMenuRef = useRef<HTMLDivElement>(null);
@@ -79,12 +121,12 @@ const Header = () => {
   }, [location.pathname]);
 
   const navLinks = [
-    { to: "/", label: t("home") },
-    { to: "/store-guide/what-is", label: t("storeGuide") },
-    { to: "/store-guide/popular-markets", label: t("stores") },
+    { to: ``, label: t("home") },
+    { to: `/store-guide/what-is`, label: t("storeGuide") },
+    { to: `/store-guide/popular-markets`, label: t("stores") },
     [
-      { to: `/news/${language}`, label: t("newsLinkTitle") },
-      { to: `/blog/${language}`, label: t("blog") },
+      { to: `/news/`, label: t("newsLinkTitle") },
+      { to: `/blog/`, label: t("blog") },
     ],
     { to: "/contact", label: t("contact") },
     { to: "/calculator", label: t("calculator") },
@@ -101,7 +143,7 @@ const Header = () => {
   }) => {
     return (
       <NavLink
-        to={to}
+        to={`${root}${to}`}
         className={({ isActive }) =>
           `max-w-xs  block rounded-full text-base transition-all duration-300 ml-4 ${className} ${
             isActive
@@ -132,7 +174,7 @@ const Header = () => {
           <div className="relative h-10 w-full">
             <div className="w-full h-full bg-black/80 flex justify-center items-center text-sm z-2 gap-4">
               <p className="font-bold text-white">{t("newUser")}</p>
-              <Link to="/store-guide/what-is">
+              <Link to={`${root}/store-guide/what-is`}>
                 <Button className="text-white" variant="breadcrumb" size="xs">
                   {t("moreInfo")}
                   <ArrowRight />
@@ -157,7 +199,7 @@ const Header = () => {
            * */}
           <div className="flex justify-between items-center h-14">
             {/* Logo */}
-            <Link to="/">
+            <Link to={`${root}/`}>
               <img
                 src={Logo}
                 alt="Aiyu Japan Logo"
@@ -179,11 +221,11 @@ const Header = () => {
                       return (
                         <NavigationMenuItem
                           key={link[0].to}
-                          className="relative"
+                          className="relative bg-none"
                         >
-                          <NavigationMenuTrigger className="px-0">
+                          <NavigationMenuTrigger className="px-0 bg-none">
                             <div
-                              className={` py-2 text-sm font-semibold transition-all duration-300 text-gray-700 hover:text-capybara-orange`}
+                              className={` py-2 text-sm font-semibold transition-all duration-300 text-gray-700 hover:text-capybara-orange bg-none`}
                             >
                               {link[0].label} & {link[1].label}
                             </div>
@@ -194,10 +236,10 @@ const Header = () => {
                                 <li key={subLink.to}>
                                   <NavigationMenuLink asChild>
                                     <NavLink
-                                      to={subLink.to}
+                                      to={`${root}${subLink.to}`}
                                       className={({ isActive }) =>
                                         cn(
-                                          "select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-capybara-orange focus:bg-accent focus:text-capybara-orange",
+                                          "select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors  hover:text-capybara-orange focus:text-capybara-orange",
                                           isActive
                                             ? "text-capybara-orange"
                                             : "text-gray-700"
@@ -215,13 +257,13 @@ const Header = () => {
                       );
                     }
 
-                    if (link.to === "/") return null;
+                    if (link.to === "") return null;
 
                     return (
                       <NavigationMenuItem key={link.to}>
                         <NavigationMenuLink>
                           <NavLink
-                            to={link.to}
+                            to={`${root}${link.to}`}
                             className={({ isActive }) =>
                               `px-3 py-2 text-sm font-semibold transition-all duration-300 text-gray-700 hover:text-capybara-orange ${
                                 isActive ? "text-capybara-orange" : ""
@@ -421,7 +463,7 @@ const Header = () => {
 
                 {/* language selector & logout button */}
                 <div className="relative flex items-center justify-center gap-2 px-1  border-b-2 border-capybara-orange/20">
-                  <Select value={language} onValueChange={setLanguage}>
+                  <Select value={language} onValueChange={handleLanguageChange}>
                     <SelectTrigger
                       aria-label="Language"
                       className=" relative flex items-center justify-normal gap-2 w-auto border border-input bg-background hover:bg-accent hover:text-accent-foreground"
@@ -466,7 +508,9 @@ const Header = () => {
           <Globe className="w-5 h-5 text-capybara-orange" />
           <select
             value={language}
-            onChange={(e) => setLanguage(e.target.value as "en" | "es")}
+            onChange={(e) =>
+              handleLanguageChange(e.target.value as "en" | "es")
+            }
             className="bg-transparent text-sm text-gray-700 border-none focus:outline-none cursor-pointer font-body"
           >
             <option value="es">ES</option>

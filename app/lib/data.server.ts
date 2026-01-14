@@ -8,15 +8,13 @@ import {
   getStoreCategories,
   getStoreMarkets,
 } from "./strapi.server";
-import { Article } from "@/types/blog";
-import { New } from "@/types/strapi-news";
 
 const CACHE_FILE_PATH = path.resolve(
   process.cwd(),
   "node_modules/.cache/aiyu-build-data.json"
 );
 
-interface CachedData {
+/* interface CachedData {
   allBlogPostsEs: any;
   allBlogPostsEn: any;
   allNewsPostsEs: any;
@@ -27,9 +25,9 @@ interface CachedData {
   storeMarketsEn: any;
   storeCategories: any;
   paraguayDeliveries: any;
-}
+} */
 
-async function getPrerenderData(): Promise<CachedData> {
+async function getPrerenderData(): Promise</* CachedData */ any> {
   // Ensure cache directory exists
   const cacheDir = path.dirname(CACHE_FILE_PATH);
 
@@ -43,47 +41,49 @@ async function getPrerenderData(): Promise<CachedData> {
   }
 
   console.log("Fetching data from Strapi...");
-  const [
-    allBlogPostsEs,
-    allBlogPostsEn,
-    allNewsPostsEs,
-    allNewsPostsEn,
-    homeDataEs,
-    homeDataEn,
-    storeMarketsEs,
-    storeMarketsEn,
-    storeCategories,
-    paraguayDeliveries,
-  ] = await Promise.all([
-    getAllBlogArticles("es", 999),
-    getAllBlogArticles("en", 999),
-    getAllNewsPosts("es", 999),
-    getAllNewsPosts("en", 999),
-    getHomeComponents("es"),
-    getHomeComponents("en"),
-    getStoreMarkets("es"),
-    getStoreMarkets("en"),
+
+  const { getLocales } = await import("./strapi.server");
+  const locales = await getLocales();
+  const localeCodes = locales.map((l: any) => l.code);
+
+  console.log(`Found locales: ${localeCodes.join(", ")}`);
+
+  const [storeCategories, paraguayDeliveries] = await Promise.all([
     getStoreCategories(),
     getParaguayDeliveryData(),
   ]);
 
-  const data = {
-    allBlogPostsEs,
-    allBlogPostsEn,
-    allNewsPostsEs,
-    allNewsPostsEn,
-    homeDataEs,
-    homeDataEn,
-    storeMarketsEs,
-    storeMarketsEn,
-    storeCategories,
-    paraguayDeliveries,
-  };
+  const localeDataPromises = localeCodes.map(async (code: string) => {
+    const [blogPosts, newsPosts, homePage, markets] = await Promise.all([
+      getAllBlogArticles(code, 999),
+      getAllNewsPosts(code, 999),
+      getHomeComponents(code),
+      getStoreMarkets(code),
+    ]);
+    return {
+      code,
+      data: {
+        blogPosts,
+        newsPosts,
+        homePage,
+        markets,
+        storeCategories,
+        paraguayDeliveries,
+      },
+    };
+  });
+
+  const localeDataResults = await Promise.all(localeDataPromises);
+
+  const contentData: any = {};
+  for (const { code, data } of localeDataResults) {
+    contentData[code] = data;
+  }
 
   // Write to cache (Best effort - ignore errors on read-only filesystems like Vercel)
   try {
     await fs.mkdir(cacheDir, { recursive: true });
-    await fs.writeFile(CACHE_FILE_PATH, JSON.stringify(data));
+    await fs.writeFile(CACHE_FILE_PATH, JSON.stringify(contentData));
   } catch (error) {
     console.warn(
       "Could not write to build cache (likely read-only FS):",
@@ -91,31 +91,9 @@ async function getPrerenderData(): Promise<CachedData> {
     );
   }
 
-  return data;
+  return contentData;
 }
 
-const {
-  allBlogPostsEs,
-  allBlogPostsEn,
-  allNewsPostsEs,
-  allNewsPostsEn,
-  homeDataEs,
-  homeDataEn,
-  storeMarketsEs,
-  storeMarketsEn,
-  storeCategories,
-  paraguayDeliveries,
-} = await getPrerenderData();
+const contentData = await getPrerenderData();
 
-export {
-  allBlogPostsEs,
-  allBlogPostsEn,
-  allNewsPostsEs,
-  allNewsPostsEn,
-  homeDataEs,
-  homeDataEn,
-  storeMarketsEs,
-  storeMarketsEn,
-  storeCategories,
-  paraguayDeliveries,
-};
+export default contentData;

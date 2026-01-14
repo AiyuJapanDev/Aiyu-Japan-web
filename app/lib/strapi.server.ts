@@ -1,5 +1,4 @@
 import { Article } from "@/types/blog";
-import { HomePageData } from "@/types/home";
 import { New } from "@/types/strapi-news";
 import { StoreCategory, StoreMarket } from "@/types/strapi-stores";
 
@@ -35,7 +34,7 @@ interface StrapiResponse<T> {
   };
 }
 
-async function strapiFetchAPI<T>(
+export async function strapiFetchAPI<T>(
   path: string,
   options: RequestInit = {}
 ): Promise<T> {
@@ -79,12 +78,23 @@ async function strapiFetchAPI<T>(
   }
 }
 
+const getHomepage = async (
+  locale: string = "en"
+): Promise<{ posts: Article[]; total: number }> => {
+  const data = await strapiFetchAPI<StrapiResponse<Article[]>>(
+    `/api/home?locale=${locale}&populate=*`
+  );
+  return {
+    posts: data.data,
+    total: data.meta?.pagination?.total || 0,
+  };
+};
 const getAllBlogArticles = async (
   locale: string = "en",
   pageSize: number = 25
 ): Promise<{ posts: Article[]; total: number }> => {
   const data = await strapiFetchAPI<StrapiResponse<Article[]>>(
-    `/api/articles?locale=${locale}&populate[0]=cover&populate[1]=author&pagination[pageSize]=${pageSize}&sort=createdAt`
+    `/api/articles?locale=${locale}&populate[0]=cover&populate[1]=author&pagination[pageSize]=${pageSize}&sort=createdAt&populate[blocks][populate]=*`
   );
   return {
     posts: data.data,
@@ -97,7 +107,7 @@ const getAllNewsPosts = async (
   pageSize: number = 25
 ): Promise<{ posts: New[]; total: number }> => {
   const data = await strapiFetchAPI<StrapiResponse<New[]>>(
-    `/api/news?locale=${locale}&populate[0]=image&pagination[pageSize]=${pageSize}&sort[0]=date:desc`
+    `/api/news?locale=${locale}&populate[0]=image&pagination[pageSize]=${pageSize}&sort[0]=date:desc&populate[blocks][populate]=*`
   );
   return {
     posts: data.data,
@@ -105,11 +115,11 @@ const getAllNewsPosts = async (
   };
 };
 
-const getHomeComponents = async (language: string): Promise<HomePageData> => {
-  const featuredBanner = await strapiFetchAPI<StrapiResponse<HomePageData>>(
-    `/api/home?locale=${language}&populate[blocks][on][components.featured-banner][populate][blog_posts][populate][0]=cover`
+const getHomeComponents = async (language: string): Promise<any> => {
+  const data = await strapiFetchAPI<StrapiResponse<any>>(
+    `/api/home?locale=${language}&populate[blocks][on][blocks.featured-banner][populate][articles][populate][0]=cover&populate[blocks][on][blocks.featured-articles-carousel][populate]=*&populate[blocks][on][blocks.latest-news][populate]=*&populate[blocks][on][blocks.hero][populate]=*&populate[blocks][on][blocks.card-grid][populate][card][populate][0]=icon&populate[blocks][on][blocks.card-grid][populate]=background&populate[blocks][on][blocks.card-grid][populate][card][populate][1]=List&populate[blocks][on][blocks.comparison-table][populate]=*&populate[blocks][on][blocks.stores-cards-grid][populate]=*&populate[blocks][on][blocks.social-media-iframe][populate]=*&populate[blocks][on][blocks.testimonials][populate]=*&populate[blocks][on][blocks.faqs][populate]=*&populate[blocks][on][blocks.heading-section][populate]=*`
   );
-  return featuredBanner.data;
+  return data.data;
 };
 
 const getHomeBannerCarousel = async (locale: string) => {
@@ -147,13 +157,18 @@ const getParaguayDeliveryData = async () => {
   return data.data;
 };
 
+export const getLocales = async (): Promise<any[]> => {
+  const data = await strapiFetchAPI<any>("/api/i18n/locales");
+  return data;
+};
+
 export {
   getAllBlogArticles,
+  getAllNewsPosts,
   getHomeBannerCarousel,
   getHomeComponents,
-  getAllNewsPosts,
+  getParaguayDeliveryData,
   getStoreCategories,
   getStoreMarkets,
-  getParaguayDeliveryData,
   StrapiError,
 };

@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { useApp } from "@/contexts/AppContext";
 import { NavLink } from "react-router";
 
-export const TabNavigation = () => {
+export function TabNavigation() {
   const { t } = useApp();
 
   const tabs = [
@@ -25,9 +25,8 @@ export const TabNavigation = () => {
               className={({ isActive, isPending }) => {
                 const active = "text-blue-600";
                 const inactive = "text-gray-500 hover:text-gray-900";
-                return `flex-1 relative font-medium transition-colors w-full ${
-                  isActive ? active : inactive
-                }`;
+                return `flex-1 relative font-medium transition-colors w-full ${isActive ? active : inactive
+                  }`;
               }}
             >
               <Button variant="outline" className="w-full">
@@ -39,4 +38,4 @@ export const TabNavigation = () => {
       </div>
     </div>
   );
-};
+}

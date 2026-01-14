@@ -12,14 +12,13 @@ import { ArrowRight, Calendar, User } from "lucide-react";
 import { Link } from "react-router";
 
 import { useApp } from "@/contexts/AppContext";
-import { allBlogPostsEn, allBlogPostsEs } from "@/lib/data.server";
+import contentData from "@/lib/data.server";
 import { getImage } from "@/lib/utils";
 import Autoplay from "embla-carousel-autoplay";
 
 export async function loader({ params }: Route.LoaderArgs) {
   const page = params.page ? parseInt(params.page, 10) : 1;
-  const { posts, total } =
-    params.lang === "es" ? allBlogPostsEs : allBlogPostsEn;
+  const { posts, total } = contentData[params.lang].blogPosts;
   const featuredPosts = posts.filter((post) => post.featured);
   const totalPages = calculateTotalPages(total, POSTS_PER_PAGE);
 
@@ -61,7 +60,7 @@ export default function Blog({ loaderData }: Route.ComponentProps) {
 
     return (
       <Link
-        to={`/blog/${language}/${post.slug}`}
+        to={`${post.slug}`}
         className={`group bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 flex flex-col h-full border border-gray-100 ${className}`}
       >
         <div className="relative h-48 overflow-hidden">
@@ -232,11 +231,10 @@ export default function Blog({ loaderData }: Route.ComponentProps) {
                                 ? `/blog/${language}`
                                 : `/blog/${language}/page/${page}`
                             }
-                            className={`min-w-[40px] h-10 flex items-center justify-center rounded-lg font-medium transition-colors ${
-                              isCurrentPage
+                            className={`min-w-[40px] h-10 flex items-center justify-center rounded-lg font-medium transition-colors ${isCurrentPage
                                 ? "bg-blue-600 text-white"
                                 : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-50"
-                            }`}
+                              }`}
                           >
                             {page}
                           </Link>

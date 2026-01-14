@@ -6,6 +6,7 @@ import { ServerRouter } from "react-router";
 import { isbot } from "isbot";
 import type { RenderToPipeableStreamOptions } from "react-dom/server";
 import { renderToPipeableStream } from "react-dom/server";
+import { supportedLocales } from "@/lib/i18n";
 
 export const streamTimeout = 5_000;
 
@@ -14,10 +15,37 @@ export default function handleRequest(
   responseStatusCode: number,
   responseHeaders: Headers,
   routerContext: EntryContext,
-  loadContext: AppLoadContext,
+  loadContext: AppLoadContext
   // If you have middleware enabled:
   // loadContext: RouterContextProvider
 ) {
+  const url = new URL(request.url);
+  if (url.pathname === "/") {
+    const acceptLanguage = request.headers.get("Accept-Language");
+    let locale = "en";
+
+    if (acceptLanguage) {
+      const preferences = acceptLanguage
+        .split(",")
+        .map((lang) => {
+          const [tag] = lang.trim().split(";");
+          return tag.split("-")[0];
+        })
+        .filter((lang) => supportedLocales.includes(lang));
+
+      if (preferences.length > 0) {
+        locale = preferences[0];
+      }
+    }
+
+    return new Response(null, {
+      status: 302,
+      headers: {
+        Location: `/${locale}`,
+      },
+    });
+  }
+
   // https://httpwg.org/specs/rfc9110.html#HEAD
   if (request.method.toUpperCase() === "HEAD") {
     return new Response(null, {
@@ -41,7 +69,7 @@ export default function handleRequest(
     // flush down the rejected boundaries
     let timeoutId: ReturnType<typeof setTimeout> | undefined = setTimeout(
       () => abort(),
-      streamTimeout + 1000,
+      streamTimeout + 1000
     );
 
     const { pipe, abort } = renderToPipeableStream(
@@ -67,7 +95,7 @@ export default function handleRequest(
             new Response(stream, {
               headers: responseHeaders,
               status: responseStatusCode,
-            }),
+            })
           );
         },
         onShellError(error: unknown) {
@@ -82,7 +110,7 @@ export default function handleRequest(
             console.error(error);
           }
         },
-      },
+      }
     );
   });
 }

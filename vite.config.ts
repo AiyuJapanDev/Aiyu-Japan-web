@@ -8,6 +8,7 @@ export default defineConfig(() => ({
   server: {
     host: "::",
     port: 8080,
+    open: true,
   },
   ssr: {
     external: ["jsdom", "isomorphic-dompurify"],
