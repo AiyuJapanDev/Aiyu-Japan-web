@@ -174,7 +174,7 @@ const Header = () => {
           <div className="relative h-10 w-full">
             <div className="w-full h-full bg-black/80 flex justify-center items-center text-sm z-2 gap-4">
               <p className="font-bold text-white">{t("newUser")}</p>
-              <Link to="/store-guide/what-is">
+              <Link to={`${root}/store-guide/what-is`}>
                 <Button className="text-white" variant="breadcrumb" size="xs">
                   {t("moreInfo")}
                   <ArrowRight />
