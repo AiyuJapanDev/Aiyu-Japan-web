@@ -94,7 +94,7 @@ const getAllBlogArticles = async (
   pageSize: number = 25
 ): Promise<{ posts: Article[]; total: number }> => {
   const data = await strapiFetchAPI<StrapiResponse<Article[]>>(
-    `/api/articles?locale=${locale}&populate[0]=cover&populate[1]=author&pagination[pageSize]=${pageSize}&sort=createdAt&populate[blocks][populate]=*`
+    `/api/articles?locale=${locale}&pagination[pageSize]=${pageSize}&sort=createdAt&populate[cover][populate]=*&populate[author][populate]=*&populate[blocks][populate]=*`
   );
   return {
     posts: data.data,

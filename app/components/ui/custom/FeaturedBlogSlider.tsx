@@ -28,7 +28,6 @@ const FeaturedBlogSlider: React.FC<FeaturedBlogSliderProps> = ({
   while (items.length < 6) {
     items = [...items, ...articles];
   }
-
   return (
     <div className="max-w-7xl mx-auto">
       <Carousel
@@ -51,6 +50,8 @@ const FeaturedBlogSlider: React.FC<FeaturedBlogSliderProps> = ({
             const { src, srcset } = getImage(blog.cover);
             const sizes =
               "(min-width: 1280px) 525px, (min-width: 1040px) calc(30.45vw + 141px), (min-width: 780px) calc(63.33vw - 39px), calc(95vw - 43px)";
+            console.log(blog);
+
             return (
               <CarouselItem
                 key={`${blog.id}-${index}`}
@@ -80,7 +81,6 @@ const FeaturedBlogSlider: React.FC<FeaturedBlogSliderProps> = ({
         </CarouselContent>
       </Carousel>
     </div>
-
   );
 };
 
