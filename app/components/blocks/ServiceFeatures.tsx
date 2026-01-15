@@ -14,7 +14,10 @@ const ServiceFeatures: React.FC<ServiceFeaturesProps> = ({ data }) => {
   return (
     <div className="grid md:grid-cols-3 gap-8 max-w-7xl mx-auto">
       {serviceFeatures.map((feature, index) => {
-        const src = feature.icon.url;
+        const src =
+          import.meta.env.MODE === "development"
+            ? `${import.meta.env.VITE_STRAPI_URL}${feature.icon.url}`
+            : feature.icon.url;
 
         return (
           <Card
@@ -25,7 +28,7 @@ const ServiceFeatures: React.FC<ServiceFeaturesProps> = ({ data }) => {
               <div className="w-16 h-16 bg-gradient-to-br from-blue-300 to-blue-400 rounded-full flex items-center justify-center mx-auto mb-6 overflow-hidden">
                 {src ? (
                   <img
-                    src={`${import.meta.env.VITE_STRAPI_URL}${src}`}
+                    src={src}
                     alt={feature.heading}
                     className="w-8 h-8 object-contain brightness-0 invert"
                   />
