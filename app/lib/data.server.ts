@@ -11,21 +11,8 @@ import {
 
 const CACHE_FILE_PATH = path.resolve(
   process.cwd(),
-  "node_modules/.cache/aiyu-build-data.json"
+  "node_modules/.cache/aiyu-build-data.json",
 );
-
-/* interface CachedData {
-  allBlogPostsEs: any;
-  allBlogPostsEn: any;
-  allNewsPostsEs: any;
-  allNewsPostsEn: any;
-  homeDataEs: any;
-  homeDataEn: any;
-  storeMarketsEs: any;
-  storeMarketsEn: any;
-  storeCategories: any;
-  paraguayDeliveries: any;
-} */
 
 async function getPrerenderData(): Promise</* CachedData */ any> {
   // Ensure cache directory exists
@@ -87,7 +74,7 @@ async function getPrerenderData(): Promise</* CachedData */ any> {
   } catch (error) {
     console.warn(
       "Could not write to build cache (likely read-only FS):",
-      error
+      error,
     );
   }
 

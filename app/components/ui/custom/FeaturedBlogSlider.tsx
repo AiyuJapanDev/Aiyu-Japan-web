@@ -20,7 +20,7 @@ const FeaturedBlogSlider: React.FC<FeaturedBlogSliderProps> = ({
   contentData,
 }) => {
   const articles = contentData.articles.posts.filter(
-    (post) => post.featured === true
+    (post) => post.featured === true,
   );
   if (!articles || articles.length === 0) return [];
 
@@ -50,7 +50,6 @@ const FeaturedBlogSlider: React.FC<FeaturedBlogSliderProps> = ({
             const { src, srcset } = getImage(blog.cover);
             const sizes =
               "(min-width: 1280px) 525px, (min-width: 1040px) calc(30.45vw + 141px), (min-width: 780px) calc(63.33vw - 39px), calc(95vw - 43px)";
-            console.log(blog);
 
             return (
               <CarouselItem

@@ -32,13 +32,13 @@ const Contact = () => {
     {
       name: "Aimi",
       role: "Content Creation Staff, English Market Manager",
-      image: "aimi.png",
+      image: "/aimi.png",
       description: "Descripción",
     },
     {
       name: "Sayuki",
       role: "Content Creation Leader",
-      image: "sayuki.png",
+      image: "/sayuki.png",
       description: "Descripción",
     },
   ];
