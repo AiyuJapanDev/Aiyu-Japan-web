@@ -178,7 +178,7 @@ const PurchaseCalculator = () => {
           <div className="text-center py-8">
             <div className="mb-4">
               <img
-                src="KapyCalculator.png"
+                src="/KapyCalculator.png"
                 alt="Capybara Calculator"
                 className="w-28 h-36 mx-auto mb-2"
               />

@@ -9,7 +9,7 @@ class StrapiError extends Error {
   constructor(
     public status: number,
     public statusText: string,
-    message?: string
+    message?: string,
   ) {
     super(message || `Strapi API Error: ${status} ${statusText}`);
     this.name = "StrapiError";
@@ -36,7 +36,7 @@ interface StrapiResponse<T> {
 
 export async function strapiFetchAPI<T>(
   path: string,
-  options: RequestInit = {}
+  options: RequestInit = {},
 ): Promise<T> {
   const defaultHeaders = {
     "Content-Type": "application/json",
@@ -61,7 +61,7 @@ export async function strapiFetchAPI<T>(
       throw new StrapiError(
         response.status,
         response.statusText,
-        data?.error?.message || "An error occurred while fetching from Strapi"
+        data?.error?.message || "An error occurred while fetching from Strapi",
       );
     }
 
@@ -79,10 +79,10 @@ export async function strapiFetchAPI<T>(
 }
 
 const getHomepage = async (
-  locale: string = "en"
+  locale: string = "en",
 ): Promise<{ posts: Article[]; total: number }> => {
   const data = await strapiFetchAPI<StrapiResponse<Article[]>>(
-    `/api/home?locale=${locale}&populate=*`
+    `/api/home?locale=${locale}&populate=*`,
   );
   return {
     posts: data.data,
@@ -91,10 +91,10 @@ const getHomepage = async (
 };
 const getAllBlogArticles = async (
   locale: string = "en",
-  pageSize: number = 25
+  pageSize: number = 25,
 ): Promise<{ posts: Article[]; total: number }> => {
   const data = await strapiFetchAPI<StrapiResponse<Article[]>>(
-    `/api/articles?locale=${locale}&pagination[pageSize]=${pageSize}&sort=createdAt&populate[cover][populate]=*&populate[author][populate]=*&populate[blocks][populate]=*`
+    `/api/articles?locale=${locale}&pagination[pageSize]=${pageSize}&sort=createdAt&populate[cover][populate]=*&populate[author][populate]=*&populate[blocks][populate]=*`,
   );
   return {
     posts: data.data,
@@ -104,10 +104,10 @@ const getAllBlogArticles = async (
 
 const getAllNewsPosts = async (
   locale: string = "en",
-  pageSize: number = 25
+  pageSize: number = 25,
 ): Promise<{ posts: New[]; total: number }> => {
   const data = await strapiFetchAPI<StrapiResponse<New[]>>(
-    `/api/news?locale=${locale}&populate[0]=image&pagination[pageSize]=${pageSize}&sort[0]=date:desc&populate[blocks][populate]=*`
+    `/api/news?locale=${locale}&populate[0]=image&pagination[pageSize]=${pageSize}&sort[0]=date:desc&populate[blocks][populate]=*`,
   );
   return {
     posts: data.data,
@@ -117,7 +117,7 @@ const getAllNewsPosts = async (
 
 const getHomeComponents = async (language: string): Promise<any> => {
   const data = await strapiFetchAPI<StrapiResponse<any>>(
-    `/api/home?locale=${language}&populate[blocks][on][blocks.featured-banner][populate][articles][populate][0]=cover&populate[blocks][on][blocks.featured-articles-carousel][populate]=*&populate[blocks][on][blocks.latest-news][populate]=*&populate[blocks][on][blocks.hero][populate]=*&populate[blocks][on][blocks.card-grid][populate][card][populate][0]=icon&populate[blocks][on][blocks.card-grid][populate]=background&populate[blocks][on][blocks.card-grid][populate][card][populate][1]=List&populate[blocks][on][blocks.comparison-table][populate]=*&populate[blocks][on][blocks.stores-cards-grid][populate]=*&populate[blocks][on][blocks.social-media-iframe][populate]=*&populate[blocks][on][blocks.testimonials][populate]=*&populate[blocks][on][blocks.faqs][populate]=*&populate[blocks][on][blocks.heading-section][populate]=*`
+    `/api/home?locale=${language}&populate[blocks][on][blocks.featured-banner][populate][articles][populate][0]=cover&populate[blocks][on][blocks.featured-articles-carousel][populate]=*&populate[blocks][on][blocks.latest-news][populate]=*&populate[blocks][on][blocks.hero][populate]=*&populate[blocks][on][blocks.card-grid][populate][background]=true&populate[blocks][on][blocks.card-grid][populate][card][populate]=*&populate[blocks][on][blocks.comparison-table][populate]=*&populate[blocks][on][blocks.stores-cards-grid][populate]=*&populate[blocks][on][blocks.social-media-iframe][populate]=*&populate[blocks][on][blocks.testimonials][populate]=*&populate[blocks][on][blocks.faqs][populate]=*&populate[blocks][on][blocks.heading-section][populate]=*`,
   );
   return data.data;
 };
@@ -129,7 +129,7 @@ const getHomeBannerCarousel = async (locale: string) => {
       headers: {
         Authorization: `Bearer ${import.meta.env.VITE_STRAPI_API_KEY}`,
       },
-    }
+    },
   );
   return data.data.carousell;
 };
@@ -138,21 +138,21 @@ const getHomeBannerCarousel = async (locale: string) => {
 
 const getStoreMarkets = async (locale: string = "*") => {
   const data = await strapiFetchAPI<StrapiResponse<StoreMarket[]>>(
-    `/api/recommended-stores?locale=${locale}&sort=sortOrder&locale=&populate=*`
+    `/api/recommended-stores?locale=${locale}&sort=sortOrder&locale=&populate=*`,
   );
   return data.data;
 };
 
 const getStoreCategories = async (locale: string = "*") => {
   const data = await strapiFetchAPI<StrapiResponse<StoreCategory[]>>(
-    `/api/store-categories`
+    `/api/store-categories`,
   );
   return data.data;
 };
 
 const getParaguayDeliveryData = async () => {
   const data = await strapiFetchAPI<StrapiResponse<StoreCategory[]>>(
-    `/api/paraguay-deliveries`
+    `/api/paraguay-deliveries`,
   );
   return data.data;
 };

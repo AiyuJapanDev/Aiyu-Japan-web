@@ -11,13 +11,21 @@ interface ServiceFeaturesProps {
 const ServiceFeatures: React.FC<ServiceFeaturesProps> = ({ data }) => {
   const { t } = useApp();
   const serviceFeatures = data.card;
+
   return (
     <div className="grid md:grid-cols-3 gap-8 max-w-7xl mx-auto">
       {serviceFeatures.map((feature, index) => {
-        const src =
-          import.meta.env.MODE === "development"
-            ? `${import.meta.env.VITE_STRAPI_URL}${feature.icon.url}`
-            : feature.icon.url;
+        const iconUrl = feature?.icon?.url;
+
+        let src: string;
+
+        /* IF component HAS an icon */
+        if (iconUrl) {
+          src =
+            import.meta.env.MODE === "development"
+              ? `${import.meta.env.VITE_STRAPI_URL}${feature.icon.url}`
+              : feature?.icon?.url;
+        }
 
         return (
           <Card
