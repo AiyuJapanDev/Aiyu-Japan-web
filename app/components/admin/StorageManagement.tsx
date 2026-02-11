@@ -132,8 +132,11 @@ export const StorageManagement = React.memo(() => {
     productUrl?: boolean;
     isBox?: boolean;
   }>({});
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(10);
+  
+  // Paginación del servidor (product_requests)
+  const [serverPage, setServerPage] = useState(1);
+  const serverPageSize = 50; // 50 product_requests por página
+  const [totalProducts, setTotalProducts] = useState(0);
 
   // Fetch all users for the add item dropdown
   const { data: allUsers } = useQuery({
@@ -150,19 +153,38 @@ export const StorageManagement = React.memo(() => {
   });
 
   const { data: storageData, isLoading } = useQuery({
-    queryKey: ['admin-storage'],
+    queryKey: ['admin-storage', serverPage],
     queryFn: async () => {
-      // First, fetch all product requests with status 'received'
+      const from = (serverPage - 1) * serverPageSize;
+      const to = from + serverPageSize - 1;
+
+      // ✅ 1. Obtener total count
+      const { count } = await supabase
+        .from('product_requests')
+        .select('*', { count: 'exact', head: true })
+        .eq('status', 'received');
+
+      if (count !== null) {
+        setTotalProducts(count);
+      }
+
+      // ✅ 2. Traer productos paginados (más nuevos primero) con order_items
       const { data: productRequests, error: requestsError } = await supabase
         .from('product_requests')
-        .select('*')
+        .select(`
+          *,
+          order_items!order_items_product_request_id_fkey(id)
+        `)
         .eq('status', 'received')
-        .order('created_at', { ascending: false }) as any;
+        .order('created_at', { ascending: false })
+        .range(from, to) as any;
 
       if (requestsError) throw requestsError;
-      if (!productRequests || productRequests.length === 0) return [];
+      if (!productRequests || productRequests.length === 0) {
+        return [];
+      }
 
-      // Fetch all shipped order items from shipping_quotes with status 'sent'
+      // ✅ 3. Fetch shipped quotes to filter already shipped items
       const { data: shippedQuotes, error: shippedError } = await supabase
         .from('shipping_quotes')
         .select('items')
@@ -181,26 +203,10 @@ export const StorageManagement = React.memo(() => {
         });
       });
 
-      // Get product request IDs
-      const productRequestIds = productRequests.map(pr => pr.id);
-
-      // Fetch order_items to map product_request_id to order_item_id
-      const { data: orderItems, error: orderItemsError } = await supabase
-        .from('order_items')
-        .select('id, product_request_id')
-        .in('product_request_id', productRequestIds);
-
-      if (orderItemsError) throw orderItemsError;
-
-      // Create a map: product_request_id -> order_item_id
-      const productToOrderItemMap = new Map(
-        orderItems?.map(oi => [oi.product_request_id, oi.id]) || []
-      );
-
-      // Get unique user IDs
+      // ✅ 4. Get unique user IDs
       const userIds = [...new Set(productRequests.map((pr: any) => pr.user_id))] as string[];
 
-      // Fetch profiles for those users
+      // ✅ 5. Fetch profiles for those users
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
         .select('id, full_name, email, phone_number, user_personal_id')
@@ -211,13 +217,15 @@ export const StorageManagement = React.memo(() => {
       // Create a map of profiles for quick lookup
       const profileMap = new Map(profiles?.map(p => [p.id, p]) || []);
 
-      // Group items by user
+      // ✅ 6. Group items by user
       const grouped: Record<string, CustomerStorage> = {};
       productRequests.forEach((item: any) => {
         const userId = item.user_id;
         const profile = profileMap.get(userId);
-        const orderItemId = productToOrderItemMap.get(item.id);
-        const isShipped = (orderItemId && shippedOrderItemIds.has(orderItemId)) || shippedOrderItemIds.has(item.id);
+        
+        // Check if item has order_items and if any are shipped
+        const orderItemIds = item.order_items?.map((oi: any) => oi.id) || [];
+        const isShipped = orderItemIds.some((id: string) => shippedOrderItemIds.has(id));
         
         if (!grouped[userId]) {
           grouped[userId] = {
@@ -254,7 +262,6 @@ export const StorageManagement = React.memo(() => {
 
       return Object.values(grouped);
     },
-    refetchInterval: 30000, // Refetch every 30 seconds
   });
 
   const updateItemDetailsMutation = useMutation({
@@ -291,7 +298,6 @@ export const StorageManagement = React.memo(() => {
         description: 'Failed to update item details. Please try again.',
         variant: 'destructive',
       });
-      console.error('Update item details error:', error);
     },
   });
 
@@ -338,7 +344,6 @@ export const StorageManagement = React.memo(() => {
         description: 'Failed to add item. Please try again.',
         variant: 'destructive',
       });
-      console.error('Add item error:', error);
     },
   });
 
@@ -365,7 +370,6 @@ export const StorageManagement = React.memo(() => {
         description: 'Failed to delete item. Please try again.',
         variant: 'destructive',
       });
-      console.error('Delete item error:', error);
     },
   });
 
@@ -489,7 +493,6 @@ export const StorageManagement = React.memo(() => {
       });
       
     } catch (error) {
-      console.error('Error adding box item:', error);
       setIsBoxConfirmDialogOpen(false);
     }
   };
@@ -516,22 +519,18 @@ export const StorageManagement = React.memo(() => {
     );
   });
 
-  // Calculate pagination
-  const totalCustomers = filteredData?.length || 0;
-  const totalPages = Math.ceil(totalCustomers / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const paginatedData = filteredData?.slice(startIndex, endIndex);
+  // Cálculos de paginación del servidor
+  const totalPages = Math.ceil(totalProducts / serverPageSize);
 
-  // Reset to page 1 when search changes or itemsPerPage changes
+  // Reset to page 1 when search changes
   useEffect(() => {
-    setCurrentPage(1);
-  }, [searchTerm, itemsPerPage]);
+    setServerPage(1);
+  }, [searchTerm]);
 
   // Scroll to top when page changes
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
-  }, [currentPage]);
+  }, [serverPage]);
 
   if (isLoading) {
     return (
@@ -754,111 +753,53 @@ export const StorageManagement = React.memo(() => {
           </div>
         </CardHeader>
         <CardContent>
-          {/* Pagination Controls - Top */}
+          {/* Controles de paginación del servidor */}
           {totalPages > 1 && (
-            <div className="mb-6 pb-6 border-b flex flex-col sm:flex-row items-center justify-between gap-4">
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-muted-foreground">Items per page:</span>
-                <Select
-                  value={itemsPerPage.toString()}
-                  onValueChange={(value) => setItemsPerPage(parseInt(value))}
-                >
-                  <SelectTrigger className="w-[70px]">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="5">5</SelectItem>
-                    <SelectItem value="10">10</SelectItem>
-                    <SelectItem value="20">20</SelectItem>
-                    <SelectItem value="50">50</SelectItem>
-                  </SelectContent>
-                </Select>
-                <span className="text-sm text-muted-foreground">
-                  Showing {startIndex + 1}-{Math.min(endIndex, totalCustomers)} of {totalCustomers}
-                </span>
+            <div className="mb-6 pb-6 border-b">
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div className="text-sm text-muted-foreground">
+                  Mostrando página {serverPage} de {totalPages} ({totalProducts} productos en total)
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setServerPage(1)}
+                    disabled={serverPage === 1 || isLoading}
+                  >
+                    Primera
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setServerPage(p => Math.max(1, p - 1))}
+                    disabled={serverPage === 1 || isLoading}
+                  >
+                    ← Anterior
+                  </Button>
+                  <div className="flex items-center gap-2 px-3 py-1 bg-accent rounded-md">
+                    <span className="text-sm font-medium">{serverPage}</span>
+                    <span className="text-sm text-muted-foreground">/</span>
+                    <span className="text-sm text-muted-foreground">{totalPages}</span>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setServerPage(p => Math.min(totalPages, p + 1))}
+                    disabled={serverPage === totalPages || isLoading}
+                  >
+                    Siguiente →
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setServerPage(totalPages)}
+                    disabled={serverPage === totalPages || isLoading}
+                  >
+                    Última
+                  </Button>
+                </div>
               </div>
-
-              <Pagination>
-                <PaginationContent>
-                  <PaginationItem>
-                    <PaginationPrevious
-                      onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                      className={currentPage === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
-                    />
-                  </PaginationItem>
-                  
-                  {currentPage > 2 && (
-                    <PaginationItem>
-                      <PaginationLink
-                        onClick={() => setCurrentPage(1)}
-                        isActive={currentPage === 1}
-                        className="cursor-pointer"
-                      >
-                        1
-                      </PaginationLink>
-                    </PaginationItem>
-                  )}
-                  
-                  {currentPage > 3 && (
-                    <PaginationItem>
-                      <PaginationEllipsis />
-                    </PaginationItem>
-                  )}
-                  
-                  {currentPage > 1 && (
-                    <PaginationItem>
-                      <PaginationLink
-                        onClick={() => setCurrentPage(currentPage - 1)}
-                        className="cursor-pointer"
-                      >
-                        {currentPage - 1}
-                      </PaginationLink>
-                    </PaginationItem>
-                  )}
-                  
-                  <PaginationItem>
-                    <PaginationLink isActive className="cursor-default">
-                      {currentPage}
-                    </PaginationLink>
-                  </PaginationItem>
-                  
-                  {currentPage < totalPages && (
-                    <PaginationItem>
-                      <PaginationLink
-                        onClick={() => setCurrentPage(currentPage + 1)}
-                        className="cursor-pointer"
-                      >
-                        {currentPage + 1}
-                      </PaginationLink>
-                    </PaginationItem>
-                  )}
-                  
-                  {currentPage < totalPages - 2 && (
-                    <PaginationItem>
-                      <PaginationEllipsis />
-                    </PaginationItem>
-                  )}
-                  
-                  {currentPage < totalPages - 1 && (
-                    <PaginationItem>
-                      <PaginationLink
-                        onClick={() => setCurrentPage(totalPages)}
-                        isActive={currentPage === totalPages}
-                        className="cursor-pointer"
-                      >
-                        {totalPages}
-                      </PaginationLink>
-                    </PaginationItem>
-                  )}
-                  
-                  <PaginationItem>
-                    <PaginationNext
-                      onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                      className={currentPage === totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
-                    />
-                  </PaginationItem>
-                </PaginationContent>
-              </Pagination>
             </div>
           )}
 
@@ -877,7 +818,7 @@ export const StorageManagement = React.memo(() => {
               No items currently in storage
             </div>
           ) : (
-            paginatedData?.map((customer) => (
+            filteredData?.map((customer) => (
               <Collapsible
                 key={customer.user_id}
                 open={openSections[customer.user_id]}
@@ -931,6 +872,13 @@ export const StorageManagement = React.memo(() => {
                                   <Package className="h-4 w-4 text-muted-foreground" />
                                   <span className="font-medium break-words">{item.item_name || 'Unnamed Item'}</span>
                                   <Badge variant="outline">Qty: {item.quantity}</Badge>
+                                  <Badge variant="secondary" className="text-xs">
+                                    {new Date(item.created_at).toLocaleDateString('es-ES', {
+                                      day: '2-digit',
+                                      month: '2-digit',
+                                      year: 'numeric'
+                                    })}
+                                  </Badge>
                                   {item.isShipped && (
                                     <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
                                       <PackageCheck className="h-3 w-3 mr-1" />
