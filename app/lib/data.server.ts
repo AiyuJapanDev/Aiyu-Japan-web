@@ -18,22 +18,16 @@ async function getPrerenderData(): Promise</* CachedData */ any> {
   // Ensure cache directory exists
   const cacheDir = path.dirname(CACHE_FILE_PATH);
 
-  // Try to read from cache (it might fail if file doesn't exist, which is fine)
   try {
     const cached = await fs.readFile(CACHE_FILE_PATH, "utf-8");
-    console.log("Reading from build cache...");
     return JSON.parse(cached);
   } catch (error) {
-    // Cache miss or error reading
+    // Cache miss, fetch from Strapi
   }
-
-  console.log("Fetching data from Strapi...");
 
   const { getLocales } = await import("./strapi.server");
   const locales = await getLocales();
   const localeCodes = locales.map((l: any) => l.code);
-
-  console.log(`Found locales: ${localeCodes.join(", ")}`);
 
   const [storeCategories, paraguayDeliveries] = await Promise.all([
     getStoreCategories(),
@@ -72,10 +66,7 @@ async function getPrerenderData(): Promise</* CachedData */ any> {
     await fs.mkdir(cacheDir, { recursive: true });
     await fs.writeFile(CACHE_FILE_PATH, JSON.stringify(contentData));
   } catch (error) {
-    console.warn(
-      "Could not write to build cache (likely read-only FS):",
-      error,
-    );
+    // Silently fail on read-only filesystems
   }
 
   return contentData;

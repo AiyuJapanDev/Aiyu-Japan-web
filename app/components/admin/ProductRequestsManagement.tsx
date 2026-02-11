@@ -139,10 +139,11 @@ export function ProductRequestsManagement({ orderId }: ProductRequestsManagement
   const [orderForAllReceived, setOrderForAllReceived] = useState<OrderWithDetails | null>(null);
   const [dimensionsForAllReceived, setDimensionsForAllReceived] = useState<Map<string, {weight?: number, width?: number, length?: number, height?: number}>>(new Map());
   const [isMarkingAllReceived, setIsMarkingAllReceived] = useState(false);
+  const [itemsWithoutWeight, setItemsWithoutWeight] = useState<string[]>([]);
 
   // Mark Individual as Received Dialog
   const [showMarkReceivedDialog, setShowMarkReceivedDialog] = useState(false);
-  const [itemForReceived, setItemForReceived] = useState<{id: string, weight?: number, width?: number, length?: number, height?: number} | null>(null);
+  const [itemForReceived, setItemForReceived] = useState<{id: string, itemName?: string, weight?: number, width?: number, length?: number, height?: number} | null>(null);
   const [isMarkingReceived, setIsMarkingReceived] = useState(false);
 
   // Mark Individual as Purchased Dialog
@@ -1626,11 +1627,14 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
                                   {/* Individual received button with dimension inputs for purchased items */}
                                   {item.status === "purchased" && (
                                     <div className="flex flex-col gap-2 mt-2">
+                                      <p className="text-xs text-muted-foreground">
+                                        <span className="text-red-500">*</span> Weight is required to mark as received
+                                      </p>
                                       <div className="flex items-center gap-2 flex-wrap">
                                         <Input
                                           type="number"
-                                          placeholder="Weight (g)"
-                                          className="w-24 h-8"
+                                          placeholder="Weight (g) *"
+                                          className="w-28 h-8 border-red-300 focus:border-red-500"
                                           id={`weight-${item.id}`}
                                           min="0"
                                           step="1"
@@ -1667,9 +1671,23 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
                                           const lengthInput = document.getElementById(`length-${item.id}`) as HTMLInputElement;
                                           const heightInput = document.getElementById(`height-${item.id}`) as HTMLInputElement;
                                           
+                                          const weight = weightInput?.value ? parseFloat(weightInput.value) : undefined;
+                                          
+                                          // Validate weight is provided
+                                          if (weight === undefined || weight === null || isNaN(weight)) {
+                                            toast({
+                                              title: "Weight Required",
+                                              description: "Please enter the weight in grams before marking as received. Use 0 if unknown.",
+                                              variant: "destructive",
+                                            });
+                                            weightInput?.focus();
+                                            return;
+                                          }
+                                          
                                           setItemForReceived({ 
-                                            id: item.id, 
-                                            weight: weightInput?.value ? parseFloat(weightInput.value) : undefined,
+                                            id: item.id,
+                                            itemName: item.item_name,
+                                            weight,
                                             width: widthInput?.value ? parseFloat(widthInput.value) : undefined,
                                             length: lengthInput?.value ? parseFloat(lengthInput.value) : undefined,
                                             height: heightInput?.value ? parseFloat(heightInput.value) : undefined,
@@ -1678,9 +1696,9 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
                                         }}
                                         size="sm"
                                         variant="outline"
+                                        className="border-green-500 text-black font-bold hover:bg-green-100"
                                       >
-                                        <Check className="h-3 w-3 mr-1" />
-                                        Mark as Received
+                                        ✔️  Mark as Received
                                       </Button>
                                     </div>
                                   )}
@@ -1874,9 +1892,12 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
                               <Button
                                 size="sm"
                                 variant="outline"
+                                className="border-green-500 text-black font-bold hover:bg-green-100"
                                 onClick={() => {
                                   // Collect dimensions from all input fields
                                   const dimensions = new Map<string, {weight?: number, width?: number, length?: number, height?: number}>();
+                                  const missingWeight: string[] = [];
+                                  
                                   order.items.forEach((item) => {
                                     if (item.status === "purchased") {
                                       const weightInput = document.getElementById(`weight-${item.id}`) as HTMLInputElement;
@@ -1885,7 +1906,14 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
                                       const heightInput = document.getElementById(`height-${item.id}`) as HTMLInputElement;
                                       
                                       const itemDimensions: any = {};
-                                      if (weightInput?.value) itemDimensions.weight = parseFloat(weightInput.value);
+                                      const weight = weightInput?.value ? parseFloat(weightInput.value) : undefined;
+                                      
+                                      if (weight !== undefined && !isNaN(weight)) {
+                                        itemDimensions.weight = weight;
+                                      } else {
+                                        missingWeight.push(item.item_name || 'Unnamed Product');
+                                      }
+                                      
                                       if (widthInput?.value) itemDimensions.width = parseFloat(widthInput.value);
                                       if (lengthInput?.value) itemDimensions.length = parseFloat(lengthInput.value);
                                       if (heightInput?.value) itemDimensions.height = parseFloat(heightInput.value);
@@ -1895,13 +1923,24 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
                                       }
                                     }
                                   });
+                                  
+                                  // Check if any items are missing weight
+                                  if (missingWeight.length > 0) {
+                                    toast({
+                                      title: "Weight Required",
+                                      description: `Please enter weight for: ${missingWeight.join(', ')}. Use 0 if unknown.`,
+                                      variant: "destructive",
+                                    });
+                                    return;
+                                  }
+                                  
                                   setDimensionsForAllReceived(dimensions);
+                                  setItemsWithoutWeight(missingWeight);
                                   setOrderForAllReceived(order);
                                   setShowMarkAllReceivedDialog(true);
                                 }}
                               >
-                                <Check className="h-4 w-4 mr-1" />
-                                Mark All Purchased as Received
+                                ✔️ Mark All Purchased as Received
                               </Button>
                             )}
 
@@ -2110,9 +2149,20 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
       <AlertDialog open={showMarkAllReceivedDialog} onOpenChange={setShowMarkAllReceivedDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Mark All as Received?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to mark all purchased items in Order #{orderForAllReceived?.order_personal_id} as received?
+            <AlertDialogTitle className="flex items-center gap-2">
+              <AlertCircle className="h-5 w-5 text-red-500" />
+              Mark All as Received?
+            </AlertDialogTitle>
+            <AlertDialogDescription className="space-y-3">
+              <p className="font-semibold text-foreground">
+                ⚠️ These products will be sent to STORAGE and will be VISIBLE to the customer.
+              </p>
+              <p>
+                You are about to mark <span className="font-bold text-foreground">{orderForAllReceived?.items.filter(i => i.status === "purchased").length} product(s)</span> in Order #{orderForAllReceived?.order_personal_id} as physically received in the warehouse.
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Please confirm that all products are physically present before proceeding.
+              </p>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -2120,8 +2170,9 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
             <AlertDialogAction
               onClick={handleMarkAllReceived}
               disabled={isMarkingAllReceived}
+              className="bg-orange-600 hover:bg-orange-700"
             >
-              {isMarkingAllReceived ? "Marking..." : "Mark as Received"}
+              {isMarkingAllReceived ? "Marking..." : "Yes, Mark as Received"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -2131,9 +2182,20 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
       <AlertDialog open={showMarkReceivedDialog} onOpenChange={setShowMarkReceivedDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Mark as Received?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to mark this item as received?
+            <AlertDialogTitle className="flex items-center gap-2">
+              <AlertCircle className="h-5 w-5 text-orange-500" />
+              Mark as Received?
+            </AlertDialogTitle>
+            <AlertDialogDescription className="space-y-3">
+              <p className="font-semibold text-foreground">
+                ⚠️ This product will be sent to STORAGE and will be VISIBLE to the customer.
+              </p>
+              <p>
+                You are about to mark <span className="font-bold text-foreground">"{itemForReceived?.itemName || 'this item'}"</span> (Weight: {itemForReceived?.weight}g) as physically received in the warehouse.
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Please confirm that the product is physically present before proceeding.
+              </p>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -2141,8 +2203,9 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
             <AlertDialogAction
               onClick={handleMarkReceived}
               disabled={isMarkingReceived}
+              className="bg-orange-600 hover:bg-orange-700"
             >
-              {isMarkingReceived ? "Marking..." : "Mark as Received"}
+              {isMarkingReceived ? "Marking..." : "Yes, Mark as Received"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

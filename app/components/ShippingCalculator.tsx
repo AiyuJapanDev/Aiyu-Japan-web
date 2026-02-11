@@ -2,14 +2,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
+import { CountrySelect } from "@/components/ui/country-select";
 import { useApp } from "@/contexts/AppContext";
 import { useCurrencyRates } from "@/hooks/useCurrencyRates";
 import { useSystemSettings } from "@/hooks/useSystemSettings";
@@ -142,29 +136,26 @@ const ShippingCalculator = () => {
   );
 
   return (
-    <Card className="rounded-3xl p-8 bg-white/90 backdrop-blur-sm shadow-lg border-2 border-white/30">
-      <CardHeader className="pb-4">
-        <CardTitle className="flex items-center gap-3 font-heading text-xl text-gray-800 leading-tight flex-wrap">
+    <Card className="rounded-3xl p-8 bg-white shadow-xl border-2 border-capybara-orange/30">
+      <CardHeader className="pb-6 border-b-2 border-capybara-yellow/40">
+        <CardTitle className="flex items-center gap-3 font-heading text-2xl text-gray-900 leading-tight flex-wrap">
           <span className="whitespace-normal break-words">
             {t("shippingCalculator")}
           </span>
         </CardTitle>
       </CardHeader>
 
-      <CardContent className="space-y-4">
-        <div className="space-y-1">
-          <Select value={selectedCountry} onValueChange={setSelectedCountry}>
-            <SelectTrigger className="w-full rounded-full px-3 py-2 text-sm border-2 border-capybara-orange/20 focus:border-capybara-orange transition-all duration-300 font-body">
-              <SelectValue placeholder="Select Country" />
-            </SelectTrigger>
-            <SelectContent className="rounded-2xl border-2 border-capybara-orange/20 max-h-[300px]">
-              {ALL_COUNTRIES.map((country) => (
-                <SelectItem key={country} value={country}>
-                  <div className="text-left leading-tight">{country}</div>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+      <CardContent className="space-y-6 pt-6">
+        <div className="space-y-2">
+          <Label className="font-body text-sm font-semibold text-gray-700">
+            {t("destination")}
+          </Label>
+          <CountrySelect
+            countries={ALL_COUNTRIES}
+            value={selectedCountry}
+            onValueChange={setSelectedCountry}
+            placeholder="Select Country"
+          />
           {zoneInfo && !isDHLOnly && (
             <p className="text-xs text-gray-600 font-body text-center">
               Zone {zoneInfo.zone}: {zoneInfo.name}
@@ -182,11 +173,11 @@ const ShippingCalculator = () => {
           )}
         </div>
 
-        <div className="space-y-2">
-          <Label className="font-body text-sm text-gray-700">
+        <div className="space-y-3">
+          <Label className="font-body text-sm font-semibold text-gray-700">
             {t("shippingMethods")}
           </Label>
-          <p className="text-xs text-gray-500">{t("chooseShippingMethod")}</p>
+          <p className="text-xs text-gray-600">{t("chooseShippingMethod")}</p>
 
           <RadioGroup
             value={shippingMethod}
@@ -200,18 +191,22 @@ const ShippingCalculator = () => {
             {availableMethods.map((method) => (
               <div
                 key={method.value}
-                className="flex items-center space-x-2 p-2 rounded-full bg-capybara-cream transition-colors"
+                className={`flex items-center space-x-3 p-3 rounded-xl border-2 transition-all duration-300 cursor-pointer ${
+                  shippingMethod === method.value
+                    ? "bg-capybara-yellow border-capybara-orange shadow-md"
+                    : "bg-white border-gray-200 hover:border-capybara-orange/50 hover:bg-capybara-cream/30"
+                }`}
               >
                 <RadioGroupItem
                   value={method.value}
                   id={method.value}
-                  className="w-3 h-3"
+                  className="w-4 h-4"
                 />
                 <Label
                   htmlFor={method.value}
-                  className="flex-1 font-body cursor-pointer text-xs"
+                  className="flex-1 font-body cursor-pointer text-sm"
                 >
-                  <span className="font-semibold">{method.label}</span>
+                  <span className="font-semibold text-gray-800">{method.label}</span>
                 </Label>
               </div>
             ))}
@@ -219,14 +214,14 @@ const ShippingCalculator = () => {
         </div>
 
         {(shippingMethod === "dhl" || shippingMethod === "paraguay") && (
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label className="font-body text-sm text-gray-700">
+          <div className="space-y-4 p-4 bg-capybara-cream/30 rounded-2xl border-2 border-capybara-yellow/40">
+            <div className="space-y-3">
+              <Label className="font-body text-sm font-semibold text-gray-700">
                 {t("dimensionsLabel")}
               </Label>
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-3 gap-3">
                 <div>
-                  <Label htmlFor="length" className="text-xs">
+                  <Label htmlFor="length" className="text-xs font-medium text-gray-700">
                     {t("lengthLabel")}
                   </Label>
                   <Input
@@ -236,11 +231,11 @@ const ShippingCalculator = () => {
                     value={length}
                     onChange={(e) => setLength(e.target.value)}
                     placeholder="L"
-                    className="rounded-full border-2 border-capybara-orange/20 focus:border-capybara-orange"
+                    className="rounded-xl border-2 border-capybara-orange/40 focus:border-capybara-orange shadow-sm bg-white"
                   />
                 </div>
                 <div>
-                  <Label htmlFor="width" className="text-xs">
+                  <Label htmlFor="width" className="text-xs font-medium text-gray-700">
                     {t("widthLabel")}
                   </Label>
                   <Input
@@ -250,11 +245,11 @@ const ShippingCalculator = () => {
                     value={width}
                     onChange={(e) => setWidth(e.target.value)}
                     placeholder="W"
-                    className="rounded-full border-2 border-capybara-orange/20 focus:border-capybara-orange"
+                    className="rounded-xl border-2 border-capybara-orange/40 focus:border-capybara-orange shadow-sm bg-white"
                   />
                 </div>
                 <div>
-                  <Label htmlFor="height" className="text-xs">
+                  <Label htmlFor="height" className="text-xs font-medium text-gray-700">
                     {t("heightLabel")}
                   </Label>
                   <Input
@@ -264,7 +259,7 @@ const ShippingCalculator = () => {
                     value={height}
                     onChange={(e) => setHeight(e.target.value)}
                     placeholder="H"
-                    className="rounded-full border-2 border-capybara-orange/20 focus:border-capybara-orange"
+                    className="rounded-xl border-2 border-capybara-orange/40 focus:border-capybara-orange shadow-sm bg-white"
                   />
                 </div>
               </div>
@@ -272,42 +267,44 @@ const ShippingCalculator = () => {
           </div>
         )}
 
-        <div className="space-y-2">
-          <Label className="font-body text-sm text-gray-700">
+        <div className="space-y-3">
+          <Label className="font-body text-sm font-semibold text-gray-700">
             {t("selectWeight")}
           </Label>
-          <div className="flex items-center gap-4">
-            <Input
-              type="number"
-              min={weightRange.min}
-              max={weightRange.max}
-              step={shippingMethod === "paraguay" ? 200 : 50}
-              defaultValue={weight[0]}
-              key={`weight-${weight[0]}`}
-              onBlur={(e) => {
-                // Validate and update state when user finishes typing
-                const value = e.target.value.trim();
-                if (value === "" || isNaN(Number(value))) {
-                  setWeight([weightRange.min]);
-                  e.target.value = String(weightRange.min);
-                } else {
-                  const numValue = Number(value);
-                  if (numValue < weightRange.min) {
+          <div className="p-4 bg-capybara-cream/30 rounded-2xl border-2 border-capybara-yellow/40">
+            <div className="flex items-center gap-4 mb-3">
+              <Input
+                type="number"
+                min={weightRange.min}
+                max={weightRange.max}
+                step={shippingMethod === "paraguay" ? 200 : 50}
+                defaultValue={weight[0]}
+                key={`weight-${weight[0]}`}
+                onBlur={(e) => {
+                  // Validate and update state when user finishes typing
+                  const value = e.target.value.trim();
+                  if (value === "" || isNaN(Number(value))) {
                     setWeight([weightRange.min]);
                     e.target.value = String(weightRange.min);
-                  } else if (numValue > weightRange.max) {
-                    setWeight([weightRange.max]);
-                    e.target.value = String(weightRange.max);
                   } else {
-                    setWeight([numValue]);
+                    const numValue = Number(value);
+                    if (numValue < weightRange.min) {
+                      setWeight([weightRange.min]);
+                      e.target.value = String(weightRange.min);
+                    } else if (numValue > weightRange.max) {
+                      setWeight([weightRange.max]);
+                      e.target.value = String(weightRange.max);
+                    } else {
+                      setWeight([numValue]);
+                    }
                   }
-                }
-              }}
-              className="w-32"
-            />
-            <span className="text-sm text-muted-foreground whitespace-nowrap">
-              g
-            </span>
+                }}
+                className="w-32 rounded-xl border-2 border-capybara-orange/40 focus:border-capybara-orange shadow-sm bg-white font-semibold"
+              />
+              <span className="text-sm font-medium text-gray-700 whitespace-nowrap">
+                gramos
+              </span>
+            </div>
             <Slider
               value={weight}
               onValueChange={setWeight}
@@ -316,15 +313,15 @@ const ShippingCalculator = () => {
               step={shippingMethod === "paraguay" ? 200 : 50}
               className="flex-1"
             />
-          </div>
-
-          <div className="flex justify-end text-xs text-gray-600 font-body">
-            <span>{weightRange.max.toLocaleString()}g</span>
+            <div className="flex justify-between text-xs text-gray-600 font-body mt-2">
+              <span>{weightRange.min.toLocaleString()}g</span>
+              <span>{weightRange.max.toLocaleString()}g</span>
+            </div>
           </div>
         </div>
 
         {shippingResults && (
-          <div className="space-y-3 mt-4 animate-fade-in animate-scale-in">
+          <div className="space-y-3 mt-4 animate-fade-in">
             <div className="bg-gradient-to-br from-gray-800 to-gray-900 text-white rounded-2xl p-4 transition-all duration-500">
               <div className="text-2xl font-bold text-center">
                 {animatedTotal.toLocaleString()} yen
@@ -362,7 +359,7 @@ const ShippingCalculator = () => {
           <div className="text-center py-8">
             <div className="mb-4">
               <img
-                src="KapyPlane.png"
+                src="/KapyPlane.png"
                 alt="Capybara Plane"
                 className="w-28 h-36 mx-auto mb-2"
               />

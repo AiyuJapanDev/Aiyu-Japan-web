@@ -26,7 +26,6 @@ export default function NewsPage({ loaderData }: Route.ComponentProps) {
   const { newPost, lang } = loaderData;
 
   const { title, image, blocks } = newPost as New;
-  console.log(newPost);
   const { t } = useApp();
 
   // Get image

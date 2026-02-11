@@ -71,6 +71,8 @@ interface StoredItem {
 
 interface CustomerStorage {
   user_id: string;
+  batchDate: string; // Date string for grouping
+  isNew: boolean; // If batch contains new items (last 3 days)
   user: {
     full_name: string;
     email: string;
@@ -108,6 +110,7 @@ export const StorageManagement = React.memo(() => {
   const [lengths, setLengths] = useState<Record<string, string>>({});
   const [heights, setHeights] = useState<Record<string, string>>({});
   const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [deleteItemId, setDeleteItemId] = useState<string | null>(null);
   const [preSelectedUserId, setPreSelectedUserId] = useState<string | null>(null);
@@ -138,6 +141,15 @@ export const StorageManagement = React.memo(() => {
   const serverPageSize = 50; // 50 product_requests por página
   const [totalProducts, setTotalProducts] = useState(0);
 
+  // Debounce search term to prevent input interruption
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+    }, 500); // Wait 500ms after user stops typing
+
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
+
   // Fetch all users for the add item dropdown
   const { data: allUsers } = useQuery({
     queryKey: ['all-users'],
@@ -153,31 +165,63 @@ export const StorageManagement = React.memo(() => {
   });
 
   const { data: storageData, isLoading } = useQuery({
-    queryKey: ['admin-storage', serverPage],
+    queryKey: ['admin-storage', serverPage, debouncedSearchTerm],
     queryFn: async () => {
-      const from = (serverPage - 1) * serverPageSize;
-      const to = from + serverPageSize - 1;
-
-      // ✅ 1. Obtener total count
-      const { count } = await supabase
-        .from('product_requests')
-        .select('*', { count: 'exact', head: true })
-        .eq('status', 'received');
-
-      if (count !== null) {
-        setTotalProducts(count);
-      }
-
-      // ✅ 2. Traer productos paginados (más nuevos primero) con order_items
-      const { data: productRequests, error: requestsError } = await supabase
+      const hasSearch = debouncedSearchTerm.trim().length > 0;
+      
+      // When searching, fetch all matching records; otherwise paginate
+      let query = supabase
         .from('product_requests')
         .select(`
           *,
           order_items!order_items_product_request_id_fkey(id)
-        `)
+        `, { count: 'exact' })
         .eq('status', 'received')
-        .order('created_at', { ascending: false })
-        .range(from, to) as any;
+        .order('created_at', { ascending: false });
+
+      if (hasSearch) {
+        // Server-side search: fetch all matching users first
+        const searchLower = debouncedSearchTerm.toLowerCase();
+        
+        // Search in profiles for name, email, or personal_id
+        const { data: matchingProfiles } = await supabase
+          .from('profiles')
+          .select('id')
+          .or(`full_name.ilike.%${searchLower}%,email.ilike.%${searchLower}%,user_personal_id.ilike.%${searchLower}%`);
+        
+        const matchingUserIds = matchingProfiles?.map(p => p.id) || [];
+        
+        // Search in product_requests for item names
+        const { data: matchingItems } = await supabase
+          .from('product_requests')
+          .select('user_id')
+          .eq('status', 'received')
+          .ilike('item_name', `%${searchLower}%`);
+        
+        const itemUserIds = matchingItems?.map(i => i.user_id) || [];
+        
+        // Combine both search results
+        const allMatchingUserIds = [...new Set([...matchingUserIds, ...itemUserIds])];
+        
+        if (allMatchingUserIds.length === 0) {
+          setTotalProducts(0);
+          return [];
+        }
+        
+        // Fetch all products for matching users (no pagination when searching)
+        query = query.in('user_id', allMatchingUserIds);
+      } else {
+        // Normal pagination when not searching
+        const from = (serverPage - 1) * serverPageSize;
+        const to = from + serverPageSize - 1;
+        query = query.range(from, to);
+      }
+
+      const { data: productRequests, error: requestsError, count } = await query as any;
+
+      if (count !== null) {
+        setTotalProducts(count);
+      }
 
       if (requestsError) throw requestsError;
       if (!productRequests || productRequests.length === 0) {
@@ -217,50 +261,144 @@ export const StorageManagement = React.memo(() => {
       // Create a map of profiles for quick lookup
       const profileMap = new Map(profiles?.map(p => [p.id, p]) || []);
 
-      // ✅ 6. Group items by user
-      const grouped: Record<string, CustomerStorage> = {};
+      // ✅ 6. Group items by user AND by 10-day windows
+      // First, sort products by user and date
+      const sortedByUser: Record<string, any[]> = {};
       productRequests.forEach((item: any) => {
         const userId = item.user_id;
-        const profile = profileMap.get(userId);
-        
-        // Check if item has order_items and if any are shipped
-        const orderItemIds = item.order_items?.map((oi: any) => oi.id) || [];
-        const isShipped = orderItemIds.some((id: string) => shippedOrderItemIds.has(id));
-        
-        if (!grouped[userId]) {
-          grouped[userId] = {
-            user_id: userId,
-            user: {
-              full_name: profile?.full_name || 'Unknown User',
-              email: profile?.email || 'No email',
-              phone_number: profile?.phone_number || 'No phone'
-            },
-            items: [],
-            totalWeight: 0,
-            totalItems: 0,
-          };
+        if (!sortedByUser[userId]) {
+          sortedByUser[userId] = [];
         }
-        
-        grouped[userId].items.push({
-          id: item.id,
-          item_name: item.item_name,
-          product_url: item.product_url,
-          quantity: item.quantity,
-          weight: item.weight,
-          width: item.width,
-          length: item.length,
-          height: item.height,
-          created_at: item.created_at,
-          status: item.status,
-          isShipped,
-          is_box: item.is_box,
-          local_tracking_number: item.local_tracking_number,
-        });
-        grouped[userId].totalWeight += item.weight || 0;
-        grouped[userId].totalItems += item.quantity || 1;
+        sortedByUser[userId].push(item);
       });
 
-      return Object.values(grouped);
+      // Sort each user's products by date
+      Object.keys(sortedByUser).forEach(userId => {
+        sortedByUser[userId].sort((a, b) => 
+          new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+        );
+      });
+
+      const grouped: Record<string, CustomerStorage> = {};
+      const now = new Date();
+      const eightDaysAgo = new Date(now.getTime() - 8 * 24 * 60 * 60 * 1000);
+      let groupCounter = 0;
+      
+      // Group products within 10-day windows for each user
+      Object.keys(sortedByUser).forEach(userId => {
+        const userProducts = sortedByUser[userId];
+        const profile = profileMap.get(userId);
+        
+        let currentGroup: any[] = [];
+        let groupStartDate: Date | null = null;
+        
+        userProducts.forEach((item: any, index: number) => {
+          const itemDate = new Date(item.created_at);
+          
+          // If this is the first item or within 10 days of group start, add to current group
+          if (!groupStartDate || (itemDate.getTime() - groupStartDate.getTime()) <= 10 * 24 * 60 * 60 * 1000) {
+            if (!groupStartDate) {
+              groupStartDate = itemDate;
+            }
+            currentGroup.push(item);
+          } else {
+            // Save current group and start a new one
+            const groupKey = `${userId}_${groupCounter++}`;
+            const isNew = groupStartDate! >= eightDaysAgo;
+            
+            grouped[groupKey] = {
+              user_id: groupKey,
+              batchDate: groupStartDate!.toISOString().split('T')[0],
+              isNew,
+              user: {
+                full_name: profile?.full_name || 'Unknown User',
+                email: profile?.email || 'No email',
+                phone_number: profile?.phone_number || 'No phone',
+                user_personal_id: profile?.user_personal_id
+              },
+              items: [],
+              totalWeight: 0,
+              totalItems: 0,
+            };
+            
+            currentGroup.forEach((groupItem: any) => {
+              const orderItemIds = groupItem.order_items?.map((oi: any) => oi.id) || [];
+              const isShipped = orderItemIds.some((id: string) => shippedOrderItemIds.has(id));
+              
+              grouped[groupKey].items.push({
+                id: groupItem.id,
+                item_name: groupItem.item_name,
+                product_url: groupItem.product_url,
+                quantity: groupItem.quantity,
+                weight: groupItem.weight,
+                width: groupItem.width,
+                length: groupItem.length,
+                height: groupItem.height,
+                created_at: groupItem.created_at,
+                status: groupItem.status,
+                isShipped,
+                is_box: groupItem.is_box,
+                local_tracking_number: groupItem.local_tracking_number,
+              });
+              grouped[groupKey].totalWeight += groupItem.weight || 0;
+              grouped[groupKey].totalItems += groupItem.quantity || 1;
+            });
+            
+            // Start new group with current item
+            currentGroup = [item];
+            groupStartDate = itemDate;
+          }
+          
+          // Handle last group
+          if (index === userProducts.length - 1 && currentGroup.length > 0) {
+            const groupKey = `${userId}_${groupCounter++}`;
+            const isNew = groupStartDate! >= eightDaysAgo;
+            
+            grouped[groupKey] = {
+              user_id: groupKey,
+              batchDate: groupStartDate!.toISOString().split('T')[0],
+              isNew,
+              user: {
+                full_name: profile?.full_name || 'Unknown User',
+                email: profile?.email || 'No email',
+                phone_number: profile?.phone_number || 'No phone',
+                user_personal_id: profile?.user_personal_id
+              },
+              items: [],
+              totalWeight: 0,
+              totalItems: 0,
+            };
+            
+            currentGroup.forEach((groupItem: any) => {
+              const orderItemIds = groupItem.order_items?.map((oi: any) => oi.id) || [];
+              const isShipped = orderItemIds.some((id: string) => shippedOrderItemIds.has(id));
+              
+              grouped[groupKey].items.push({
+                id: groupItem.id,
+                item_name: groupItem.item_name,
+                product_url: groupItem.product_url,
+                quantity: groupItem.quantity,
+                weight: groupItem.weight,
+                width: groupItem.width,
+                length: groupItem.length,
+                height: groupItem.height,
+                created_at: groupItem.created_at,
+                status: groupItem.status,
+                isShipped,
+                is_box: groupItem.is_box,
+                local_tracking_number: groupItem.local_tracking_number,
+              });
+              grouped[groupKey].totalWeight += groupItem.weight || 0;
+              grouped[groupKey].totalItems += groupItem.quantity || 1;
+            });
+          }
+        });
+      });
+
+      // Sort groups by batch date (newest first)
+      return Object.values(grouped).sort((a, b) => 
+        new Date(b.batchDate).getTime() - new Date(a.batchDate).getTime()
+      );
     },
   });
 
@@ -508,16 +646,8 @@ export const StorageManagement = React.memo(() => {
     }));
   };
 
-  const filteredData = storageData?.filter(customer => {
-    const searchLower = searchTerm.toLowerCase();
-    return (
-      customer.user.full_name?.toLowerCase().includes(searchLower) ||
-      customer.user.email?.toLowerCase().includes(searchLower) ||
-      customer.items.some(item => 
-        item.item_name?.toLowerCase().includes(searchLower)
-      )
-    );
-  });
+  // No client-side filtering needed - search is done server-side
+  const filteredData = storageData;
 
   // Cálculos de paginación del servidor
   const totalPages = Math.ceil(totalProducts / serverPageSize);
@@ -525,7 +655,7 @@ export const StorageManagement = React.memo(() => {
   // Reset to page 1 when search changes
   useEffect(() => {
     setServerPage(1);
-  }, [searchTerm]);
+  }, [debouncedSearchTerm]);
 
   // Scroll to top when page changes
   useEffect(() => {
@@ -753,8 +883,8 @@ export const StorageManagement = React.memo(() => {
           </div>
         </CardHeader>
         <CardContent>
-          {/* Controles de paginación del servidor */}
-          {totalPages > 1 && (
+          {/* Controles de paginación del servidor - ocultar durante búsqueda */}
+          {totalPages > 1 && !debouncedSearchTerm.trim() && (
             <div className="mb-6 pb-6 border-b">
               <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
                 <div className="text-sm text-muted-foreground">
@@ -805,17 +935,29 @@ export const StorageManagement = React.memo(() => {
 
           <div className="mb-6">
             <Input
-              placeholder="Search by customer name, email, or product..."
+              placeholder="Search by customer name, personal ID, email, or product..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full sm:max-w-sm"
             />
+            {debouncedSearchTerm.trim() && (
+              <div className="mt-2 text-sm text-muted-foreground">
+                {isLoading ? (
+                  'Searching...'
+                ) : (
+                  `Found ${totalProducts} product${totalProducts !== 1 ? 's' : ''} matching "${debouncedSearchTerm}"`
+                )}
+              </div>
+            )}
           </div>
 
         <div className="space-y-4">
           {filteredData?.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
-              No items currently in storage
+              {debouncedSearchTerm.trim() 
+                ? `No results found for "${debouncedSearchTerm}"` 
+                : 'No items currently in storage'
+              }
             </div>
           ) : (
             filteredData?.map((customer) => (
@@ -831,13 +973,21 @@ export const StorageManagement = React.memo(() => {
                         <div className="flex items-center gap-3 min-w-0">
                           <User className="h-5 w-5 text-muted-foreground flex-shrink-0" />
                           <div className="min-w-0 flex-1">
-                            <h3 className="font-medium truncate">
-                              {customer.user.full_name}
-                              {customer.user.user_personal_id && (
-                                <span className="text-xs text-muted-foreground ml-2">#{customer.user.user_personal_id}</span>
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <h3 className="font-medium truncate">
+                                {customer.user.full_name}
+                                {customer.user.user_personal_id && (
+                                  <span className="text-xs text-muted-foreground ml-2">#{customer.user.user_personal_id}</span>
+                                )}
+                              </h3>
+                              {customer.isNew && (
+                                <Badge className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400 text-xs font-semibold">
+                                  NEW
+                                </Badge>
                               )}
-                            </h3>
+                            </div>
                             <p className="text-sm text-muted-foreground truncate">{customer.user.email}</p>
+                            <p className="text-xs text-muted-foreground">Pedido del {new Date(customer.batchDate).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' })}</p>
                           </div>
                         </div>
                         <div className="flex items-center justify-between sm:justify-end gap-4">
@@ -872,13 +1022,6 @@ export const StorageManagement = React.memo(() => {
                                   <Package className="h-4 w-4 text-muted-foreground" />
                                   <span className="font-medium break-words">{item.item_name || 'Unnamed Item'}</span>
                                   <Badge variant="outline">Qty: {item.quantity}</Badge>
-                                  <Badge variant="secondary" className="text-xs">
-                                    {new Date(item.created_at).toLocaleDateString('es-ES', {
-                                      day: '2-digit',
-                                      month: '2-digit',
-                                      year: 'numeric'
-                                    })}
-                                  </Badge>
                                   {item.isShipped && (
                                     <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
                                       <PackageCheck className="h-3 w-3 mr-1" />
