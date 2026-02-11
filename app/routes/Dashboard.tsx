@@ -12,12 +12,8 @@ const DashboardContent = () => {
   const { user, loading, isAdmin, userRole } = useAuth();
   const navigate = useNavigate();
 
-  console.log('Dashboard - user:', user?.id, 'loading:', loading, 'userRole:', userRole, 'isAdmin:', isAdmin);
-
   useEffect(() => {
-    // Only redirect if we have a user and userRole is determined
     if (user && userRole !== null) {
-      console.log('Dashboard - redirecting based on role:', userRole);
       if (userRole === 'admin') {
         navigate('/admin-dashboard', { replace: true });
       } else {

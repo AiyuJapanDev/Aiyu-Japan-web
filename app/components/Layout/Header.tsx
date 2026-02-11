@@ -191,7 +191,7 @@ const Header = () => {
          *
          *
          * */}
-        <nav className="px-2 pt-2 max-w-7xl mx-auto  sm:px-6 lg:px-8">
+        <nav className="px-2 pt-2 max-w-7xl mx-auto  sm:px-6 lg:px-6">
           {/*
            *
            * Centered Desktop Navigation
@@ -296,16 +296,7 @@ const Header = () => {
                     )}
                   </div>
                   <div className="flex items-center space-x-0">
-                    <Link to="/calculator">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-9 w-9 rounded-full hover:bg-capybara-cream transition-all duration-300"
-                      >
-                        <Calculator className="h-5 w-5 text-grey-600" />
-                      </Button>
-                    </Link>
-
+                    
                     <Link
                       to={
                         isAdmin
@@ -343,6 +334,17 @@ const Header = () => {
 
             {/* Easy Access Action Icons */}
             <div className="lg:hidden flex items-center space-x-1">
+              {/* Admin Panel Badge */}
+              {isAdmin && (
+                <Link
+                  to="/admin-dashboard"
+                  className="flex items-center space-x-1 bg-blue-500 text-white px-2 py-1 rounded-full text-xs hover:bg-blue-600 transition-all duration-300"
+                >
+                  <Crown className="w-3 h-3" />
+                  <span className="font-semibold">Admin</span>
+                </Link>
+              )}
+
               {/* Calculator icon */}
               <Link to="/calculator">
                 <Button
@@ -403,12 +405,23 @@ const Header = () => {
            * */}
           {isMobileMenuOpen && (
             <div
-              className="px-4 lg:hidden animate-fade-in "
+              className="lg:hidden animate-fade-in absolute left-0 right-0 top-full max-h-[calc(100vh-8rem)] overflow-y-auto w-full"
               ref={mobileMenuRef}
             >
-              <div className="space-y-4 pt-4 pb-2  bg-white/95 border-t-2 border-capybara-orange/20 rounded-b-3xl min-h-screen">
+              <div className="space-y-4 pt-4 pb-6 px-4 bg-white border-t-2 border-capybara-orange/20 shadow-lg w-full">
+                {/* Admin Badge for Mobile */}
+                {isAdmin && (
+                  <Link
+                    to="/admin-dashboard"
+                    className="flex items-center justify-center space-x-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white px-4 py-3 rounded-xl shadow-md hover:shadow-lg transition-all duration-300"
+                  >
+                    <Crown className="w-5 h-5" />
+                    <span className="font-semibold">Admin Dashboard</span>
+                  </Link>
+                )}
+
                 {/* Information Section Title */}
-                <div className=" py-2 text-base font-bold text-gray-500">
+                <div className="py-2 text-base font-bold text-gray-500">
                   {t("information")}
                 </div>
 

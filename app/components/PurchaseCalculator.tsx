@@ -40,28 +40,28 @@ const PurchaseCalculator = () => {
   }, [purchaseAmount, ratesLoading, convertCurrency]);
 
   return (
-    <Card className="rounded-3xl p-8 bg-white/90 backdrop-blur-sm shadow-lg border-2 border-white/30">
-      <CardHeader className="pb-4">
-        <CardTitle className="flex items-center gap-3 font-heading text-xl text-gray-800">
+    <Card className="rounded-3xl p-8 bg-white shadow-xl border-2 border-capybara-orange/30">
+      <CardHeader className="pb-6 border-b-2 border-capybara-yellow/40">
+        <CardTitle className="flex items-center gap-3 font-heading text-2xl text-gray-900">
           {t("purchaseCalculator")}
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="space-y-2">
+      <CardContent className="space-y-6 pt-6">
+        <div className="space-y-3">
+          <label className="font-body text-sm font-semibold text-gray-700">
+            {t("enterPriceInYen")}
+          </label>
           <Input
             type="number"
             placeholder="¥100"
             value={purchaseAmount}
             onChange={(e) => setPurchaseAmount(e.target.value)}
-            className="w-full rounded-full px-4 py-3 border-2 border-capybara-orange/20 focus:border-capybara-orange transition-all duration-300 font-body"
+            className="w-full rounded-xl px-4 py-3 border-2 border-capybara-orange/40 focus:border-capybara-orange transition-all duration-300 font-body shadow-sm bg-white text-base"
           />
-          <p className="text-sm text-gray-600 font-body text-center">
-            {t("enterPriceInYen")}
-          </p>
         </div>
 
         {purchaseResults && (
-          <div className="space-y-3 mt-4 animate-fade-in animate-scale-in">
+          <div className="space-y-3 mt-4 animate-fade-in">
             <div className="bg-gradient-to-br from-gray-800 to-gray-900 text-white rounded-2xl p-4 transition-all duration-500">
               <div className="text-2xl font-bold text-center">
                 ¥{purchaseResults.total.toLocaleString()}

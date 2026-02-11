@@ -31,7 +31,6 @@ export const useSystemSettings = () => {
         });
       }
     } catch (error) {
-      console.error('Error fetching system settings:', error);
       // Use default values on error
     } finally {
       setLoading(false);

@@ -28,7 +28,6 @@ export async function createNotification(
     if (error) throw error;
     return data?.id || null;
   } catch (error) {
-    console.error('Failed to create notification:', error);
     return null;
   }
 }
@@ -46,10 +45,8 @@ export async function notifyAllAdmins(
     });
 
     if (error) throw error;
-
-    console.log('✅ Admin notifications created successfully');
   } catch (error) {
-    console.error('Failed to notify admins:', error);
+    // Silently fail
   }
 }
 

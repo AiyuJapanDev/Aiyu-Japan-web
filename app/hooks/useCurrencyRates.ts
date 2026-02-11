@@ -44,7 +44,7 @@ export const useCurrencyRates = () => {
         setRates(ratesMap);
       }
     } catch (error) {
-      console.error("Error fetching currency rates:", error);
+      // Use fallback rates
     } finally {
       setLoading(false);
     }
