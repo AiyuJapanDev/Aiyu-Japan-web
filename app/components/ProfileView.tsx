@@ -186,54 +186,25 @@ const ProfileView = () => {
       const cleanDisplayTaxId = displayData.tax_vat_Id ? displayData.tax_vat_Id.replace(/[^a-zA-Z0-9]/g, '').toUpperCase() : '';
       
       if (cleanTaxId !== cleanDisplayTaxId) {
-        const generateTaxIdVariations = (taxId: string) => {
-          const variations = [taxId];
-          
-          if (taxId.length === 8 && /^\d+$/.test(taxId)) {
-            variations.push(`20${taxId}`, `27${taxId}`, `23${taxId}`, `24${taxId}`);
-            for (let i = 0; i <= 9; i++) {
-              variations.push(`20${taxId}${i}`, `27${taxId}${i}`, `23${taxId}${i}`, `24${taxId}${i}`);
-            }
-          }
-          
-          if (taxId.length >= 10 && /^\d+$/.test(taxId)) {
-            const possibleDni = taxId.substring(2, 10);
-            if (possibleDni.length === 8) {
-              variations.push(possibleDni);
-            }
-          }
-          
-          return variations;
-        };
+        const { data: taxExists, error: rpcError } = await supabase
+          .rpc('check_tax_id_exists', { input_tax_id: formData.tax_vat_Id });
 
-        const userVariations = generateTaxIdVariations(cleanTaxId);
-
-        const { data: existingTaxIds } = await supabase
-          .from('profiles')
-          .select('tax_vat_Id, id')
-          .not('tax_vat_Id', 'is', null)
-          .neq('id', user.id);
-
-        if (existingTaxIds && existingTaxIds.length > 0) {
-          const taxIdExists = existingTaxIds.some(profile => {
-            if (!profile.tax_vat_Id) return false;
-            const existingClean = profile.tax_vat_Id.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
-            const existingVariations = generateTaxIdVariations(existingClean);
-            
-            return userVariations.some(userVar => 
-              existingVariations.includes(userVar) || 
-              userVar.includes(existingClean) || 
-              existingClean.includes(userVar)
-            );
+        if (rpcError) {
+          console.error('Error validating tax ID:', rpcError);
+          toast({
+            title: "Error de validación",
+            description: "No se pudo validar la clave fiscal. Intenta nuevamente.",
+            variant: "destructive",
           });
+          return;
+        }
 
-          if (taxIdExists) {
-            toast({
-              description: t('taxIdAlreadyInUse'),
-              variant: "destructive"
-            });
-            return;
-          }
+        if (taxExists) {
+          toast({
+            description: t('taxIdAlreadyInUse'),
+            variant: "destructive"
+          });
+          return;
         }
       }
     }
