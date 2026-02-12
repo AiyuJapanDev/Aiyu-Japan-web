@@ -254,6 +254,7 @@ export type Database = {
           phone_number: string
           postal_code: string
           state: string | null
+          tax_vat_Id: string | null
           updated_at: string
           user_personal_id: string
         }
@@ -269,6 +270,7 @@ export type Database = {
           phone_number: string
           postal_code: string
           state?: string | null
+          tax_vat_Id?: string | null
           updated_at?: string
           user_personal_id?: string
         }
@@ -284,6 +286,7 @@ export type Database = {
           phone_number?: string
           postal_code?: string
           state?: string | null
+          tax_vat_Id?: string | null
           updated_at?: string
           user_personal_id?: string
         }

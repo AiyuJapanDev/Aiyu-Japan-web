@@ -113,6 +113,12 @@ export function UserInfoDialog({
                   </div>
                   <div>
                     <p className="text-sm font-medium text-muted-foreground">
+                      Tax/VAT ID
+                    </p>
+                    <p>{profile.tax_vat_Id || "N/A"}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">
                       Phone
                     </p>
                     <p>{profile.phone_number || "N/A"}</p>

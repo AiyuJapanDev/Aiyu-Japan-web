@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Package,
   Truck,
@@ -96,8 +97,7 @@ interface ProductRequestsManagementProps {
 }
 
 export function ProductRequestsManagement({ orderId }: ProductRequestsManagementProps) {
-  const [orders, setOrders] = useState<OrderWithDetails[]>([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
   const [refreshing, setRefreshing] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [openOrders, setOpenOrders] = useState<Set<string>>(new Set());
@@ -107,7 +107,6 @@ export function ProductRequestsManagement({ orderId }: ProductRequestsManagement
   const [hideCancelled, setHideCancelled] = useState(false);
   const [itemsPerPage, setItemsPerPage] = useState(10);
 
-  // Order-level actions
   const [selectedOrder, setSelectedOrder] = useState<OrderWithDetails | null>(null);
   const [quotePrice, setQuotePrice] = useState("");
   const [quoteInvoiceUrl, setQuoteInvoiceUrl] = useState("");
@@ -124,59 +123,34 @@ export function ProductRequestsManagement({ orderId }: ProductRequestsManagement
   const [orderToCancel, setOrderToCancel] = useState<OrderWithDetails | null>(null);
   const [isCancelling, setIsCancelling] = useState(false);
 
-  // Confirm Payment Dialog
   const [showConfirmPaymentDialog, setShowConfirmPaymentDialog] = useState(false);
   const [orderForPayment, setOrderForPayment] = useState<OrderWithDetails | null>(null);
   const [isConfirmingPayment, setIsConfirmingPayment] = useState(false);
 
-  // Mark All Paid as Purchased Dialog
   const [showMarkPurchasedDialog, setShowMarkPurchasedDialog] = useState(false);
   const [orderForPurchased, setOrderForPurchased] = useState<OrderWithDetails | null>(null);
   const [isMarkingPurchased, setIsMarkingPurchased] = useState(false);
 
-  // Mark All Purchased as Received Dialog
   const [showMarkAllReceivedDialog, setShowMarkAllReceivedDialog] = useState(false);
   const [orderForAllReceived, setOrderForAllReceived] = useState<OrderWithDetails | null>(null);
   const [dimensionsForAllReceived, setDimensionsForAllReceived] = useState<Map<string, {weight?: number, width?: number, length?: number, height?: number}>>(new Map());
   const [isMarkingAllReceived, setIsMarkingAllReceived] = useState(false);
   const [itemsWithoutWeight, setItemsWithoutWeight] = useState<string[]>([]);
 
-  // Mark Individual as Received Dialog
   const [showMarkReceivedDialog, setShowMarkReceivedDialog] = useState(false);
   const [itemForReceived, setItemForReceived] = useState<{id: string, itemName?: string, weight?: number, width?: number, length?: number, height?: number} | null>(null);
   const [isMarkingReceived, setIsMarkingReceived] = useState(false);
 
-  // Mark Individual as Purchased Dialog
   const [showMarkIndividualPurchasedDialog, setShowMarkIndividualPurchasedDialog] = useState(false);
   const [itemForPurchased, setItemForPurchased] = useState<{id: string} | null>(null);
   const [isMarkingIndividualPurchased, setIsMarkingIndividualPurchased] = useState(false);
 
   const { toast } = useToast();
 
-  useEffect(() => {
-    fetchOrders();
-  }, [hideRejected, hideCancelled, itemsPerPage]);
+  const { data: orders = [], isLoading: loading, refetch, error } = useQuery({
+    queryKey: ['admin-orders', hideRejected, hideCancelled],
+    queryFn: async () => {
 
-  // Auto-open and scroll to order when orderId is provided
-  useEffect(() => {
-    if (orderId && orders.length > 0) {
-      setOpenOrders(prev => new Set(prev).add(orderId));
-      setTimeout(() => {
-        const element = document.getElementById(`order-${orderId}`);
-        element?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }, 100);
-    }
-  }, [orderId, orders.length]);
-
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [statusFilter, itemsPerPage, hideRejected, hideCancelled, searchTerm]);
-
-  const fetchOrders = async () => {
-    try {
-      setLoading(true);
-
-      // Build query for orders
       let ordersQuery = supabase.from("orders").select(
         `
           *,
@@ -187,23 +161,19 @@ export function ProductRequestsManagement({ orderId }: ProductRequestsManagement
         `,
       );
 
-      // Apply hide rejected filter
       if (hideRejected) {
         ordersQuery = ordersQuery.eq("is_rejected", false);
       }
 
-      // Apply hide cancelled filter
       if (hideCancelled) {
         ordersQuery = ordersQuery.eq("is_cancelled", false);
       }
 
-      // Fetch all orders (filtering and pagination will be done client-side)
       const { data: ordersData, error: ordersError } = await ordersQuery
         .order("created_at", { ascending: false });
 
       if (ordersError) throw ordersError;
 
-      // Get all product request IDs
       const allProductRequestIds = new Set<string>();
       (ordersData || []).forEach((order) => {
         order.order_items.forEach((item: any) => {
@@ -230,11 +200,8 @@ export function ProductRequestsManagement({ orderId }: ProductRequestsManagement
         });
       }
 
-      // Fetch user profiles and combine data
-      // Get all unique user IDs
       const userIds = [...new Set((ordersData || []).map(o => o.user_id))];
 
-      // Fetch all profiles in one query
       const { data: profiles, error: profilesError } = await supabase
         .from("profiles")
         .select("id, full_name, email, user_personal_id")
@@ -242,10 +209,8 @@ export function ProductRequestsManagement({ orderId }: ProductRequestsManagement
 
       if (profilesError) throw profilesError;
 
-      // Build a quick lookup map
       const profileMap = new Map((profiles || []).map(p => [p.id, p]));
 
-      // Combine order data with product requests and profiles
       const ordersWithDetails = (ordersData || []).map(order => {
         let items: ProductRequestWithIssue[];
 
@@ -268,7 +233,6 @@ export function ProductRequestsManagement({ orderId }: ProductRequestsManagement
             items = [];
           }
         } else {
-          // For active orders, use fetched product_requests
           items = order.order_items
             .map((item: any) => requestsMap.get(item.product_request_id))
             .filter(Boolean) as ProductRequestWithIssue[];
@@ -281,32 +245,34 @@ export function ProductRequestsManagement({ orderId }: ProductRequestsManagement
         };
       });
 
-      setOrders(ordersWithDetails.map(order => ({
+      return ordersWithDetails.map((order) => ({
         ...order,
         rejection_details: order.rejection_details as any,
-      })));
+      }));
+    },
+    staleTime: 1000 * 60,
+    gcTime: 1000 * 60 * 5,
+    refetchOnWindowFocus: true,
+  });
 
-
-      setOrders(ordersWithDetails.map((order) => ({
-        ...order,
-        rejection_details: order.rejection_details as any,
-      })));
-    } catch (error) {
-      console.error("Error fetching orders:", error);
-      toast({
-        title: "Error",
-        description: "Failed to fetch orders",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
+  useEffect(() => {
+    if (orderId && orders.length > 0) {
+      setOpenOrders(prev => new Set(prev).add(orderId));
+      setTimeout(() => {
+        const element = document.getElementById(`order-${orderId}`);
+        element?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 100);
     }
-  };
+  }, [orderId, orders.length]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [statusFilter, itemsPerPage, hideRejected, hideCancelled, searchTerm]);
 
   const handleRefresh = async () => {
     setRefreshing(true);
     try {
-      await fetchOrders();
+      await refetch();
       sonnerToast.success("Orders updated successfully");
     } catch (error) {
       sonnerToast.error("Failed to refresh orders");
@@ -349,6 +315,9 @@ export function ProductRequestsManagement({ orderId }: ProductRequestsManagement
 
       if (updateError) throw updateError;
 
+      // Invalidar caché para actualizar la lista
+      queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
+
       await createNotification(
         selectedOrder.user_id,
         "quote_received",
@@ -366,7 +335,7 @@ export function ProductRequestsManagement({ orderId }: ProductRequestsManagement
       setSelectedOrder(null);
       setQuoteInvoiceUrl("");
       setProductIssues(new Map());
-      fetchOrders();
+      queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
     } catch (error: any) {
       toast({
         title: "Error",
@@ -459,7 +428,7 @@ export function ProductRequestsManagement({ orderId }: ProductRequestsManagement
       setSelectedOrder(null);
       setRejectionReason("");
       setProductIssues(new Map());
-      fetchOrders();
+      queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
     } catch (error: any) {
       toast({
         title: "Error",
@@ -487,7 +456,7 @@ const adminCancelOrder = async () => {
     
     setShowCancelDialog(false);
     setOrderToCancel(null);
-    fetchOrders();
+    queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
   } catch (error: any) {
     toast({
       title: "Error",
@@ -552,7 +521,7 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
         description: "Payment has been confirmed and products status updated",
       });
 
-      fetchOrders();
+      queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
     } catch (error: any) {
       toast({
         title: "Error",
@@ -562,7 +531,6 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
     }
   };
 
-  // Confirm Payment with dialog
   const handleConfirmPayment = async () => {
     if (!orderForPayment) return;
     setIsConfirmingPayment(true);
@@ -572,7 +540,6 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
     setOrderForPayment(null);
   };
 
-  // Mark All Paid as Purchased with dialog
   const handleMarkPurchased = async () => {
     if (!orderForPurchased) return;
     setIsMarkingPurchased(true);
@@ -582,7 +549,6 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
     setOrderForPurchased(null);
   };
 
-  // Mark All Purchased as Received with dialog
   const handleMarkAllReceived = async () => {
     if (!orderForAllReceived) return;
     setIsMarkingAllReceived(true);
@@ -593,7 +559,6 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
     setDimensionsForAllReceived(new Map());
   };
 
-  // Mark Individual as Received with dialog
   const handleMarkReceived = async () => {
     if (!itemForReceived) return;
     setIsMarkingReceived(true);
@@ -609,7 +574,6 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
     setItemForReceived(null);
   };
 
-  // Mark Individual as Purchased with dialog
   const handleMarkIndividualPurchased = async () => {
     if (!itemForPurchased) return;
     setIsMarkingIndividualPurchased(true);
@@ -649,7 +613,6 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
           .eq("id", item.id);
       }
 
-      // After updating all purchased items, check if ALL items in the order are now received
       const { data: allOrderItems } = await supabase
         .from("order_items")
         .select(`
@@ -679,7 +642,7 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
         description: `${purchasedItems.length} product(s) marked as received.`,
       });
 
-      fetchOrders();
+      queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
     } catch (error: any) {
       toast({
         title: "Error",
@@ -718,7 +681,7 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
         title: "Products Marked",
         description: `${updates.length} product(s) marked as purchased`,
       });
-      fetchOrders();
+      queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
     } catch (error: any) {
       toast({
         title: "Error",
@@ -745,7 +708,7 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
         title: "Product Marked",
         description: "Product marked as purchased",
       });
-      fetchOrders();
+      queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
     } catch (error: any) {
       toast({
         title: "Error",
@@ -825,7 +788,7 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
         title: "Product Marked",
         description: "Product marked as received",
       });
-      fetchOrders();
+      queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
     } catch (error: any) {
       toast({
         title: "Error",
@@ -878,7 +841,7 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
       setShowShippingDialog(false);
       setShippingPrice("");
       setShippingInvoiceUrl("");
-      fetchOrders();
+      queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
     } catch (error: any) {
       toast({
         title: "Error",
@@ -915,7 +878,7 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
         title: "Shipping Payment Confirmed",
         description: "Shipping payment has been confirmed",
       });
-      fetchOrders();
+      queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
     } catch (error: any) {
       toast({
         title: "Error",
@@ -957,7 +920,7 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
       });
       setShowTrackingDialog(false);
       setTrackingNumber("");
-      fetchOrders();
+      queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
     } catch (error: any) {
       toast({
         title: "Error",
@@ -1139,7 +1102,6 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
         }
       }
 
-      // Step 2: highlight "Items being purchased" for PAID only
       if (index === 2) {
         const normalizedStatus = status.toLowerCase();
 
@@ -1200,7 +1162,6 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
     );
   });
 
-  // Apply status filter
   if (statusFilter !== "all") {
     filteredOrders = filteredOrders.filter((order) => {
       const status = getOrderStatus(order);
@@ -1208,12 +1169,10 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
     });
   }
 
-  // Calculate pagination
   const totalFilteredPages = Math.ceil(filteredOrders.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
   const paginatedOrders = filteredOrders.slice(startIndex, endIndex);
-  // Utility to shorten URL but keep domain + ~40 chars after
   const formatShortUrl = (url: string): string => {
     try {
       const parsed = new URL(url);
@@ -1230,6 +1189,41 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
       return url.length > 50 ? url.slice(0, 50) + "..." : url;
     }
   };
+
+  if (loading) {
+    return (
+      <Card>
+        <CardContent className="p-8">
+          <div className="flex flex-col items-center justify-center space-y-4">
+            <RefreshCw className="h-8 w-8 animate-spin text-muted-foreground" />
+            <p className="text-muted-foreground">Loading orders...</p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (error) {
+    return (
+      <Card>
+        <CardContent className="p-8">
+          <div className="flex flex-col items-center justify-center space-y-4">
+            <AlertCircle className="h-12 w-12 text-red-500" />
+            <div className="text-center">
+              <p className="text-lg font-semibold text-red-900">Error loading orders</p>
+              <p className="text-sm text-muted-foreground mt-2">
+                {error instanceof Error ? error.message : 'An unexpected error occurred'}
+              </p>
+            </div>
+            <Button onClick={() => refetch()} variant="outline">
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Try Again
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <div className="space-y-4">
@@ -1483,7 +1477,7 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
 
 
                             {/* RIGHT SIDE — Status + Chevron */}
-                            <div className="flex flex-row sm:flex-col items-center sm:items-end justify-between sm:justify-start gap-2 sm:gap-1 text-right flex-shrink-0 min-w-fit">
+                            <div className="flex flex-col sm:flex-col items-end sm:items-end justify-start gap-2 sm:gap-1 text-right flex-shrink-0 min-w-fit">
                               <div className="flex items-center gap-2">
                                 <Badge className={`${getOrderStatusColor(orderStatus)} text-xs`}>
                                   {orderStatus}
@@ -1494,8 +1488,8 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
                                 />
                               </div>
 
-                              <div className="flex flex-col sm:items-end text-xs text-muted-foreground">
-                                <p className="flex items-center gap-1">
+                              <div className="flex flex-col items-end text-xs text-muted-foreground">
+                                <p className="flex items-center gap-1 whitespace-nowrap">
                                   <Clock className="h-3 w-3" />
                                   {new Date(order.created_at).toLocaleString(undefined, {
                                     year: "numeric",
@@ -1505,7 +1499,7 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
                                     minute: "2-digit",
                                   })}
                                 </p>
-                                <p>
+                                <p className="whitespace-nowrap">
                                   {order.items.length} product{order.items.length !== 1 ? "s" : ""}
                                 </p>
                               </div>
@@ -1630,76 +1624,77 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
                                       <p className="text-xs text-muted-foreground">
                                         <span className="text-red-500">*</span> Weight is required to mark as received
                                       </p>
-                                      <div className="flex items-center gap-2 flex-wrap">
-                                        <Input
-                                          type="number"
-                                          placeholder="Weight (g) *"
-                                          className="w-28 h-8 border-red-300 focus:border-red-500"
-                                          id={`weight-${item.id}`}
-                                          min="0"
-                                          step="1"
-                                        />
-                                        <Input
-                                          type="number"
-                                          placeholder="Width (cm)"
-                                          className="w-24 h-8"
-                                          id={`width-${item.id}`}
-                                          min="0"
-                                          step="0.1"
-                                        />
-                                        <Input
-                                          type="number"
-                                          placeholder="Length (cm)"
-                                          className="w-24 h-8"
-                                          id={`length-${item.id}`}
-                                          min="0"
-                                          step="0.1"
-                                        />
-                                        <Input
-                                          type="number"
-                                          placeholder="Height (cm)"
-                                          className="w-24 h-8"
-                                          id={`height-${item.id}`}
-                                          min="0"
-                                          step="0.1"
-                                        />
-                                      </div>
-                                      <Button
-                                        onClick={() => {
-                                          const weightInput = document.getElementById(`weight-${item.id}`) as HTMLInputElement;
-                                          const widthInput = document.getElementById(`width-${item.id}`) as HTMLInputElement;
-                                          const lengthInput = document.getElementById(`length-${item.id}`) as HTMLInputElement;
-                                          const heightInput = document.getElementById(`height-${item.id}`) as HTMLInputElement;
-                                          
-                                          const weight = weightInput?.value ? parseFloat(weightInput.value) : undefined;
-                                          
-                                          // Validate weight is provided
-                                          if (weight === undefined || weight === null || isNaN(weight)) {
-                                            toast({
-                                              title: "Weight Required",
-                                              description: "Please enter the weight in grams before marking as received. Use 0 if unknown.",
-                                              variant: "destructive",
+                                      <div className="flex flex-col justify-between sm:flex-row items-stretch sm:items-center gap-2">
+                                        <div className="flex items-center gap-2 flex-wrap">
+                                          <Input
+                                            type="number"
+                                            placeholder="Weight (g) *"
+                                            className="w-28 h-8 border-red-300 focus:border-red-500"
+                                            id={`weight-${item.id}`}
+                                            min="0"
+                                            step="1"
+                                          />
+                                          <Input
+                                            type="number"
+                                            placeholder="Width (cm)"
+                                            className="w-24 h-8"
+                                            id={`width-${item.id}`}
+                                            min="0"
+                                            step="0.1"
+                                          />
+                                          <Input
+                                            type="number"
+                                            placeholder="Length (cm)"
+                                            className="w-24 h-8"
+                                            id={`length-${item.id}`}
+                                            min="0"
+                                            step="0.1"
+                                          />
+                                          <Input
+                                            type="number"
+                                            placeholder="Height (cm)"
+                                            className="w-24 h-8"
+                                            id={`height-${item.id}`}
+                                            min="0"
+                                            step="0.1"
+                                          />
+                                        </div>
+                                        <Button
+                                          onClick={() => {
+                                            const weightInput = document.getElementById(`weight-${item.id}`) as HTMLInputElement;
+                                            const widthInput = document.getElementById(`width-${item.id}`) as HTMLInputElement;
+                                            const lengthInput = document.getElementById(`length-${item.id}`) as HTMLInputElement;
+                                            const heightInput = document.getElementById(`height-${item.id}`) as HTMLInputElement;
+                                            
+                                            const weight = weightInput?.value ? parseFloat(weightInput.value) : undefined;
+                                            
+                                            if (weight === undefined || weight === null || isNaN(weight)) {
+                                              toast({
+                                                title: "Weight Required",
+                                                description: "Please enter the weight in grams before marking as received. Use 0 if unknown.",
+                                                variant: "destructive",
+                                              });
+                                              weightInput?.focus();
+                                              return;
+                                            }
+                                            
+                                            setItemForReceived({ 
+                                              id: item.id,
+                                              itemName: item.item_name,
+                                              weight,
+                                              width: widthInput?.value ? parseFloat(widthInput.value) : undefined,
+                                              length: lengthInput?.value ? parseFloat(lengthInput.value) : undefined,
+                                              height: heightInput?.value ? parseFloat(heightInput.value) : undefined,
                                             });
-                                            weightInput?.focus();
-                                            return;
-                                          }
-                                          
-                                          setItemForReceived({ 
-                                            id: item.id,
-                                            itemName: item.item_name,
-                                            weight,
-                                            width: widthInput?.value ? parseFloat(widthInput.value) : undefined,
-                                            length: lengthInput?.value ? parseFloat(lengthInput.value) : undefined,
-                                            height: heightInput?.value ? parseFloat(heightInput.value) : undefined,
-                                          });
-                                          setShowMarkReceivedDialog(true);
-                                        }}
-                                        size="sm"
-                                        variant="outline"
-                                        className="border-green-500 text-black font-bold hover:bg-green-100"
-                                      >
-                                        ✔️  Mark as Received
-                                      </Button>
+                                            setShowMarkReceivedDialog(true);
+                                          }}
+                                          size="sm"
+                                          variant="outline"
+                                          className="border-green-400 text-green-500 text-sm hover:bg-green-100 w-full sm:w-auto"
+                                        >
+                                          ✔️  Mark as Received
+                                        </Button>
+                                      </div>
                                     </div>
                                   )}
 
@@ -1892,9 +1887,8 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
                               <Button
                                 size="sm"
                                 variant="outline"
-                                className="border-green-500 text-black font-bold hover:bg-green-100"
+                                className="bg-green-500 text-white hover:text-gray-600 font-bold w-auto hover:bg-green-400 text-xs sm:text-sm"
                                 onClick={() => {
-                                  // Collect dimensions from all input fields
                                   const dimensions = new Map<string, {weight?: number, width?: number, length?: number, height?: number}>();
                                   const missingWeight: string[] = [];
                                   
@@ -1924,7 +1918,6 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
                                     }
                                   });
                                   
-                                  // Check if any items are missing weight
                                   if (missingWeight.length > 0) {
                                     toast({
                                       title: "Weight Required",
@@ -1998,11 +1991,9 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
 
                             <div className="space-y-2">
                               {order.quotes.map((quote) => {
-                                // Capitalize first letter of status
                                 const formattedStatus =
                                   quote.status.charAt(0).toUpperCase() + quote.status.slice(1);
 
-                                // Shorten URL (domain + 20 chars max)
                                 let shortUrl = quote.quote_url;
                                 try {
                                   const parsed = new URL(quote.quote_url);
@@ -2018,20 +2009,20 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
                                 return (
                                   <div
                                     key={quote.id}
-                                    className="flex items-center justify-between bg-white/60 rounded-lg p-3 border border-blue-100 "
+                                    className="bg-white/60 rounded-lg p-3 border border-blue-100"
                                   >
-                                    <div className=" sm:flex-row sm:items-center sm:gap-3 text-sm">
-                                      <p className="text-blue-900 font-medium">Status: {formattedStatus}</p>
+                                    <div className="flex flex-col sm:flex-row sm:items-center sm:gap-3 gap-2 text-sm">
+                                      <p className="text-blue-900 font-medium flex-shrink-0">Status: {formattedStatus}</p>
 
                                       <a
                                         href={quote.quote_url}
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="flex items-center gap-1 text-blue-600 hover:text-blue-700 hover:underline"
+                                        className="flex items-center gap-1 text-blue-600 hover:text-blue-700 hover:underline break-all sm:break-normal min-w-0"
                                         title={quote.quote_url}
                                       >
-                                        <Link className="h-3.5 w-3.5" />
-                                        {shortUrl}
+                                        <Link className="h-3.5 w-3.5 flex-shrink-0" />
+                                        <span className="truncate sm:inline">{shortUrl}</span>
                                       </a>
                                     </div>
                                   </div>

@@ -33,7 +33,8 @@ const ProfileView = () => {
     country: '',
     postal_code: '',
     city: '',
-    state: ''
+    state: '',
+    tax_vat_Id: ''
   });
 
   const [formData, setFormData] = useState({
@@ -45,7 +46,8 @@ const ProfileView = () => {
     country: '',
     postal_code: '',
     city: '',
-    state: ''
+    state: '',
+    tax_vat_Id: ''
   });
 
   useEffect(() => {
@@ -64,7 +66,8 @@ const ProfileView = () => {
         country: profile.country || '',
         postal_code: profile.postal_code || '',
         city: profile.city || '',
-        state: profile.state || ''
+        state: profile.state || '',
+        tax_vat_Id: profile.tax_vat_Id || ''
       };
       setDisplayData(data);
       setFormData({
@@ -76,7 +79,8 @@ const ProfileView = () => {
         country: data.country,
         postal_code: data.postal_code,
         city: data.city,
-        state: data.state
+        state: data.state,
+        tax_vat_Id: data.tax_vat_Id
       });
     }
   }, [profile, user]);
@@ -104,7 +108,8 @@ const ProfileView = () => {
           country: data.country || '',
           postal_code: data.postal_code || '',
           city: data.city || '',
-          state: data.state || ''
+          state: data.state || '',
+          tax_vat_Id: data.tax_vat_Id || ''
         };
         setDisplayData(profileData);
         setFormData({
@@ -116,7 +121,8 @@ const ProfileView = () => {
           country: profileData.country,
           postal_code: profileData.postal_code,
           city: profileData.city,
-          state: profileData.state
+          state: profileData.state,
+          tax_vat_Id: profileData.tax_vat_Id
         });
       }
     } catch (error) {
@@ -133,9 +139,90 @@ const ProfileView = () => {
       return;
     }
 
-    if (!formData.full_name || !formData.phone_number || !formData.address || !formData.country || !formData.postal_code) {
+    if (!formData.full_name || !formData.email || !formData.phone_number || !formData.address || !formData.country || !formData.postal_code || !formData.city || !formData.state) {
       toast({ title: "Error", description: t('fillAllRequired'), variant: "destructive" });
       return;
+    }
+
+    if (formData.phone_number && formData.phone_number !== displayData.phone_number) {
+      const cleanPhone = formData.phone_number.replace(/\D/g, '');
+      const phoneVariants = [
+        formData.phone_number,
+        cleanPhone,
+        `+${cleanPhone}`,
+        cleanPhone.startsWith('81') ? cleanPhone : `81${cleanPhone}`,
+        cleanPhone.startsWith('81') ? cleanPhone.substring(2) : cleanPhone
+      ];
+
+      const { data: existingPhones } = await supabase
+        .from('profiles')
+        .select('phone_number, id')
+        .neq('id', user.id);
+
+      if (existingPhones && existingPhones.length > 0) {
+        const phoneExists = existingPhones.some(profile => {
+          if (!profile.phone_number) return false;
+          const existingClean = profile.phone_number.replace(/\D/g, '');
+          return phoneVariants.some(variant => {
+            const variantClean = variant.replace(/\D/g, '');
+            return variantClean === existingClean || 
+                   variantClean === existingClean.replace(/^81/, '') ||
+                   variantClean.replace(/^81/, '') === existingClean;
+          });
+        });
+
+        if (phoneExists) {
+          toast({
+            description: t('phoneAlreadyInUse'),
+            variant: "destructive"
+          });
+          return;
+        }
+      }
+    }
+
+    if (formData.tax_vat_Id && formData.tax_vat_Id.trim() !== '') {
+      const cleanTaxId = formData.tax_vat_Id.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
+      const cleanDisplayTaxId = displayData.tax_vat_Id ? displayData.tax_vat_Id.replace(/[^a-zA-Z0-9]/g, '').toUpperCase() : '';
+      
+      if (cleanTaxId !== cleanDisplayTaxId) {
+        const { data: taxExists, error: rpcError } = await supabase
+          .rpc('check_tax_id_exists', { input_tax_id: formData.tax_vat_Id });
+
+        if (rpcError) {
+          console.error('Error validating tax ID:', rpcError);
+          toast({
+            title: "Error de validación",
+            description: "No se pudo validar la clave fiscal. Intenta nuevamente.",
+            variant: "destructive",
+          });
+          return;
+        }
+
+        if (taxExists) {
+          toast({
+            description: t('taxIdAlreadyInUse'),
+            variant: "destructive"
+          });
+          return;
+        }
+      }
+    }
+
+    if (formData.email && formData.email.trim() !== '' && formData.email.toLowerCase() !== displayData.email.toLowerCase()) {
+      const { data: existingEmails } = await supabase
+        .from('profiles')
+        .select('email, id')
+        .ilike('email', formData.email.trim())
+        .neq('id', user.id);
+
+      if (existingEmails && existingEmails.length > 0) {
+        toast({
+          description: t('emailAlreadyInUse'),
+          variant: "destructive"
+        });
+        return;
+      }
     }
 
     setIsSaving(true);
@@ -160,6 +247,7 @@ const ProfileView = () => {
             postal_code: formData.postal_code,
             city: formData.city,
             state: formData.state,
+            tax_vat_Id: formData.tax_vat_Id || null,
             updated_at: new Date().toISOString()
           })
           .eq('id', user.id);
@@ -177,21 +265,47 @@ const ProfileView = () => {
             country: formData.country,
             postal_code: formData.postal_code,
             city: formData.city,
-            state: formData.state
+            state: formData.state,
+            tax_vat_Id: formData.tax_vat_Id || null
           });
         error = insertError;
       }
 
       if (error) throw error;
 
-      setDisplayData({ ...displayData, ...formData });
+      const updatedData = {
+        user_personal_id: displayData.user_personal_id,
+        full_name: formData.full_name,
+        email: formData.email,
+        phone_number: formData.phone_number,
+        address: formData.address,
+        address_notes: formData.address_notes,
+        country: formData.country,
+        postal_code: formData.postal_code,
+        city: formData.city,
+        state: formData.state,
+        tax_vat_Id: formData.tax_vat_Id
+      };
+      setDisplayData(updatedData);
       setIsEditing(false);
       toast({ title: "Success", description: t('savingSuccess') });
-      await refreshProfile();
+      refreshProfile();
     } catch (error: any) {
+      let errorMessage = t('savingError');
+      
+      // Interceptar errores específicos de constraints
+      if (error.message) {
+        if (error.message.includes('profiles_email_key') || error.message.includes('duplicate key value') && error.message.includes('email')) {
+          errorMessage = t('emailAlreadyInUse');
+        } else if (error.message.includes('profiles_phone_number_key') || error.message.includes('duplicate key value') && error.message.includes('phone')) {
+          errorMessage = t('phoneAlreadyInUse');
+        } else if (error.message.includes('profiles_tax_vat_id_unique') || error.message.includes('duplicate key value') && error.message.includes('tax_vat')) {
+          errorMessage = t('taxIdAlreadyInUse');
+        }
+      }
+      
       toast({
-        title: "Error",
-        description: error.message || t('savingError'),
+        description: errorMessage,
         variant: "destructive"
       });
     } finally {
@@ -207,13 +321,19 @@ const ProfileView = () => {
   const handleEdit = () => {
     setFormData({ ...displayData });
     setIsEditing(true);
-    if (!open) setOpen(true); // auto-expand when entering edit mode
+    if (!open) setOpen(true);
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    let value = e.target.value;
+    
+    if (e.target.name === 'tax_vat_Id') {
+      value = value.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
+    }
+    
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value
+      [e.target.name]: value
     });
   };
 
@@ -270,6 +390,21 @@ const ProfileView = () => {
                     <div className="space-y-2">
                       <Label htmlFor="phone_number">{t('phoneNumberLabel')} *</Label>
                       <Input id="phone_number" name="phone_number" type="tel" value={formData.phone_number} onChange={handleInputChange} required />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="tax_vat_Id">
+                        {t('taxVatIdLabelShort')}{" "}
+                        <span className="text-muted-foreground">({t('optional')})</span>
+                      </Label>
+                      <Input
+                        id="tax_vat_Id"
+                        name="tax_vat_Id"
+                        type="text"
+                        value={formData.tax_vat_Id}
+                        onChange={handleInputChange}
+                        placeholder={t('taxVatIdPlaceholder')}
+                      />
                     </div>
 
                     <div className="space-y-2">
@@ -355,6 +490,11 @@ const ProfileView = () => {
                     <div>
                       <Label className="text-muted-foreground text-sm">{t('phoneNumberLabel')}</Label>
                       <p className="font-medium mt-1">{displayData.phone_number || t('notProvided')}</p>
+                    </div>
+
+                    <div>
+                      <Label className="text-muted-foreground text-sm">{t('taxVatIdLabelShort')}</Label>
+                      <p className="font-medium mt-1">{displayData.tax_vat_Id || t('notProvided')}</p>
                     </div>
 
                     <div>

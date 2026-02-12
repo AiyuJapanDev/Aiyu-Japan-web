@@ -32,6 +32,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '@/components/ui/command';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
 import { Label } from '@/components/ui/label';
 import {
   AlertDialog,
@@ -116,6 +129,8 @@ export const StorageManagement = React.memo(() => {
   const [preSelectedUserId, setPreSelectedUserId] = useState<string | null>(null);
   const [isBoxConfirmDialogOpen, setIsBoxConfirmDialogOpen] = useState(false);
   const [pendingBoxItemData, setPendingBoxItemData] = useState<any>(null);
+  const [userSearchOpen, setUserSearchOpen] = useState(false);
+  const [userSearchQuery, setUserSearchQuery] = useState('');
   
   // Add item form state
   const [selectedUserId, setSelectedUserId] = useState('');
@@ -536,6 +551,7 @@ export const StorageManagement = React.memo(() => {
     setLocalTrackingNumber('');
     setPreSelectedUserId(null);
     setFormErrors({});
+    setUserSearchQuery('');
   };
 
   const handleAddItemForUser = (userId: string) => {
@@ -705,24 +721,70 @@ export const StorageManagement = React.memo(() => {
                 <div className="grid gap-4 py-4">
                   <div className="grid gap-2">
                     <Label htmlFor="user">Customer *</Label>
-                    <Select 
-                      value={selectedUserId} 
-                      onValueChange={(value) => {
-                        setSelectedUserId(value);
-                        setFormErrors(prev => ({ ...prev, userId: false }));
-                      }}
-                    >
-                      <SelectTrigger className={formErrors.userId ? 'border-destructive' : ''}>
-                        <SelectValue placeholder="Select a customer" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {allUsers?.map((user) => (
-                          <SelectItem key={user.id} value={user.id}>
-                            {user.full_name} ({user.user_personal_id || user.email})
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <Popover open={userSearchOpen} onOpenChange={setUserSearchOpen}>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          role="combobox"
+                          aria-expanded={userSearchOpen}
+                          className={`w-full justify-between rounded-xl px-4 py-3 text-sm transition-all duration-300 font-body bg-white focus:ring-2 focus:ring-black focus:ring-offset-2 shadow-sm h-auto ${!selectedUserId ? 'text-gray-500' : 'font-medium text-gray-900'}`}
+                        >
+                          {selectedUserId
+                            ? (() => {
+                                const user = allUsers?.find((u) => u.id === selectedUserId);
+                                return user ? `${user.full_name} (${user.user_personal_id || user.email})` : 'Select a customer';
+                              })()
+                            : 'Select a customer for id, name or email'}
+                          <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-full p-0" align="start">
+                        <Command shouldFilter={false}>
+                          <CommandInput
+                            placeholder="Search customer..."
+                            value={userSearchQuery}
+                            onValueChange={setUserSearchQuery}
+                            className="h-9"
+                          />
+                          <CommandList>
+                            <CommandEmpty>No customer found.</CommandEmpty>
+                            <CommandGroup>
+                              {allUsers
+                                ?.filter((user) => {
+                                  if (!userSearchQuery) return true;
+                                  const searchLower = userSearchQuery.toLowerCase();
+                                  return (
+                                    user.full_name.toLowerCase().includes(searchLower) ||
+                                    user.email.toLowerCase().includes(searchLower) ||
+                                    user.id.toLowerCase().includes(searchLower) ||
+                                    (user.user_personal_id && user.user_personal_id.toLowerCase().includes(searchLower))
+                                  );
+                                })
+                                .map((user) => (
+                                  <CommandItem
+                                    key={user.id}
+                                    value={user.id}
+                                    onSelect={() => {
+                                      setSelectedUserId(user.id);
+                                      setFormErrors(prev => ({ ...prev, userId: false }));
+                                      setUserSearchOpen(false);
+                                      setUserSearchQuery('');
+                                    }}
+                                    className="cursor-pointer"
+                                  >
+                                    <div className="flex flex-col">
+                                      <span className="font-medium">{user.full_name}</span>
+                                      <span className="text-xs text-muted-foreground">
+                                        {user.user_personal_id || user.email}
+                                      </span>
+                                    </div>
+                                  </CommandItem>
+                                ))}
+                            </CommandGroup>
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
                     {formErrors.userId && (
                       <p className="text-xs text-destructive">Customer is required</p>
                     )}
@@ -886,11 +948,11 @@ export const StorageManagement = React.memo(() => {
           {/* Controles de paginación del servidor - ocultar durante búsqueda */}
           {totalPages > 1 && !debouncedSearchTerm.trim() && (
             <div className="mb-6 pb-6 border-b">
-              <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-                <div className="text-sm text-muted-foreground">
+              <div className="flex flex-col items-center justify-between gap-4">
+                <div className="text-sm text-muted-foreground text-center">
                   Mostrando página {serverPage} de {totalPages} ({totalProducts} productos en total)
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center justify-center gap-2">
                   <Button
                     variant="outline"
                     size="sm"

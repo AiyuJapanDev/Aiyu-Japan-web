@@ -26,11 +26,9 @@ import { Language } from "./lib/i18n";
 const queryClient = new QueryClient();
 
 export async function loader({ params }: Route.LoaderArgs) {
-  const locale = params.lang;
-
-  if (!locale) {
-    throw data("Language not supported", { status: 404 });
-  }
+  // El locale real será manejado por LocaleLayout.tsx
+  // Aquí solo proporcionamos un fallback para el Layout component
+  const locale = params.lang || "es";
 
   return { locale };
 }
