@@ -31,7 +31,7 @@ const Auth = () => {
   const [searchParams] = useSearchParams();
   const [isLogin, setIsLogin] = useState(
     searchParams.get("mode") === "signup" ? false : true
-  ); //when passing "?mode=signup" query param to url takes users to register form. <Link /> component must use reloadDocument property to refresh the DOM with current UI
+  );
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -42,6 +42,7 @@ const Auth = () => {
     password: "",
     confirmPassword: "",
     fullName: "",
+    lastName: "",
     phoneNumber: "",
     address: "",
     addressNotes: "",
@@ -49,6 +50,7 @@ const Auth = () => {
     postalCode: "",
     city: "",
     state: "",
+    tax_vat_Id: "",
   });
   const { t } = useApp();
 
@@ -70,11 +72,17 @@ const Auth = () => {
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    let value = e.target.value;
+    
+    if (e.target.name === 'tax_vat_Id') {
+      value = value.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
+    }
+    
+    setFormData({ ...formData, [e.target.name]: value });
   };
 
   const validateStep1 = () => {
-    if (!formData.email || !formData.password || !formData.fullName) {
+    if (!formData.email || !formData.password || !formData.fullName || !formData.lastName) {
       toast({
         title: "Error",
         description: "Please fill in all required fields",
@@ -101,26 +109,7 @@ const Auth = () => {
     return true;
   };
 
-  const validateStep2 = () => {
-    if (!formData.phoneNumber) {
-      toast({
-        title: "Error",
-        description: "Please enter your phone number",
-        variant: "destructive",
-      });
-      return false;
-    }
-    const phoneRegex = /^[\d\s+()-]+$/;
-    if (!phoneRegex.test(formData.phoneNumber)) {
-      toast({
-        title: "Error",
-        description: "Please enter a valid phone number",
-        variant: "destructive",
-      });
-      return false;
-    }
-    return true;
-  };
+
 
   const validateStep3 = () => {
     if (
@@ -143,8 +132,6 @@ const Auth = () => {
   const handleNextStep = () => {
     if (signUpStep === 1 && validateStep1()) {
       setSignUpStep(2);
-    } else if (signUpStep === 2 && validateStep2()) {
-      setSignUpStep(3);
     }
   };
 
@@ -157,92 +144,148 @@ const Auth = () => {
     setIsLoading(true);
 
     if (isLogin) {
-      // Sign in
       const { error } = await signIn(formData.email, formData.password);
       if (!error) {
         navigate("/dashboard");
       }
     } else {
-      // Sign up - validate final step
-      if (signUpStep === 3 && !validateStep3()) {
+      if (signUpStep !== 2) {
+        setIsLoading(false);
+        return;
+      }
+      
+      if (!validateStep3()) {
         setIsLoading(false);
         return;
       }
 
-      // Check for existing email/phone in profiles table
+      const fullNameComplete = `${formData.fullName.trim()} ${formData.lastName.trim()}`;
+
+      // Validar email (case-insensitive)
       const { data: existingProfiles } = await supabase
         .from("profiles")
-        .select("email, phone_number")
-        .or(
-          `email.eq.${formData.email},phone_number.eq.${formData.phoneNumber}`
-        );
+        .select("email")
+        .ilike("email", formData.email.trim());
 
       if (existingProfiles && existingProfiles.length > 0) {
-        const existingEmail = existingProfiles.find(
-          (p) => p.email === formData.email
-        );
-        const existingPhone = existingProfiles.find(
-          (p) => p.phone_number === formData.phoneNumber
-        );
+        toast({
+          title: t("emailAlreadyRegistered"),
+          description: t("emailAlreadyRegisteredDesc"),
+          variant: "destructive",
+        });
+        setIsLoading(false);
+        return;
+      }
 
-        if (existingEmail) {
-          toast({
-            title: "Email already registered",
-            description:
-              "This email is already in use. Please sign in or use a different email.",
-            variant: "destructive",
-          });
-          setIsLoading(false);
-          return;
-        }
+      if (formData.tax_vat_Id && formData.tax_vat_Id.trim() !== '') {
+        const cleanTaxId = formData.tax_vat_Id.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
+        
+        const generateTaxIdVariations = (taxId: string) => {
+          const variations = [taxId];
+          
+          if (taxId.length === 8 && /^\d+$/.test(taxId)) {
+            variations.push(`20${taxId}`, `27${taxId}`, `23${taxId}`, `24${taxId}`);
+            for (let i = 0; i <= 9; i++) {
+              variations.push(`20${taxId}${i}`, `27${taxId}${i}`, `23${taxId}${i}`, `24${taxId}${i}`);
+            }
+          }
+          
+          if (taxId.length >= 10 && /^\d+$/.test(taxId)) {
+            const possibleDni = taxId.substring(2, 10);
+            if (possibleDni.length === 8) {
+              variations.push(possibleDni);
+            }
+          }
+          
+          return variations;
+        };
 
-        if (existingPhone) {
-          toast({
-            title: "Phone number already registered",
-            description:
-              "This phone number is already in use. Please use a different phone number.",
-            variant: "destructive",
+        const userVariations = generateTaxIdVariations(cleanTaxId);
+        
+        const { data: existingTaxIds } = await supabase
+          .from("profiles")
+          .select("tax_vat_Id")
+          .not('tax_vat_Id', 'is', null);
+
+        if (existingTaxIds && existingTaxIds.length > 0) {
+          const taxIdExists = existingTaxIds.some(profile => {
+            if (!profile.tax_vat_Id) return false;
+            const existingClean = profile.tax_vat_Id.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
+            const existingVariations = generateTaxIdVariations(existingClean);
+            
+            return userVariations.some(userVar => 
+              existingVariations.includes(userVar) || 
+              userVar.includes(existingClean) || 
+              existingClean.includes(userVar)
+            );
           });
-          setIsLoading(false);
-          return;
+
+          if (taxIdExists) {
+            toast({
+              description: t("taxIdAlreadyInUse"),
+              variant: "destructive",
+            });
+            setIsLoading(false);
+            return;
+          }
         }
       }
 
-      // Pass all profile data as user metadata
       const { error } = await signUp(
         formData.email,
         formData.password,
-        formData.fullName,
+        fullNameComplete,
         {
-          phone_number: formData.phoneNumber,
           address: formData.address,
           address_notes: formData.addressNotes,
           country: formData.country,
           postal_code: formData.postalCode,
           city: formData.city,
           state: formData.state,
+          tax_vat_Id: formData.tax_vat_Id || null,
         }
       );
 
       if (error) {
-        // Handle Supabase auth errors
+        let errorTitle = "Sign up failed";
+        let errorDescription = error.message || "An error occurred during signup.";
+
         if (
           error.message?.includes("already registered") ||
           error.message?.includes("User already registered")
         ) {
-          toast({
-            title: "Email already registered",
-            description:
-              "This email is already registered. Please sign in instead.",
-            variant: "destructive",
-          });
-        } else {
-          toast({
-            title: "Sign up failed",
-            description: error.message || "An error occurred during signup.",
-            variant: "destructive",
-          });
+          errorTitle = t("emailAlreadyRegistered");
+          errorDescription = t("emailAlreadyRegisteredDesc");
+        } else if (
+          error.message?.includes("Database error saving new user")
+        ) {
+          errorTitle = "Tax/VAT ID already in use";
+          errorDescription = t("taxIdAlreadyInUse");
+        } else if (
+          error.message?.includes("duplicate key value") && 
+          (error.message?.includes("tax_vat") || error.message?.includes("profiles_tax_vat_id_unique"))
+        ) {
+          errorTitle = "Tax ID already in use";
+          errorDescription = t("taxIdAlreadyInUse");
+        } else if (
+          error.message?.includes("duplicate key value") && 
+          error.message?.includes("email")
+        ) {
+          errorTitle = t("emailAlreadyRegistered");
+          errorDescription = t("emailAlreadyInUse");
+        } else if (
+          error.message?.includes("duplicate key value") && 
+          error.message?.includes("phone")
+        ) {
+          errorTitle = "Phone already in use";
+          errorDescription = t("phoneAlreadyInUse");
         }
+
+        toast({
+          title: errorTitle,
+          description: errorDescription,
+          variant: "destructive",
+        });
       } else {
         setEmailSent(true);
       }
@@ -327,29 +370,23 @@ const Auth = () => {
                     : "bg-muted text-muted-foreground"
                 }`}
               >
-                {signUpStep > 2 ? <Check className="w-4 h-4" /> : "2"}
-              </div>
-              <div
-                className={`w-12 h-1 ${
-                  signUpStep >= 3 ? "bg-primary" : "bg-muted"
-                }`}
-              />
-              <div
-                className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                  signUpStep >= 3
-                    ? "bg-primary text-white"
-                    : "bg-muted text-muted-foreground"
-                }`}
-              >
-                3
+                2
               </div>
             </div>
           )}
         </CardHeader>
         <CardContent className="space-y-6">
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form 
+            onSubmit={handleSubmit} 
+            className="space-y-4"
+            onKeyDown={(e) => {
+              if (!isLogin && signUpStep < 2 && e.key === 'Enter') {
+                e.preventDefault();
+                handleNextStep();
+              }
+            }}
+          >
             {isLogin ? (
-              // Login form
               <>
                 <div className="space-y-2">
                   <Label htmlFor="email">{t("email")}</Label>
@@ -395,21 +432,36 @@ const Auth = () => {
                 </Button>
               </>
             ) : (
-              // Multi-step signup form
               <>
                 {signUpStep === 1 && (
                   <>
-                    <div className="space-y-2">
-                      <Label htmlFor="fullName">{t("fullName")} *</Label>
-                      <Input
-                        id="fullName"
-                        name="fullName"
-                        type="text"
-                        value={formData.fullName}
-                        onChange={handleInputChange}
-                        className="rounded-lg"
-                        required
-                      />
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="fullName">{t("fullName")} *</Label>
+                        <Input
+                          id="fullName"
+                          name="fullName"
+                          type="text"
+                          value={formData.fullName}
+                          onChange={handleInputChange}
+                          className="rounded-lg"
+                          placeholder={t("firstNamePlaceholder")}
+                          required
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="lastName">{t("lastName")} *</Label>
+                        <Input
+                          id="lastName"
+                          name="lastName"
+                          type="text"
+                          value={formData.lastName}
+                          onChange={handleInputChange}
+                          className="rounded-lg"
+                          placeholder={t("lastNamePlaceholder")}
+                          required
+                        />
+                      </div>
                     </div>
 
                     <div className="space-y-2">
@@ -486,7 +538,7 @@ const Auth = () => {
                       onClick={handleNextStep}
                       className="w-full"
                     >
-                      {t("next")} <ArrowRight className="ml-2 h-4 w-4" />
+                      {t("next")} <ArrowRight className="h-4 w-4" />
                     </Button>
                   </>
                 )}
@@ -494,46 +546,21 @@ const Auth = () => {
                 {signUpStep === 2 && (
                   <>
                     <div className="space-y-2">
-                      <Label htmlFor="phoneNumber">
-                        {t("phoneNumberLabel")} *
+                      <Label htmlFor="tax_vat_Id">
+                        {t("taxVatIdLabel")}{" "}
+                        <span className="text-muted-foreground">({t("optional")})</span>
                       </Label>
                       <Input
-                        id="phoneNumber"
-                        name="phoneNumber"
-                        type="tel"
-                        value={formData.phoneNumber}
+                        id="tax_vat_Id"
+                        name="tax_vat_Id"
+                        type="text"
+                        value={formData.tax_vat_Id}
                         onChange={handleInputChange}
-                        placeholder="+81 90-1234-5678"
+                        placeholder={t("taxVatIdPlaceholder")}
                         className="rounded-lg"
-                        required
                       />
-                      <p className="text-xs text-muted-foreground">
-                        {t("includeCountryCode")}
-                      </p>
                     </div>
 
-                    <div className="flex space-x-2">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={handlePrevStep}
-                        className="flex-1"
-                      >
-                        <ArrowLeft className="mr-2 h-4 w-4" /> {t("back")}
-                      </Button>
-                      <Button
-                        type="button"
-                        onClick={handleNextStep}
-                        className="flex-1"
-                      >
-                        {t("next")} <ArrowRight className="ml-2 h-4 w-4" />
-                      </Button>
-                    </div>
-                  </>
-                )}
-
-                {signUpStep === 3 && (
-                  <>
                     <div className="space-y-2">
                       <Label htmlFor="country">{t("country")} *</Label>
                       <Select

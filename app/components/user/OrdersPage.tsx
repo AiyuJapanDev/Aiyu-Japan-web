@@ -165,7 +165,7 @@ export const OrdersPage = () => {
           order_items (
             product_request:product_requests (*)
           )
-        `
+        `,
         )
         .eq("user_id", user.id)
         .order("created_at", { ascending: false });
@@ -849,7 +849,7 @@ export const OrdersPage = () => {
 
                     {/* Delivery time message */}
                     {["some_purchased", "all_purchased", "in_transit"].includes(
-                      status
+                      status,
                     ) && (
                       <div className="mt-3 mb-4 p-3 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-lg">
                         <p className="text-sm text-blue-800 dark:text-blue-200">
@@ -934,7 +934,7 @@ export const OrdersPage = () => {
                                     )}
                                 </div>
                               </div>
-                            )
+                            ),
                           )
                         : // Active orders: render from order_items
                           // Active orders: render from order_items
@@ -1011,7 +1011,7 @@ export const OrdersPage = () => {
                                   {getProductStatusBadge(
                                     order.is_cancelled
                                       ? "cancelled"
-                                      : item.product_request.status
+                                      : item.product_request.status,
                                   )}
                                 </div>
                               )}
@@ -1023,7 +1023,8 @@ export const OrdersPage = () => {
                       (status === "all_received" ||
                         (status === "in_transit" &&
                           order.order_items?.some(
-                            (item) => item.product_request.status === "received"
+                            (item) =>
+                              item.product_request.status === "received",
                           ))) && (
                         <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-4">
                           <div className="flex items-center justify-between">
@@ -1041,7 +1042,7 @@ export const OrdersPage = () => {
                                     : order.order_items?.some(
                                           (item) =>
                                             item.product_request.status ===
-                                            "received"
+                                            "received",
                                         )
                                       ? "Some items may already be available in storage"
                                       : "Items will be available in storage once received"}
@@ -1108,6 +1109,75 @@ export const OrdersPage = () => {
                           </div>
                         </div>
                       )}
+
+                    {order.quotes && order.quotes.length > 0 && (
+                      <div className="mt-4 p-4 border border-blue-200 bg-blue-50/50 dark:bg-blue-950/30 dark:border-blue-800 rounded-xl">
+                        <p className="text-sm font-semibold text-blue-900 dark:text-blue-100 mb-2">
+                          {t("quoteInformation") || "Quote Information"}
+                        </p>
+
+                        <div className="space-y-2">
+                          {order.quotes.map((quote) => {
+                            const formattedStatus =
+                              quote.status.charAt(0).toUpperCase() +
+                              quote.status.slice(1);
+
+                            let shortUrl = quote.quote_url;
+                            try {
+                              const parsed = new URL(quote.quote_url);
+                              const domain = parsed.hostname.replace(
+                                /^www\./,
+                                "",
+                              );
+                              const path =
+                                parsed.pathname + parsed.search + parsed.hash;
+                              shortUrl = `${domain}${path.length > 20 ? path.slice(0, 20) + "..." : path}`;
+                            } catch {
+                              shortUrl =
+                                quote.quote_url.length > 25
+                                  ? quote.quote_url.slice(0, 25) + "..."
+                                  : quote.quote_url;
+                            }
+
+                            const quoteTypeText =
+                              quote.type === "product"
+                                ? t("productQuote") || "Product Quote"
+                                : quote.type === "shipping"
+                                  ? t("shippingQuote") || "Shipping Quote"
+                                  : quote.type;
+
+                            return (
+                              <div
+                                key={quote.id}
+                                className="bg-white/60 dark:bg-gray-800/60 rounded-lg p-3 border border-blue-100 dark:border-blue-900"
+                              >
+                                <div className="flex flex-col gap-2 text-sm">
+                                  <div className="flex flex-col sm:flex-row sm:items-center sm:gap-3 gap-1">
+                                    <p className="text-blue-900 dark:text-blue-100 font-medium flex-shrink-0">
+                                      {quoteTypeText} - {t("status")}:{" "}
+                                      {formattedStatus}
+                                    </p>
+                                  </div>
+
+                                  <a
+                                    href={quote.quote_url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="flex items-center gap-1 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:underline break-all sm:break-normal min-w-0"
+                                    title={quote.quote_url}
+                                  >
+                                    <Link className="h-3.5 w-3.5 flex-shrink-0" />
+                                    <span className="truncate sm:inline">
+                                      {shortUrl}
+                                    </span>
+                                  </a>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
                   </CardContent>
                 </CollapsibleContent>
               </Card>
@@ -1115,7 +1185,6 @@ export const OrdersPage = () => {
           );
         })}
 
-        {/* Pagination Controls */}
         {filteredOrders.length > 0 && totalPages > 1 && (
           <Card className="bg-muted/30">
             <CardContent className="p-4">
@@ -1144,7 +1213,7 @@ export const OrdersPage = () => {
                       >
                         {page}
                       </Button>
-                    )
+                    ),
                   )}
                 </div>
 

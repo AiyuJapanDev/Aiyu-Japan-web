@@ -6,6 +6,7 @@ export interface UserProfile {
   full_name: string | null;
   created_at: string;
   user_personal_id?: string | null;
+  tax_vat_Id?: string | null;
 }
 
 export interface UserWithRole {
@@ -16,4 +17,5 @@ export interface UserWithRole {
   created_at: string;
   user_personal_id?: string | null;
   country?: string | null;
+  tax_vat_Id?: string | null;
 }
