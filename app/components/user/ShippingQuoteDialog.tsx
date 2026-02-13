@@ -24,7 +24,8 @@ import {
   getZoneForCountry,
   useAnimatedNumber,
   getWeightRange,
-  isDHLOnlyCountry
+  isDHLOnlyCountry,
+  hasExpressShipping
 } from '@/lib/shippingUtils';
 import { useCurrencyRates } from '@/hooks/useCurrencyRates';
 import { useSystemSettings } from '@/hooks/useSystemSettings';
@@ -61,7 +62,6 @@ const ShippingQuoteDialog: React.FC<ShippingQuoteDialogProps> = ({
   const { settings: systemSettings, loading: settingsLoading } = useSystemSettings();
   const [loading, setLoading] = useState(false);
 
-  // Form states
   const [selectedCountry, setSelectedCountry] = useState('');
   const [shippingMethod, setShippingMethod] = useState<'economic' | 'express' | 'paraguay' | 'dhl'>('economic');
   const [fullName, setFullName] = useState('');
@@ -78,6 +78,8 @@ const ShippingQuoteDialog: React.FC<ShippingQuoteDialogProps> = ({
 
   const zoneInfo = selectedCountry ? getZoneForCountry(selectedCountry) : null;
   const isDHLOnly = selectedCountry ? isDHLOnlyCountry(selectedCountry) : false;
+  const numericWeight = Number(totalWeight) || 0;
+  const hasExpress = selectedCountry ? hasExpressShipping(selectedCountry) : false;
 
   // Auto-switch Paraguay logic
   useEffect(() => {
@@ -95,7 +97,12 @@ const ShippingQuoteDialog: React.FC<ShippingQuoteDialogProps> = ({
     }
   }, [isDHLOnly, shippingMethod]);
 
-  const numericWeight = Number(totalWeight) || 0;
+  // Auto-switch away from express if country doesn't support it
+  useEffect(() => {
+    if (shippingMethod === 'express' && selectedCountry && !hasExpressShipping(selectedCountry)) {
+      setShippingMethod(numericWeight > 2000 ? 'dhl' : 'economic');
+    }
+  }, [selectedCountry, shippingMethod, numericWeight]);
 
   const availableMethods =
     selectedCountry === 'Paraguay'
@@ -104,12 +111,12 @@ const ShippingQuoteDialog: React.FC<ShippingQuoteDialogProps> = ({
         ? [{ value: 'dhl', label: t('dhlShipping') }]
         : numericWeight > 2000
           ? [
-            { value: 'express', label: t('expressShippingLabel') },
+            ...(hasExpress ? [{ value: 'express', label: t('expressShippingLabel') }] : []),
             { value: 'dhl', label: t('dhlShipping') }
           ]
           : [
             { value: 'economic', label: t('economicShippingLabel') },
-            { value: 'express', label: t('expressShippingLabel') },
+            ...(hasExpress ? [{ value: 'express', label: t('expressShippingLabel') }] : []),
             { value: 'dhl', label: t('dhlShipping') }
           ];
 
@@ -120,12 +127,6 @@ const ShippingQuoteDialog: React.FC<ShippingQuoteDialogProps> = ({
     }
   }, [numericWeight, shippingMethod]);
 
-  // 🔍 Debug: check totalWeight type and value
-  console.log("DEBUG totalWeight:", totalWeight, typeof totalWeight);
-  console.log("DEBUG selectedCountry:", selectedCountry);
-  console.log("DEBUG shippingMethod:", shippingMethod);
-
-  // Calculate shipping cost
   const dimensions = (shippingMethod === 'dhl' || shippingMethod === 'paraguay') && length && width && height
     ? { L: Number(length), W: Number(width), H: Number(height) }
     : undefined;
@@ -146,7 +147,6 @@ const ShippingQuoteDialog: React.FC<ShippingQuoteDialogProps> = ({
     
   const animatedCost = useAnimatedNumber(shippingCost || 0, 1000);
 
-  // Load profile data
   useEffect(() => {
     if (open && profile) {
       setFullName(profile.full_name || '');
@@ -172,7 +172,6 @@ const ShippingQuoteDialog: React.FC<ShippingQuoteDialogProps> = ({
 
     setLoading(true);
     try {
-      // Insert shipping quote
       const { error } = await supabase.from('shipping_quotes').insert({
         user_id: profile?.id,
         shipping_method: shippingMethod,
@@ -209,7 +208,6 @@ const ShippingQuoteDialog: React.FC<ShippingQuoteDialogProps> = ({
 
       if (error) throw error;
 
-      // Fetch the newly created quote ID
       const { data: quoteData } = await supabase
         .from('shipping_quotes')
         .select('id')
@@ -219,7 +217,6 @@ const ShippingQuoteDialog: React.FC<ShippingQuoteDialogProps> = ({
         .single();
 
       if (quoteData) {
-        // 🟢 Fetch user's name and personal ID
         const { data: userProfile } = await supabase
           .from('profiles')
           .select('full_name, user_personal_id')
@@ -229,7 +226,6 @@ const ShippingQuoteDialog: React.FC<ShippingQuoteDialogProps> = ({
         const customerName = userProfile?.full_name || 'Unknown User';
         const customerId = userProfile?.user_personal_id ? `#${userProfile.user_personal_id}` : '';
 
-        // 📨 Notify admins with detailed message
         await notifyAllAdmins(
           'new_shipping_request',
           `New shipping quote request from ${customerName} ${customerId} — ${selectedCountry} (${shippingMethod}). ${selectedItems.length} item${selectedItems.length > 1 ? 's' : ''}, ${totalWeight}g total.`,

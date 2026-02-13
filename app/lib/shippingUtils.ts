@@ -47,20 +47,80 @@ export const currencyRates = {
 };
 
 // ---------------- ZONAS Y PAISES ----------------
-const ZONE1_ASIA = [
+// Países según lista oficial de ePacket Light (envío económico)
+
+// ZONA 1 - China, Corea del Sur, Taiwán
+const ECONOMIC_ZONE1 = ["China","Republic of Korea","Taiwan"];
+
+// ZONA 2 - Asia (excluyendo Zona 1)
+const ECONOMIC_ZONE2_ASIA = [
+  "Bangladesh","Bhutan","Brunei","Cambodia","Hong Kong","India","Indonesia","Laos",
+  "Macao","Malaysia","Maldives","Mongolia","Myanmar","Nepal","Pakistan","Philippines",
+  "Singapore","Sri Lanka","Thailand","Vietnam"
+];
+
+// ZONA 2 - Oceanía
+const ECONOMIC_ZONE2_OCEANIA = [
+  "Australia","Cook Islands","Fiji","French Polynesia","Kiribati","New Caledonia",
+  "New Zealand","Samoa","Tuvalu","Vanuatu"
+];
+
+// ZONA 2 - América del Norte (sin USA)
+const ECONOMIC_ZONE2_NA = ["Canada","Mexico"];
+
+// ZONA 2 - Oriente Medio
+const ECONOMIC_ZONE2_ME = [
+  "Bahrain","Iran","Iraq","Israel","Jordan","Kuwait","Lebanon","Oman","Qatar",
+  "Saudi Arabia","Turkey","United Arab Emirates"
+];
+
+// ZONA 2 - Europa
+const ECONOMIC_ZONE2_EU = [
+  "Armenia","Austria","Azerbaijan","Belgium","Bosnia and Herzegovina","Bulgaria","Croatia",
+  "Cyprus","Czech Republic","Denmark","Estonia","Finland","France","Germany","Gibraltar",
+  "Greece","Hungary","Iceland","Ireland","Italy","Jersey","Kazakhstan","Kyrgyz","Latvia",
+  "Lithuania","Luxembourg","Malta","Netherlands","North Macedonia","Norway","Poland",
+  "Portugal","Romania","Serbia","Slovakia","Slovenia","Spain","Sweden","Switzerland",
+  "Ukraine","United Kingdom","Uzbekistan"
+];
+
+// ZONA 4 - Estados Unidos y territorios
+const ECONOMIC_ZONE3_US = [
+  "United States of America","America Samoa","Guam","Midway","Northern Mariana Islands",
+  "Puerto Rico","Saipan","Virgin Islands","Wake"
+];
+
+// ZONA 5 - América Central y del Sur (sin México)
+const ECONOMIC_ZONE4_LATAM = [
+  "Argentina","Brazil","Chile","Colombia","Costa Rica","Cuba","Dominican Republic",
+  "Ecuador","El Salvador","Guadeloupe","Honduras","Jamaica","Martinique","Nicaragua",
+  "Panama","Peru","Trinidad and Tobago","Venezuela"
+];
+
+// ZONA 5 - África
+const ECONOMIC_ZONE4_AFRICA = [
+  "Algeria","Angola","Benin","The Democratic Republic of the Congo","Djibouti","Egypt",
+  "Ethiopia","Gabon","Gambia","Ghana","Guinea","Ivory Coast","Kenya","Liberia",
+  "Madagascar","Mauritania","Mauritius","Morocco","Mozambique","Nigeria","Reunion",
+  "Rwanda","Senegal","Sierra Leone","South Africa","Tanzania (United Rep.)","Togo",
+  "Tunisia","Uganda","Zimbabwe"
+];
+
+// Países con acceso a EXPRESS (mantener compatibilidad con código anterior)
+const EXPRESS_ZONE1_ASIA = [
   "Bangladesh","Bhutan","Brunei","Cambodia","China","Hong Kong","India","Indonesia",
   "Laos","Macao","Malaysia","Maldives","Mongolia","Myanmar","Nepal","Pakistan",
   "Philippines","Republic of Korea","Singapore","Sri Lanka","Taiwan","Thailand","Vietnam"
 ];
-const ZONE2_OCEANIA = [
+const EXPRESS_ZONE2_OCEANIA = [
   "Australia","Cook Islands","Fiji","New Caledonia","New Zealand","Papua New Guinea","Solomon"
 ];
-const ZONE2_NA = ["Canada","Mexico","St. Pierre and Miquelon"];
-const ZONE2_ME = [
+const EXPRESS_ZONE2_NA = ["Canada","Mexico","St. Pierre and Miquelon"];
+const EXPRESS_ZONE2_ME = [
   "Bahrain","Iran","Iraq","Israel","Jordan","Kuwait","Lebanon","Oman","Qatar",
   "Saudi Arabia","Syria","Turkey","United Arab Emirates"
 ];
-const ZONE2_EU = [
+const EXPRESS_ZONE2_EU = [
   "Andorra","Austria","Azerbaijan","Belarus","Belgium","Bulgaria","Croatia","Cyprus",
   "Czech Republic","Denmark","Estonia","Finland","France","Germany","United Kingdom",
   "Greece","Guernsey","Hungary","Iceland","Ireland","Italy","Jersey","Latvia",
@@ -68,30 +128,42 @@ const ZONE2_EU = [
   "Norway","Poland","Portugal","Romania","Russian Federation","San Marino","Slovakia",
   "Slovenia","Spain","Switzerland","Sweden","Ukraine"
 ];
-const ZONE3_US = ["United States of America","Guam","Saipan"];
-const ZONE4_LATAM = [
+const EXPRESS_ZONE3_US = ["United States of America","Guam","Saipan"];
+const EXPRESS_ZONE4_LATAM = [
   "Argentina","Barbados","Brazil","Chile","Costa Rica","Cuba","El Salvador",
   "French Guiana","Guadeloupe","Honduras","Jamaica","Martinique","Panama",
   "Peru","Trinidad and Tobago","Uruguay"
 ];
-const ZONE4_AFRICA = [
+const EXPRESS_ZONE4_AFRICA = [
   "Algeria","Botswana","Djibouti","Egypt","Ethiopia","Gabon","Ghana","Ivory Coast",
   "Kenya","Madagascar","Mauritius","Morocco","Nigeria","Reunion","Rwanda","Senegal",
   "Sierra Leone","South Africa","Sudan","Tanzania (United Rep.)","Togo","Tunisia","Uganda","Zimbabwe"
 ];
+
 const ZONE5_PARAGUAY = ["Paraguay"];
 
+// Mapeo para EXPRESS (mantiene estructura antigua)
+export const EXPRESS_COUNTRY_TO_ZONE: Record<string, number> = {};
+[...EXPRESS_ZONE1_ASIA].forEach(c => EXPRESS_COUNTRY_TO_ZONE[c] = 1);
+[...EXPRESS_ZONE2_OCEANIA, ...EXPRESS_ZONE2_NA, ...EXPRESS_ZONE2_ME, ...EXPRESS_ZONE2_EU].forEach(c => EXPRESS_COUNTRY_TO_ZONE[c] = 2);
+[...EXPRESS_ZONE3_US].forEach(c => EXPRESS_COUNTRY_TO_ZONE[c] = 3);
+[...EXPRESS_ZONE4_LATAM, ...EXPRESS_ZONE4_AFRICA].forEach(c => EXPRESS_COUNTRY_TO_ZONE[c] = 4);
+[...ZONE5_PARAGUAY].forEach(c => EXPRESS_COUNTRY_TO_ZONE[c] = 5);
 
-export const COUNTRY_TO_ZONE: Record<string, number> = {};
-[...ZONE1_ASIA].forEach(c => COUNTRY_TO_ZONE[c] = 1);
-[...ZONE2_OCEANIA, ...ZONE2_NA, ...ZONE2_ME, ...ZONE2_EU].forEach(c => COUNTRY_TO_ZONE[c] = 2);
-[...ZONE3_US].forEach(c => COUNTRY_TO_ZONE[c] = 3);
-[...ZONE4_LATAM, ...ZONE4_AFRICA].forEach(c => COUNTRY_TO_ZONE[c] = 4);
-[...ZONE5_PARAGUAY].forEach(c => COUNTRY_TO_ZONE[c] = 5);
+// Mapeo para ECONÓMICO (según lista oficial de ePacket Light)
+export const ECONOMIC_COUNTRY_TO_ZONE: Record<string, number> = {};
+[...ECONOMIC_ZONE1].forEach(c => ECONOMIC_COUNTRY_TO_ZONE[c] = 1);
+[...ECONOMIC_ZONE2_ASIA, ...ECONOMIC_ZONE2_OCEANIA, ...ECONOMIC_ZONE2_NA, ...ECONOMIC_ZONE2_ME, ...ECONOMIC_ZONE2_EU].forEach(c => ECONOMIC_COUNTRY_TO_ZONE[c] = 2);
+[...ECONOMIC_ZONE3_US].forEach(c => ECONOMIC_COUNTRY_TO_ZONE[c] = 3);
+[...ECONOMIC_ZONE4_LATAM, ...ECONOMIC_ZONE4_AFRICA].forEach(c => ECONOMIC_COUNTRY_TO_ZONE[c] = 4);
+[...ZONE5_PARAGUAY].forEach(c => ECONOMIC_COUNTRY_TO_ZONE[c] = 5);
+
+// Mantener COUNTRY_TO_ZONE para compatibilidad (usa el mapeo de económico)
+export const COUNTRY_TO_ZONE: Record<string, number> = ECONOMIC_COUNTRY_TO_ZONE;
 
 export const ZONE_NAMES: Record<number, string> = {
-  1: "Asia",
-  2: "Oceanía + Canadá + México + Medio Oriente + Europa",
+  1: "China, Corea del Sur, Taiwán",
+  2: "Asia + Oceanía + Canadá + México + Medio Oriente + Europa",
   3: "Estados Unidos (incluye territorios)",
   4: "Centro/Sur América (sin México) + África",
   5: "Paraguay (envío especial)",
@@ -288,8 +360,13 @@ function normalizeDHLCountry(name: string): string {
 export const isDHLOnlyCountry = (country: string): boolean => {
   const normalizedCountry = normalizeDHLCountry(country);
   const hasDHL = ALL_DHL_COUNTRIES.includes(normalizedCountry);
-  const hasRegularZone = COUNTRY_TO_ZONE[country] !== undefined;
+  const hasRegularZone = ECONOMIC_COUNTRY_TO_ZONE[country] !== undefined;
   return hasDHL && !hasRegularZone;
+};
+
+// Check if a country has access to express shipping
+export const hasExpressShipping = (country: string): boolean => {
+  return EXPRESS_COUNTRY_TO_ZONE[country] !== undefined;
 };
 
 // Get DHL zone for a country
@@ -383,7 +460,10 @@ export const calculateShippingCostByCountry = (
   dimensions?: { L?: number; W?: number; H?: number },
   fuelPercentage?: number
 ): number | DHLCostBreakdown | null => {
-  const zone = COUNTRY_TO_ZONE[country];
+  // Usar el mapeo correcto según el método de envío
+  const zoneMap = shippingMethod === 'express' ? EXPRESS_COUNTRY_TO_ZONE : ECONOMIC_COUNTRY_TO_ZONE;
+  const zone = zoneMap[country];
+  
   if (!zone && shippingMethod !== 'dhl') return null;
 
   // --- DHL special case ---

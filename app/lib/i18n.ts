@@ -752,8 +752,6 @@ export const translations = {
     japaneseAddresswarningsTitle: "⚠️ Warnings:",
     japaneseAddresswarnings0:
       "Please make sure to copy everything correctly — we are not responsible for packages that are incorrectly addressed or delivered.",
-    japaneseAddresswarnings1:
-      "This Japanese address service is different from the Aiyu Japan shopping-agent service. It does not include benefits such as product photos, consolidation, or repackaging.",
     japaneseAddresswarnings2:
       "Packages will be forwarded exactly as they are received.",
 
@@ -880,6 +878,11 @@ export const translations = {
     lastName: "Last Name",
     firstNamePlaceholder: "First Name",
     lastNamePlaceholder: "Last Name",
+    phoneNumber: "Phone Number",
+    phoneNumberPlaceholder: "+81 90-1234-5678",
+    phoneNumberRequired: "Phone number is required",
+    phoneNumberTooShort: "Phone number must have at least 9 digits",
+    phoneNumberTooLong: "Phone number cannot exceed 14 digits",
     taxVatIdLabel: "Tax/VAT ID, CUIL or similar",
     taxVatIdLabelShort: "Tax/VAT ID (important for delivering your orders)",
     taxVatIdShort: "Tax/VAT ID",
@@ -1985,8 +1988,6 @@ export const translations = {
 
     japaneseAddresswarnings0:
       "Por favor, asegúrate de copiar toda la dirección correctamente. No nos hacemos responsables por paquetes mal dirigidos o entregados de forma incorrecta.",
-    japaneseAddresswarnings1:
-      "Este servicio de dirección japonesa es diferente al servicio de compras de Aiyu Japan. No incluye beneficios como fotografías del producto, consolidación o reempaquetado.",
 
     // Blog Page
     blogTitle: "Nuestro <span class='text-blue-400'>Blog</span>",
@@ -2135,6 +2136,11 @@ export const translations = {
     confirmPassword: "Confirmar Contraseña",
     fullName: "Nombre",
     lastName: "Apellido",
+    phoneNumber: "Número de Teléfono",
+    phoneNumberPlaceholder: "+81 90-1234-5678",
+    phoneNumberRequired: "El número de teléfono es requerido",
+    phoneNumberTooShort: "El número de teléfono debe tener al menos 9 dígitos",
+    phoneNumberTooLong: "El número de teléfono no puede exceder 14 dígitos",
     firstNamePlaceholder: "Nombre",
     lastNamePlaceholder: "Apellido",
     taxVatIdLabel: "Número de identificación fiscal, CUIL o similar",

@@ -78,6 +78,10 @@ const Auth = () => {
       value = value.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
     }
     
+    if (e.target.name === 'phoneNumber') {
+      value = value.replace(/[^0-9+]/g, '');
+    }
+    
     setFormData({ ...formData, [e.target.name]: value });
   };
 
@@ -109,7 +113,38 @@ const Auth = () => {
     return true;
   };
 
-
+  const validateStep2 = () => {
+    if (!formData.phoneNumber || formData.phoneNumber.trim() === '') {
+      toast({
+        title: "Error",
+        description: t("phoneNumberRequired"),
+        variant: "destructive",
+      });
+      return false;
+    }
+    
+    const phoneDigits = formData.phoneNumber.replace(/[^0-9]/g, '');
+    
+    if (phoneDigits.length < 9) {
+      toast({
+        title: "Error",
+        description: t("phoneNumberTooShort"),
+        variant: "destructive",
+      });
+      return false;
+    }
+    
+    if (phoneDigits.length > 14) {
+      toast({
+        title: "Error",
+        description: t("phoneNumberTooLong"),
+        variant: "destructive",
+      });
+      return false;
+    }
+    
+    return true;
+  };
 
   const validateStep3 = () => {
     if (
@@ -132,6 +167,8 @@ const Auth = () => {
   const handleNextStep = () => {
     if (signUpStep === 1 && validateStep1()) {
       setSignUpStep(2);
+    } else if (signUpStep === 2 && validateStep2()) {
+      setSignUpStep(3);
     }
   };
 
@@ -149,7 +186,7 @@ const Auth = () => {
         navigate("/dashboard");
       }
     } else {
-      if (signUpStep !== 2) {
+      if (signUpStep !== 3) {
         setIsLoading(false);
         return;
       }
@@ -182,7 +219,6 @@ const Auth = () => {
           .rpc('check_tax_id_exists', { input_tax_id: formData.tax_vat_Id });
 
         if (rpcError) {
-          console.error('Error validating tax ID:', rpcError);
           toast({
             title: "Error de validación",
             description: "No se pudo validar la clave fiscal. Intenta nuevamente.",
@@ -202,19 +238,22 @@ const Auth = () => {
         }
       }
 
+      const signUpData = {
+        phone_number: formData.phoneNumber,
+        address: formData.address,
+        address_notes: formData.addressNotes,
+        country: formData.country,
+        postal_code: formData.postalCode,
+        city: formData.city,
+        state: formData.state,
+        tax_vat_Id: formData.tax_vat_Id || null,
+      };
+
       const { error } = await signUp(
         formData.email,
         formData.password,
         fullNameComplete,
-        {
-          address: formData.address,
-          address_notes: formData.addressNotes,
-          country: formData.country,
-          postal_code: formData.postalCode,
-          city: formData.city,
-          state: formData.state,
-          tax_vat_Id: formData.tax_vat_Id || null,
-        }
+        signUpData
       );
 
       if (error) {
@@ -341,7 +380,21 @@ const Auth = () => {
                     : "bg-muted text-muted-foreground"
                 }`}
               >
-                2
+                {signUpStep > 2 ? <Check className="w-4 h-4" /> : "2"}
+              </div>
+              <div
+                className={`w-12 h-1 ${
+                  signUpStep >= 3 ? "bg-primary" : "bg-muted"
+                }`}
+              />
+              <div
+                className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                  signUpStep >= 3
+                    ? "bg-primary text-white"
+                    : "bg-muted text-muted-foreground"
+                }`}
+              >
+                3
               </div>
             </div>
           )}
@@ -351,7 +404,7 @@ const Auth = () => {
             onSubmit={handleSubmit} 
             className="space-y-4"
             onKeyDown={(e) => {
-              if (!isLogin && signUpStep < 2 && e.key === 'Enter') {
+              if (!isLogin && signUpStep < 3 && e.key === 'Enter') {
                 e.preventDefault();
                 handleNextStep();
               }
@@ -515,6 +568,42 @@ const Auth = () => {
                 )}
 
                 {signUpStep === 2 && (
+                  <>
+                    <div className="space-y-2">
+                      <Label htmlFor="phoneNumber">{t("phoneNumber")} *</Label>
+                      <Input
+                        id="phoneNumber"
+                        name="phoneNumber"
+                        type="tel"
+                        value={formData.phoneNumber}
+                        onChange={handleInputChange}
+                        placeholder={t("phoneNumberPlaceholder")}
+                        className="rounded-lg"
+                        required
+                      />
+                    </div>
+
+                    <div className="flex space-x-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={handlePrevStep}
+                        className="flex-1"
+                      >
+                        <ArrowLeft className="mr-2 h-4 w-4" /> {t("back")}
+                      </Button>
+                      <Button
+                        type="button"
+                        onClick={handleNextStep}
+                        className="flex-1"
+                      >
+                        {t("next")} <ArrowRight className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </>
+                )}
+
+                {signUpStep === 3 && (
                   <>
                     <div className="space-y-2">
                       <Label htmlFor="tax_vat_Id">
