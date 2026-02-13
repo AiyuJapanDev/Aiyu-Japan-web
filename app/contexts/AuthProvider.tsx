@@ -75,6 +75,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       full_name: fullName,
       ...(additionalData || {}),
     };
+    
+    console.log('🔑 Metadata being sent to Supabase:', metadata);
+    
     const { error } = await supabase.auth.signUp({
       email,
       password,
