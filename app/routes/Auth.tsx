@@ -219,7 +219,6 @@ const Auth = () => {
           .rpc('check_tax_id_exists', { input_tax_id: formData.tax_vat_Id });
 
         if (rpcError) {
-          console.error('Error validating tax ID:', rpcError);
           toast({
             title: "Error de validación",
             description: "No se pudo validar la clave fiscal. Intenta nuevamente.",
@@ -250,12 +249,6 @@ const Auth = () => {
         tax_vat_Id: formData.tax_vat_Id || null,
       };
 
-      console.log('📋 Registration data being sent:', {
-        email: formData.email,
-        fullName: fullNameComplete,
-        ...signUpData
-      });
-
       const { error } = await signUp(
         formData.email,
         formData.password,
@@ -264,8 +257,6 @@ const Auth = () => {
       );
 
       if (error) {
-        console.error('❌ Registration error:', error);
-        
         let errorTitle = "Sign up failed";
         let errorDescription = error.message || "An error occurred during signup.";
 

@@ -112,7 +112,7 @@ export const OrdersPage = () => {
   const [itemsPerPage, setItemsPerPage] = useState(5);
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [hideRejected, setHideRejected] = useState(false);
-  const [showCancelled, setShowCancelled] = useState(false);
+  const [showCancelled, setShowCancelled] = useState(true);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [cancelOrderId, setCancelOrderId] = useState<string | null>(null);
   const [isCancelling, setIsCancelling] = useState(false);

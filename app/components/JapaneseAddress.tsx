@@ -152,7 +152,6 @@ const JapaneseAddressCard: React.FC<JapaneseAddressCardProps> = ({
           </p>
           <ul className="list-disc pl-5 space-y-1">
             <li>{t("japaneseAddresswarnings0")}</li>
-            <li>{t("japaneseAddresswarnings1")}</li>
             <li>{t("japaneseAddresswarnings2")}</li>
           </ul>
         </div>

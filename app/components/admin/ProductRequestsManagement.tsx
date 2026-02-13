@@ -128,6 +128,8 @@ export function ProductRequestsManagement({ orderId }: ProductRequestsManagement
   const [isConfirmingPayment, setIsConfirmingPayment] = useState(false);
 
   const [showMarkPurchasedDialog, setShowMarkPurchasedDialog] = useState(false);
+  const [showQuoteDialog, setShowQuoteDialog] = useState(false);
+  const [showRejectDialog, setShowRejectDialog] = useState(false);
   const [orderForPurchased, setOrderForPurchased] = useState<OrderWithDetails | null>(null);
   const [isMarkingPurchased, setIsMarkingPurchased] = useState(false);
 
@@ -329,9 +331,10 @@ export function ProductRequestsManagement({ orderId }: ProductRequestsManagement
 
       toast({
         title: "Quote Created",
-        description: "Order quote has been sent to the customer",
+        description: "Order quote has been sent to the customer. The status will update shortly.",
       });
 
+      setShowQuoteDialog(false);
       setSelectedOrder(null);
       setQuoteInvoiceUrl("");
       setProductIssues(new Map());
@@ -422,9 +425,10 @@ export function ProductRequestsManagement({ orderId }: ProductRequestsManagement
 
       toast({
         title: "Order Rejected",
-        description: "Order has been rejected and customer will be notified",
+        description: "Order has been rejected and customer will be notified. The status will update shortly.",
       });
 
+      setShowRejectDialog(false);
       setSelectedOrder(null);
       setRejectionReason("");
       setProductIssues(new Map());
@@ -433,40 +437,40 @@ export function ProductRequestsManagement({ orderId }: ProductRequestsManagement
       toast({
         title: "Error",
         description: error.message || "Failed to reject order",
-      variant: "destructive",
-    });
-  }
-};
+        variant: "destructive",
+      });
+    }
+  };
 
-const adminCancelOrder = async () => {
-  if (!orderToCancel) return;
-  
-  setIsCancelling(true);
-  try {
-    const { error } = await supabase.rpc('admin_cancel_order', { 
-      p_order_id: orderToCancel.id 
-    });
+  const adminCancelOrder = async () => {
+    if (!orderToCancel) return;
     
-    if (error) throw error;
-    
-    toast({
-      title: "Order Cancelled",
-      description: `Order #${orderToCancel.order_personal_id} has been cancelled`,
-    });
-    
-    setShowCancelDialog(false);
-    setOrderToCancel(null);
-    queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
-  } catch (error: any) {
-    toast({
-      title: "Error",
-      description: error.message || "Failed to cancel order",
-      variant: "destructive",
-    });
-  } finally {
-    setIsCancelling(false);
-  }
-};
+    setIsCancelling(true);
+    try {
+      const { error } = await supabase.rpc('admin_cancel_order', { 
+        p_order_id: orderToCancel.id 
+      });
+      
+      if (error) throw error;
+      
+      toast({
+        title: "Order Cancelled",
+        description: `Order #${orderToCancel.order_personal_id} has been cancelled. The status will update shortly.`,
+      });
+      
+      setShowCancelDialog(false);
+      setOrderToCancel(null);
+      queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to cancel order",
+        variant: "destructive",
+      });
+    } finally {
+      setIsCancelling(false);
+    }
+  };
 
 const updateProductIssue = (productId: string, hasIssue: boolean, description: string) => {
     setProductIssues((prev) => {
@@ -518,7 +522,7 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
 
       toast({
         title: "Payment Confirmed",
-        description: "Payment has been confirmed and products status updated",
+        description: "Payment has been confirmed. The product status will update shortly.",
       });
 
       queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
@@ -639,7 +643,7 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
 
       toast({
         title: "Products Marked",
-        description: `${purchasedItems.length} product(s) marked as received.`,
+        description: `${purchasedItems.length} product(s) marked as received. The status will update shortly.`,
       });
 
       queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
@@ -679,7 +683,7 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
 
       toast({
         title: "Products Marked",
-        description: `${updates.length} product(s) marked as purchased`,
+        description: `${updates.length} product(s) marked as purchased. The status will update shortly.`,
       });
       queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
     } catch (error: any) {
@@ -706,7 +710,7 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
 
       toast({
         title: "Product Marked",
-        description: "Product marked as purchased",
+        description: "Product marked as purchased. The status will update shortly.",
       });
       queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
     } catch (error: any) {
@@ -786,7 +790,7 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
 
       toast({
         title: "Product Marked",
-        description: "Product marked as received",
+        description: "Product marked as received. The status will update shortly.",
       });
       queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
     } catch (error: any) {
@@ -876,7 +880,7 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
 
       toast({
         title: "Shipping Payment Confirmed",
-        description: "Shipping payment has been confirmed",
+        description: "Shipping payment has been confirmed. The status will update shortly.",
       });
       queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
     } catch (error: any) {
@@ -916,7 +920,7 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
 
       toast({
         title: "Order Shipped",
-        description: "Order has been marked as shipped",
+        description: "Order has been marked as shipped. The status will update shortly.",
       });
       setShowTrackingDialog(false);
       setTrackingNumber("");
@@ -1230,6 +1234,7 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
       <Card>
         <CardHeader>
           <CardTitle>Order Management</CardTitle>
+          <p className="text-sm text-muted-foreground mt-1">Remember: Order status is automatically updated 1 minute after performing an action.</p>
           <CardDescription>Manage customer orders and product requests</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -1629,7 +1634,7 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
                                           <Input
                                             type="number"
                                             placeholder="Weight (g) *"
-                                            className="w-28 h-8 border-red-300 focus:border-red-500"
+                                            className="w-28 h-8 border-gray-200 focus:border-red-500"
                                             id={`weight-${item.id}`}
                                             min="0"
                                             step="1"
@@ -1690,9 +1695,10 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
                                           }}
                                           size="sm"
                                           variant="outline"
-                                          className="border-green-400 text-green-500 text-sm hover:bg-green-100 w-full sm:w-auto"
+                                          className="border border-green-200 text-green-600 hover:border-green-300 hover:bg-green-50/30 w-full sm:w-auto"
                                         >
-                                          ✔️  Mark as Received
+                                          <Check className="h-3.5 w-3.5 mr-1" />
+                                          Mark as Received
                                         </Button>
                                       </div>
                                     </div>
@@ -1721,7 +1727,7 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
                             {/* Show create quote if no quotes exist */}
                             {!order.quotes?.length && (
                               <>
-                                <Dialog>
+                                <Dialog open={showQuoteDialog} onOpenChange={setShowQuoteDialog}>
                                   <DialogTrigger asChild>
                                     <Button size="sm" variant="outline" onClick={() => setSelectedOrder(order)}>
                                       <DollarSign className="h-4 w-4 mr-1" />
@@ -1753,7 +1759,7 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
                                 </Dialog>
 
 
-                                <Dialog>
+                                <Dialog open={showRejectDialog} onOpenChange={setShowRejectDialog}>
                                   <DialogTrigger asChild>
                                     <Button
                                       size="sm"
@@ -1887,7 +1893,7 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
                               <Button
                                 size="sm"
                                 variant="outline"
-                                className="bg-green-500 text-white hover:text-gray-600 font-bold w-auto hover:bg-green-400 text-xs sm:text-sm"
+                                className="border border-green-200 text-green-600 hover:border-green-300 hover:bg-green-50/30 w-auto text-xs sm:text-sm"
                                 onClick={() => {
                                   const dimensions = new Map<string, {weight?: number, width?: number, length?: number, height?: number}>();
                                   const missingWeight: string[] = [];
@@ -1933,7 +1939,24 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
                                   setShowMarkAllReceivedDialog(true);
                                 }}
                               >
-                                ✔️ Mark All Purchased as Received
+                                <Check className="h-4 w-4 mr-1" />
+                                Mark All Purchased as Received
+                              </Button>
+                            )}
+
+                            {/* Emergency Cancel for Purchased orders */}
+                            {order.items.some((item) => item.status === "purchased") && (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="text-black hover:text-red-700 hover:bg-red-50 border-gray-300"
+                                onClick={() => {
+                                  setOrderToCancel(order);
+                                  setShowCancelDialog(true);
+                                }}
+                              >
+                                <XCircle className="h-4 w-4 mr-1" />
+                                Cancel Order
                               </Button>
                             )}
 
@@ -2071,10 +2094,32 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
       <AlertDialog open={showCancelDialog} onOpenChange={setShowCancelDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Cancel Order?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to cancel Order #{orderToCancel?.order_personal_id}? 
-              This action cannot be undone.
+            <AlertDialogTitle className="flex items-center gap-2">
+              {orderToCancel?.items.some(item => item.status === "purchased") && (
+                <AlertCircle className="h-5 w-5 text-red-500" />
+              )}
+              Cancel Order?
+            </AlertDialogTitle>
+            <AlertDialogDescription className="space-y-2">
+              {orderToCancel?.items.some(item => item.status === "purchased") ? (
+                <>
+                  <p className="font-semibold text-red-600">
+                    ⚠️ WARNING: This order contains items that have already been purchased!
+                  </p>
+                  <p>
+                    Are you sure you want to cancel Order #{orderToCancel?.order_personal_id}? 
+                  </p>
+                  <p className="text-sm">
+                    This should only be done in emergency situations when items are out of stock or unavailable.
+                    This action cannot be undone.
+                  </p>
+                </>
+              ) : (
+                <p>
+                  Are you sure you want to cancel Order #{orderToCancel?.order_personal_id}? 
+                  This action cannot be undone.
+                </p>
+              )}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -2084,7 +2129,9 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
             <AlertDialogAction
               onClick={adminCancelOrder}
               disabled={isCancelling}
-              className="bg-gray-600 hover:bg-gray-700"
+              className={orderToCancel?.items.some(item => item.status === "purchased") 
+                ? "bg-red-600 hover:bg-red-700" 
+                : "bg-gray-600 hover:bg-gray-700"}
             >
               {isCancelling ? "Cancelling..." : "Yes, Cancel Order"}
             </AlertDialogAction>

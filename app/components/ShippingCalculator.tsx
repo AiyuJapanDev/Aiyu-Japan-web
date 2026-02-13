@@ -13,6 +13,7 @@ import {
   getWeightRange,
   getZoneForCountry,
   isDHLOnlyCountry,
+  hasExpressShipping,
   useAnimatedNumber,
 } from "@/lib/shippingUtils";
 import { useEffect, useState } from "react";
@@ -59,7 +60,15 @@ const ShippingCalculator = () => {
     }
   }, [isDHLOnly, shippingMethod]);
 
+  // Automatically switch away from express if country doesn't support it
+  useEffect(() => {
+    if (shippingMethod === "express" && selectedCountry && !hasExpressShipping(selectedCountry)) {
+      setShippingMethod("economic");
+    }
+  }, [selectedCountry, shippingMethod]);
+
   const isParaguay = selectedCountry === "Paraguay";
+  const hasExpress = selectedCountry ? hasExpressShipping(selectedCountry) : false;
 
   const availableMethods =
     selectedCountry === "Paraguay"
@@ -68,7 +77,7 @@ const ShippingCalculator = () => {
         ? [{ value: "dhl", label: t("dhlShipping") }]
         : [
             { value: "economic", label: t("economicShipping") },
-            { value: "express", label: t("expressShippingMethod") },
+            ...(hasExpress ? [{ value: "express", label: t("expressShippingMethod") }] : []),
             { value: "dhl", label: t("dhlShipping") },
           ];
 

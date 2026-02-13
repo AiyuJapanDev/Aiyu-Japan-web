@@ -752,8 +752,6 @@ export const translations = {
     japaneseAddresswarningsTitle: "⚠️ Warnings:",
     japaneseAddresswarnings0:
       "Please make sure to copy everything correctly — we are not responsible for packages that are incorrectly addressed or delivered.",
-    japaneseAddresswarnings1:
-      "This Japanese address service is different from the Aiyu Japan shopping-agent service. It does not include benefits such as product photos, consolidation, or repackaging.",
     japaneseAddresswarnings2:
       "Packages will be forwarded exactly as they are received.",
 
@@ -1990,8 +1988,6 @@ export const translations = {
 
     japaneseAddresswarnings0:
       "Por favor, asegúrate de copiar toda la dirección correctamente. No nos hacemos responsables por paquetes mal dirigidos o entregados de forma incorrecta.",
-    japaneseAddresswarnings1:
-      "Este servicio de dirección japonesa es diferente al servicio de compras de Aiyu Japan. No incluye beneficios como fotografías del producto, consolidación o reempaquetado.",
 
     // Blog Page
     blogTitle: "Nuestro <span class='text-blue-400'>Blog</span>",
