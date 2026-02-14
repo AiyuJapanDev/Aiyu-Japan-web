@@ -41,7 +41,7 @@ const ProductRequestButton = () => {
     (location.pathname === "/user-dashboard" ||
       location.pathname === "/admin-dashboard");
 
-  const fabBottomClass = isDashboardOnMobile ? "bottom-28" : "bottom-6";
+  const fabBottomClass = isDashboardOnMobile ? "bottom-36" : "bottom-6";
 
   const shouldHide =
     isAdmin ||
