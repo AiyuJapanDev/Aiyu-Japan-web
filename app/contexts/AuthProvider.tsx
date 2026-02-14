@@ -75,9 +75,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       full_name: fullName,
       ...(additionalData || {}),
     };
-    
-    console.log('🔑 Metadata being sent to Supabase:', metadata);
-    
+        
     const { error } = await supabase.auth.signUp({
       email,
       password,
@@ -142,10 +140,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         });
       }
     } catch (error: any) {
-      // Handle unexpected errors but still allow local state to clear
-      console.error("Sign out error:", error);
-
-      // Don't block sign out - local state will clear via auth state listener
       toast({
         title: "Signed out",
         description: "You've been signed out successfully.",

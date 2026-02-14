@@ -150,7 +150,7 @@ export const translations = {
     ctaTitle: "Ready to start shopping?",
     ctaDescription:
       "Start by sending us your product URLs or a clear image through any of our social media channels.",
-    makeOrder: "Make Order",
+    makeOrder: "Request Order",
 
     // Detailed How It Works
     howItWorksDetailedTitle: "How Aiyu Japan Works",
@@ -1382,7 +1382,7 @@ export const translations = {
     ctaTitle: "¿Listo para empezar a comprar?",
     ctaDescription:
       "Comienza por enviarnos tus enlaces URL de tus compras o una imagen clara a una de nuestras redes sociales.",
-    makeOrder: "Realizar Pedido",
+    makeOrder: "Solicitar Pedido",
 
     // Detailed How It Works
     howItWorksDetailedTitle: "Así funciona Aiyu Japan",
