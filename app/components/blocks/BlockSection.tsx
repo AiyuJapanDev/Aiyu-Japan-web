@@ -21,10 +21,18 @@ export const BlockSection = ({
     hasIntersected ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
   }`;
 
+  const getPadding = () => {
+    if (component === "blocks.heading-section") return "pt-16";
+    if (component === "blocks.featured-banner" || component === "blocks.featured-articles-carousel") {
+      return "py-3";
+    }
+    return "py-12";
+  };
+
   return (
     <section
       ref={ref}
-      className={`mx-auto px-4 sm:px-6 lg:px-8 ${background} ${component === "blocks.heading-section" ? "pt-16" : "py-12"} ${isAnimated && animation}`}
+      className={`mx-auto px-4 sm:px-6 lg:px-8 ${background} ${getPadding()} ${isAnimated && animation}`}
       style={{
         transitionDelay: hasIntersected ? `${delay}ms` : "0ms",
       }}

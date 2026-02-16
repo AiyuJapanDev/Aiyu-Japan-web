@@ -160,7 +160,6 @@ export const ShippingPage = () => {
     </a>
   );
 
-  // ✅ Component to display tracking number or URL based on item type
   const ItemIdentifier: React.FC<{
     item: {
       product_url?: string;
@@ -188,7 +187,6 @@ export const ShippingPage = () => {
   useEffect(() => {
     fetchData();
 
-    // Set up real-time subscription for shipping_quotes updates
     const setupSubscription = async () => {
       const {
         data: { user },
@@ -1089,6 +1087,29 @@ export const ShippingPage = () => {
                         </div>
                       )}
 
+                      {(quote.status === 'quoted' || quote.status === 'paid' || quote.status === 'sent' || quote.status === 'shipped') && quote.quote_url && quote.actual_cost && (
+                        <div className="p-4 border border-blue-200 bg-blue-50/50 rounded-xl">
+                          <p className="text-sm font-semibold text-blue-900 mb-2">Quote Information</p>
+                          <div className="bg-white/60 rounded-lg p-3 border border-blue-100">
+                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-sm">
+                              <p className="text-blue-900 font-medium">
+                                Price: ¥{quote.actual_cost.toLocaleString()}
+                              </p>
+                              <a
+                                href={quote.quote_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-1 text-blue-600 hover:text-blue-700 hover:underline break-all"
+                                title={quote.quote_url}
+                              >
+                                <Link className="h-3 w-3 flex-shrink-0" />
+                                {quote.quote_url.length > 40 ? `${quote.quote_url.substring(0, 40)}...` : quote.quote_url}
+                              </a>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
                       {/* Items */}
                       <div className="space-y-2">
                         <h4 className="font-medium text-sm">
@@ -1523,6 +1544,29 @@ export const ShippingPage = () => {
                                 </p>
                               </div>
                             )}
+                          </div>
+                        </div>
+                      )}
+
+                      {(quote.status === 'quoted' || quote.status === 'paid' || quote.status === 'sent' || quote.status === 'shipped') && quote.quote_url && quote.actual_cost && (
+                        <div className="p-4 border border-blue-200 bg-blue-50/50 rounded-xl">
+                          <p className="text-sm font-semibold text-blue-900 mb-2">Quote Information</p>
+                          <div className="bg-white/60 rounded-lg p-3 border border-blue-100">
+                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-sm">
+                              <p className="text-blue-900 font-medium">
+                                Price: ¥{quote.actual_cost.toLocaleString()}
+                              </p>
+                              <a
+                                href={quote.quote_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-1 text-blue-600 hover:text-blue-700 hover:underline break-all"
+                                title={quote.quote_url}
+                              >
+                                <Link className="h-3 w-3 flex-shrink-0" />
+                                {quote.quote_url.length > 40 ? `${quote.quote_url.substring(0, 40)}...` : quote.quote_url}
+                              </a>
+                            </div>
                           </div>
                         </div>
                       )}

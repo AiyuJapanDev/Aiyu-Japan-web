@@ -52,7 +52,20 @@ const Auth = () => {
     state: "",
     tax_vat_Id: "",
   });
+  const [passwordRequirements, setPasswordRequirements] = useState({
+    minLength: false,
+    hasUpperCase: false,
+    hasNumber: false,
+  });
   const { t } = useApp();
+
+  const checkPasswordRequirements = (password: string) => {
+    setPasswordRequirements({
+      minLength: password.length >= 8,
+      hasUpperCase: /[A-Z]/.test(password),
+      hasNumber: /[0-9]/.test(password),
+    });
+  };
 
   // Check if user is already logged in
   useEffect(() => {
@@ -82,6 +95,10 @@ const Auth = () => {
       value = value.replace(/[^0-9+]/g, '');
     }
     
+    if (e.target.name === 'password') {
+      checkPasswordRequirements(value);
+    }
+    
     setFormData({ ...formData, [e.target.name]: value });
   };
 
@@ -102,10 +119,26 @@ const Auth = () => {
       });
       return false;
     }
-    if (formData.password.length < 6) {
+    if (formData.password.length < 8) {
       toast({
         title: "Error",
-        description: "Password must be at least 6 characters",
+        description: "Password must be at least 8 characters",
+        variant: "destructive",
+      });
+      return false;
+    }
+    if (!/[A-Z]/.test(formData.password)) {
+      toast({
+        title: "Error",
+        description: "Password must contain at least one uppercase letter",
+        variant: "destructive",
+      });
+      return false;
+    }
+    if (!/[0-9]/.test(formData.password)) {
+      toast({
+        title: "Error",
+        description: "Password must contain at least one number",
         variant: "destructive",
       });
       return false;
@@ -557,10 +590,62 @@ const Auth = () => {
                       </div>
                     </div>
 
+                    <div className="bg-muted/50 p-4 rounded-lg space-y-2 border border-border">
+                      <p className="text-sm font-medium text-foreground">
+                        {t("passwordRequirements")}
+                      </p>
+                      <div className="space-y-1.5">
+                        <div className="flex items-center gap-2 text-sm">
+                          <div className={`w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0 ${
+                            passwordRequirements.minLength 
+                              ? 'bg-green-500 text-white' 
+                              : 'bg-muted-foreground/20 text-muted-foreground'
+                          }`}>
+                            {passwordRequirements.minLength && <Check className="w-3 h-3" />}
+                          </div>
+                          <span className={passwordRequirements.minLength ? 'text-foreground' : 'text-muted-foreground'}>
+                            {t("passwordMinLength")}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm">
+                          <div className={`w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0 ${
+                            passwordRequirements.hasUpperCase 
+                              ? 'bg-green-500 text-white' 
+                              : 'bg-muted-foreground/20 text-muted-foreground'
+                          }`}>
+                            {passwordRequirements.hasUpperCase && <Check className="w-3 h-3" />}
+                          </div>
+                          <span className={passwordRequirements.hasUpperCase ? 'text-foreground' : 'text-muted-foreground'}>
+                            {t("passwordUpperCase")}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm">
+                          <div className={`w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0 ${
+                            passwordRequirements.hasNumber 
+                              ? 'bg-green-500 text-white' 
+                              : 'bg-muted-foreground/20 text-muted-foreground'
+                          }`}>
+                            {passwordRequirements.hasNumber && <Check className="w-3 h-3" />}
+                          </div>
+                          <span className={passwordRequirements.hasNumber ? 'text-foreground' : 'text-muted-foreground'}>
+                            {t("passwordNumber")}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
                     <Button
                       type="button"
                       onClick={handleNextStep}
                       className="w-full"
+                      disabled={
+                        !passwordRequirements.minLength ||
+                        !passwordRequirements.hasUpperCase ||
+                        !passwordRequirements.hasNumber ||
+                        !formData.password ||
+                        !formData.confirmPassword ||
+                        formData.password !== formData.confirmPassword
+                      }
                     >
                       {t("next")} <ArrowRight className="h-4 w-4" />
                     </Button>

@@ -165,17 +165,62 @@ export const ZONE_NAMES: Record<number, string> = {
   1: "China, Corea del Sur, Taiwán",
   2: "Asia + Oceanía + Canadá + México + Medio Oriente + Europa",
   3: "Estados Unidos (incluye territorios)",
-  4: "Centro/Sur América (sin México) + África",
+  4: "Centro/Sur América (sin México y Paraguay) + África",
   5: "Paraguay (envío especial)",
 };
 
 export const destinations = ['Asia', 'Europe/Canada/Mexico', 'USA', 'Central/South America','Paraguay'];
 
 export const PARAGUAY_SHIPPING = {
-  ratePerGram: 5.385,   // yen per gram
-  minWeight: 200,     // grams (minimum for Paraguay shipping)
-  maxWeight: 25000,   // grams
-  step: 100           // grams
+  ratePerGram: 5.385,
+  minWeight: 200,
+  maxWeight: 25000,
+  step: 100
+};
+
+export const PARAGUAY_MARITIME_SHIPPING = {
+  ratePerKg: 12,
+  minWeight: 1000,
+  maxWeight: 30000,
+  step: 200
+};
+
+export const PERU_MARITIME_SHIPPING = {
+  priceTable: [
+    { kg: 1, price: 3500, usd: 23 },
+    { kg: 2, price: 4300, usd: 29 },
+    { kg: 3, price: 5050, usd: 34 },
+    { kg: 4, price: 5850, usd: 39 },
+    { kg: 5, price: 6600, usd: 44 },
+    { kg: 6, price: 7350, usd: 49 },
+    { kg: 7, price: 8150, usd: 55 },
+    { kg: 8, price: 8900, usd: 60 },
+    { kg: 9, price: 9700, usd: 65 },
+    { kg: 10, price: 10450, usd: 70 },
+    { kg: 11, price: 11100, usd: 75 },
+    { kg: 12, price: 11750, usd: 79 },
+    { kg: 13, price: 12450, usd: 84 },
+    { kg: 14, price: 13100, usd: 88 },
+    { kg: 15, price: 13750, usd: 92 },
+    { kg: 16, price: 14400, usd: 97 },
+    { kg: 17, price: 15050, usd: 101 },
+    { kg: 18, price: 15700, usd: 105 },
+    { kg: 19, price: 16400, usd: 110 },
+    { kg: 20, price: 17050, usd: 114 },
+    { kg: 21, price: 17700, usd: 119 },
+    { kg: 22, price: 18350, usd: 123 },
+    { kg: 23, price: 19000, usd: 128 },
+    { kg: 24, price: 19700, usd: 132 },
+    { kg: 25, price: 20350, usd: 136 },
+    { kg: 26, price: 21000, usd: 141 },
+    { kg: 27, price: 21650, usd: 145 },
+    { kg: 28, price: 22300, usd: 150 },
+    { kg: 29, price: 22950, usd: 154 },
+    { kg: 30, price: 23650, usd: 159 },
+  ],
+  minWeight: 1000,
+  maxWeight: 30000,
+  step: 1000
 };
 
 // ============= DHL SHIPPING CONFIGURATION =================
@@ -455,7 +500,7 @@ export const calculateShippingCost = (
 
 export const calculateShippingCostByCountry = (
   country: string,
-  shippingMethod: 'economic' | 'express' | 'paraguay' | 'dhl',
+  shippingMethod: 'economic' | 'express' | 'paraguay' | 'paraguay-maritime' | 'peru-maritime' | 'dhl',
   weight: number,
   dimensions?: { L?: number; W?: number; H?: number },
   fuelPercentage?: number
@@ -478,13 +523,10 @@ export const calculateShippingCostByCountry = (
     );
   }
 
-  // --- Paraguay special case ---
-  if (zone === 5) {
-    if (shippingMethod !== 'paraguay') return null; // hide other methods
-    const { ratePerGram, minWeight, maxWeight, step } = PARAGUAY_SHIPPING;
-
-    // Calculate volumetric weight if dimensions provided
-    let effectiveWeight = weight; // weight is in grams
+  if (country === "Peru" && shippingMethod === 'peru-maritime') {
+    const { priceTable, minWeight, maxWeight, step } = PERU_MARITIME_SHIPPING;
+    
+    let effectiveWeight = weight;
     if (dimensions?.L && dimensions?.W && dimensions?.H) {
       const volumetricKg = calculateVolumetricWeight(
         dimensions.L, 
@@ -495,11 +537,59 @@ export const calculateShippingCostByCountry = (
       effectiveWeight = Math.max(weight, volumetricGrams);
     }
 
-    // Clamp to min/max range and round up to the nearest 100 g
+    const clamped = Math.max(minWeight, Math.min(maxWeight, effectiveWeight));
+    const weightInKg = Math.ceil(clamped / step);
+
+    const priceEntry = priceTable.find(entry => entry.kg === weightInKg);
+    if (priceEntry) {
+      return priceEntry.price;
+    }
+    
+    return priceTable[priceTable.length - 1].price;
+  }
+
+  if (zone === 5) {
+    if (shippingMethod !== 'paraguay' && shippingMethod !== 'paraguay-maritime') return null;
+    
+    if (shippingMethod === 'paraguay-maritime') {
+      const { ratePerKg, minWeight, maxWeight, step } = PARAGUAY_MARITIME_SHIPPING;
+      
+      let effectiveWeight = weight;
+      if (dimensions?.L && dimensions?.W && dimensions?.H) {
+        const volumetricKg = calculateVolumetricWeight(
+          dimensions.L, 
+          dimensions.W, 
+          dimensions.H
+        );
+        const volumetricGrams = volumetricKg * 1000;
+        effectiveWeight = Math.max(weight, volumetricGrams);
+      }
+
+      const clamped = Math.max(minWeight, Math.min(maxWeight, effectiveWeight));
+      const rounded = Math.ceil(clamped / step) * step;
+
+      const weightInKg = rounded / 1000;
+      const costInUSD = weightInKg * ratePerKg;
+      const costInJPY = costInUSD / currencyRates.usd;
+      return costInJPY;
+    }
+    
+    const { ratePerGram, minWeight, maxWeight, step } = PARAGUAY_SHIPPING;
+
+    let effectiveWeight = weight;
+    if (dimensions?.L && dimensions?.W && dimensions?.H) {
+      const volumetricKg = calculateVolumetricWeight(
+        dimensions.L, 
+        dimensions.W, 
+        dimensions.H
+      );
+      const volumetricGrams = volumetricKg * 1000;
+      effectiveWeight = Math.max(weight, volumetricGrams);
+    }
+
     const clamped = Math.max(minWeight, Math.min(maxWeight, effectiveWeight));
     const rounded = Math.ceil(clamped / step) * step;
 
-    // Calculate cost (5.4 yen/g)
     return rounded * ratePerGram;
   }
 
@@ -557,9 +647,11 @@ export const useAnimatedNumber = (targetNumber: number, duration = 100) => {
   return animatedValue;
 };
 
-export const getWeightRange = (shippingMethod: 'economic' | 'express' | 'paraguay' | 'dhl') => {
+export const getWeightRange = (shippingMethod: 'economic' | 'express' | 'paraguay' | 'paraguay-maritime' | 'peru-maritime' | 'dhl') => {
   if (shippingMethod === 'express') return { min: 500, max: 10000 };
   if (shippingMethod === 'paraguay') return { min: 200, max: 25000 };
+  if (shippingMethod === 'paraguay-maritime') return { min: 1000, max: 30000 };
+  if (shippingMethod === 'peru-maritime') return { min: 1000, max: 30000 };
   if (shippingMethod === 'dhl') return { min: 500, max: 10000 };
   return { min: 300, max: 2000 };
 };
