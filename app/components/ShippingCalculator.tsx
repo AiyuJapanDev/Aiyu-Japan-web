@@ -15,6 +15,7 @@ import {
   isDHLOnlyCountry,
   hasExpressShipping,
   useAnimatedNumber,
+  PERU_MARITIME_SHIPPING,
 } from "@/lib/shippingUtils";
 import { useEffect, useState } from "react";
 
@@ -25,7 +26,7 @@ const ShippingCalculator = () => {
     useSystemSettings();
   const [selectedCountry, setSelectedCountry] = useState("");
   const [shippingMethod, setShippingMethod] = useState<
-    "economic" | "express" | "paraguay" | "dhl"
+    "economic" | "express" | "paraguay" | "paraguay-maritime" | "peru-maritime" | "dhl"
   >("economic");
   const [length, setLength] = useState("");
   const [width, setWidth] = useState("");
@@ -43,24 +44,22 @@ const ShippingCalculator = () => {
   const zoneInfo = selectedCountry ? getZoneForCountry(selectedCountry) : null;
   const isDHLOnly = selectedCountry ? isDHLOnlyCountry(selectedCountry) : false;
 
-  // Automatically switch shipping method if Paraguay is selected
   useEffect(() => {
     if (selectedCountry === "Paraguay") {
       setShippingMethod("paraguay");
-    } else if (shippingMethod === "paraguay") {
-      // If user switches away from Paraguay, reset to economic
+    } else if (shippingMethod === "paraguay" || shippingMethod === "paraguay-maritime") {
+      setShippingMethod("economic");
+    } else if (shippingMethod === "peru-maritime" && selectedCountry !== "Peru") {
       setShippingMethod("economic");
     }
   }, [selectedCountry]);
 
-  // Automatically switch to DHL for DHL-only countries
   useEffect(() => {
     if (isDHLOnly && shippingMethod !== "dhl") {
       setShippingMethod("dhl");
     }
   }, [isDHLOnly, shippingMethod]);
 
-  // Automatically switch away from express if country doesn't support it
   useEffect(() => {
     if (shippingMethod === "express" && selectedCountry && !hasExpressShipping(selectedCountry)) {
       setShippingMethod("economic");
@@ -68,18 +67,29 @@ const ShippingCalculator = () => {
   }, [selectedCountry, shippingMethod]);
 
   const isParaguay = selectedCountry === "Paraguay";
+  const isPeru = selectedCountry === "Peru";
   const hasExpress = selectedCountry ? hasExpressShipping(selectedCountry) : false;
 
   const availableMethods =
     selectedCountry === "Paraguay"
-      ? [{ value: "paraguay", label: "Paraguay Shipping" }]
-      : isDHLOnly
-        ? [{ value: "dhl", label: t("dhlShipping") }]
-        : [
+      ? [
+          { value: "paraguay", label: t("paraguayShippingLabel") },
+          { value: "paraguay-maritime", label: t("paraguayMaritimeShippingLabel") }
+        ]
+      : selectedCountry === "Peru"
+        ? [
             { value: "economic", label: t("economicShipping") },
             ...(hasExpress ? [{ value: "express", label: t("expressShippingMethod") }] : []),
             { value: "dhl", label: t("dhlShipping") },
-          ];
+            { value: "peru-maritime", label: t("peruMaritimeShippingLabel") }
+          ]
+        : isDHLOnly
+          ? [{ value: "dhl", label: t("dhlShipping") }]
+          : [
+              { value: "economic", label: t("economicShipping") },
+              ...(hasExpress ? [{ value: "express", label: t("expressShippingMethod") }] : []),
+              { value: "dhl", label: t("dhlShipping") },
+            ];
 
   useEffect(() => {
     if (selectedCountry && !ratesLoading && !settingsLoading) {
@@ -100,19 +110,28 @@ const ShippingCalculator = () => {
       );
 
       if (cost) {
-        // Always return number (total only)
         let totalCost = typeof cost === "number" ? cost : cost.total;
 
-        // Add handling fee and tax for DHL method (same as purchase calculator)
         if (shippingMethod === "dhl") {
           const handlingFee = 500;
           const tax = (totalCost + handlingFee) * 0.1;
           totalCost = totalCost + handlingFee + tax;
         }
 
+        let usdPrice = convertCurrency(totalCost, "usd");
+        if (shippingMethod === "peru-maritime") {
+          const weightInKg = Math.ceil(weight[0] / 1000);
+          const priceEntry = PERU_MARITIME_SHIPPING.priceTable.find(
+            (entry) => entry.kg === weightInKg
+          );
+          if (priceEntry) {
+            usdPrice = priceEntry.usd.toFixed(2);
+          }
+        }
+
         setShippingResults({
           shippingCost: totalCost,
-          usd: convertCurrency(totalCost, "usd"),
+          usd: usdPrice,
           mxn: convertCurrency(totalCost, "mxn"),
           clp: convertCurrency(totalCost, "clp"),
         });
@@ -192,7 +211,7 @@ const ShippingCalculator = () => {
             value={shippingMethod}
             onValueChange={(v) =>
               setShippingMethod(
-                v as "economic" | "express" | "paraguay" | "dhl"
+                v as "economic" | "express" | "paraguay" | "paraguay-maritime" | "peru-maritime" | "dhl"
               )
             }
             className="space-y-2 mt-2"
@@ -222,7 +241,7 @@ const ShippingCalculator = () => {
           </RadioGroup>
         </div>
 
-        {(shippingMethod === "dhl" || shippingMethod === "paraguay") && (
+        {(shippingMethod === "dhl" || shippingMethod === "paraguay" || shippingMethod === "paraguay-maritime" || shippingMethod === "peru-maritime") && (
           <div className="space-y-4 p-4 bg-capybara-cream/30 rounded-2xl border-2 border-capybara-yellow/40">
             <div className="space-y-3">
               <Label className="font-body text-sm font-semibold text-gray-700">
@@ -286,11 +305,10 @@ const ShippingCalculator = () => {
                 type="number"
                 min={weightRange.min}
                 max={weightRange.max}
-                step={shippingMethod === "paraguay" ? 200 : 50}
+                step={shippingMethod === "paraguay" ? 100 : shippingMethod === "paraguay-maritime" ? 200 : shippingMethod === "peru-maritime" ? 1000 : 50}
                 defaultValue={weight[0]}
                 key={`weight-${weight[0]}`}
                 onBlur={(e) => {
-                  // Validate and update state when user finishes typing
                   const value = e.target.value.trim();
                   if (value === "" || isNaN(Number(value))) {
                     setWeight([weightRange.min]);
@@ -319,7 +337,7 @@ const ShippingCalculator = () => {
               onValueChange={setWeight}
               min={weightRange.min}
               max={weightRange.max}
-              step={shippingMethod === "paraguay" ? 200 : 50}
+              step={shippingMethod === "paraguay" ? 100 : shippingMethod === "paraguay-maritime" ? 200 : shippingMethod === "peru-maritime" ? 1000 : 50}
               className="flex-1"
             />
             <div className="flex justify-between text-xs text-gray-600 font-body mt-2">

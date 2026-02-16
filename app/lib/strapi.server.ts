@@ -125,11 +125,6 @@ const getHomeComponents = async (language: string): Promise<any> => {
 const getHomeBannerCarousel = async (locale: string) => {
   const data = await strapiFetchAPI<StrapiResponse<any>>(
     `/api/banner?locale=${locale}populate[0]=carousell&populate[1]=carousell.image&populate[2]=carousell.article`,
-    {
-      headers: {
-        Authorization: `Bearer ${import.meta.env.VITE_STRAPI_API_KEY}`,
-      },
-    },
   );
   return data.data.carousell;
 };

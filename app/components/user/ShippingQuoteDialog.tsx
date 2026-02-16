@@ -25,7 +25,8 @@ import {
   useAnimatedNumber,
   getWeightRange,
   isDHLOnlyCountry,
-  hasExpressShipping
+  hasExpressShipping,
+  PERU_MARITIME_SHIPPING,
 } from '@/lib/shippingUtils';
 import { useCurrencyRates } from '@/hooks/useCurrencyRates';
 import { useSystemSettings } from '@/hooks/useSystemSettings';
@@ -63,7 +64,7 @@ const ShippingQuoteDialog: React.FC<ShippingQuoteDialogProps> = ({
   const [loading, setLoading] = useState(false);
 
   const [selectedCountry, setSelectedCountry] = useState('');
-  const [shippingMethod, setShippingMethod] = useState<'economic' | 'express' | 'paraguay' | 'dhl'>('economic');
+  const [shippingMethod, setShippingMethod] = useState<'economic' | 'express' | 'paraguay' | 'paraguay-maritime' | 'peru-maritime' | 'dhl'>('economic');
   const [fullName, setFullName] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [address, setAddress] = useState('');
@@ -81,23 +82,22 @@ const ShippingQuoteDialog: React.FC<ShippingQuoteDialogProps> = ({
   const numericWeight = Number(totalWeight) || 0;
   const hasExpress = selectedCountry ? hasExpressShipping(selectedCountry) : false;
 
-  // Auto-switch Paraguay logic
   useEffect(() => {
     if (selectedCountry === 'Paraguay') {
       setShippingMethod('paraguay');
-    } else if (shippingMethod === 'paraguay') {
+    } else if (shippingMethod === 'paraguay' || shippingMethod === 'paraguay-maritime') {
+      setShippingMethod('economic');
+    } else if (shippingMethod === 'peru-maritime' && selectedCountry !== 'Peru') {
       setShippingMethod('economic');
     }
   }, [selectedCountry]);
 
-  // Auto-switch to DHL for DHL-only countries
   useEffect(() => {
     if (isDHLOnly && shippingMethod !== 'dhl') {
       setShippingMethod('dhl');
     }
   }, [isDHLOnly, shippingMethod]);
 
-  // Auto-switch away from express if country doesn't support it
   useEffect(() => {
     if (shippingMethod === 'express' && selectedCountry && !hasExpressShipping(selectedCountry)) {
       setShippingMethod(numericWeight > 2000 ? 'dhl' : 'economic');
@@ -106,19 +106,37 @@ const ShippingQuoteDialog: React.FC<ShippingQuoteDialogProps> = ({
 
   const availableMethods =
     selectedCountry === 'Paraguay'
-      ? [{ value: 'paraguay', label: t('paraguayShippingLabel') }]
-      : isDHLOnly
-        ? [{ value: 'dhl', label: t('dhlShipping') }]
-        : numericWeight > 2000
-          ? [
-            ...(hasExpress ? [{ value: 'express', label: t('expressShippingLabel') }] : []),
-            { value: 'dhl', label: t('dhlShipping') }
-          ]
-          : [
-            { value: 'economic', label: t('economicShippingLabel') },
-            ...(hasExpress ? [{ value: 'express', label: t('expressShippingLabel') }] : []),
-            { value: 'dhl', label: t('dhlShipping') }
-          ];
+      ? [
+          { value: 'paraguay', label: t('paraguayShippingLabel') },
+          { value: 'paraguay-maritime', label: t('paraguayMaritimeShippingLabel') }
+        ]
+      : selectedCountry === 'Peru'
+        ? isDHLOnly
+          ? [{ value: 'dhl', label: t('dhlShipping') }]
+          : numericWeight > 2000
+            ? [
+                ...(hasExpress ? [{ value: 'express', label: t('expressShippingLabel') }] : []),
+                { value: 'dhl', label: t('dhlShipping') },
+                { value: 'peru-maritime', label: t('peruMaritimeShippingLabel') }
+              ]
+            : [
+                { value: 'economic', label: t('economicShippingLabel') },
+                ...(hasExpress ? [{ value: 'express', label: t('expressShippingLabel') }] : []),
+                { value: 'dhl', label: t('dhlShipping') },
+                { value: 'peru-maritime', label: t('peruMaritimeShippingLabel') }
+              ]
+        : isDHLOnly
+          ? [{ value: 'dhl', label: t('dhlShipping') }]
+          : numericWeight > 2000
+            ? [
+                ...(hasExpress ? [{ value: 'express', label: t('expressShippingLabel') }] : []),
+                { value: 'dhl', label: t('dhlShipping') }
+              ]
+            : [
+                { value: 'economic', label: t('economicShippingLabel') },
+                ...(hasExpress ? [{ value: 'express', label: t('expressShippingLabel') }] : []),
+                { value: 'dhl', label: t('dhlShipping') }
+              ];
 
 
   useEffect(() => {
@@ -127,7 +145,7 @@ const ShippingQuoteDialog: React.FC<ShippingQuoteDialogProps> = ({
     }
   }, [numericWeight, shippingMethod]);
 
-  const dimensions = (shippingMethod === 'dhl' || shippingMethod === 'paraguay') && length && width && height
+  const dimensions = (shippingMethod === 'dhl' || shippingMethod === 'paraguay' || shippingMethod === 'paraguay-maritime' || shippingMethod === 'peru-maritime') && length && width && height
     ? { L: Number(length), W: Number(width), H: Number(height) }
     : undefined;
   
@@ -187,7 +205,7 @@ const ShippingQuoteDialog: React.FC<ShippingQuoteDialogProps> = ({
           postal_code: postalCode,
           city,
           state,
-          ...((shippingMethod === 'dhl' || shippingMethod === 'paraguay') && length && width && height ? {
+          ...((shippingMethod === 'dhl' || shippingMethod === 'paraguay' || shippingMethod === 'paraguay-maritime' || shippingMethod === 'peru-maritime') && length && width && height ? {
             dimensions: { 
               length: Number(length), 
               width: Number(width), 
@@ -326,7 +344,7 @@ const ShippingQuoteDialog: React.FC<ShippingQuoteDialogProps> = ({
             <Label className="font-body text-sm text-gray-700">Shipping Method</Label>
             <RadioGroup
               value={shippingMethod}
-              onValueChange={(v) => setShippingMethod(v as 'economic' | 'express' | 'paraguay' | 'dhl')}
+              onValueChange={(v) => setShippingMethod(v as 'economic' | 'express' | 'paraguay' | 'paraguay-maritime' | 'peru-maritime' | 'dhl')}
               className="space-y-2 mt-2"
             >
               {availableMethods.map((method) => (
@@ -343,8 +361,8 @@ const ShippingQuoteDialog: React.FC<ShippingQuoteDialogProps> = ({
             </RadioGroup>
           </div>
 
-          {/* Dimensions (optional for DHL & Paraguay) */}
-          {(shippingMethod === 'dhl' || shippingMethod === 'paraguay') && (
+          {/* Dimensions (optional for DHL, Paraguay, Paraguay Maritime, Peru Maritime) */}
+          {(shippingMethod === 'dhl' || shippingMethod === 'paraguay' || shippingMethod === 'paraguay-maritime' || shippingMethod === 'peru-maritime') && (
             <div className="space-y-3">
               <div className="space-y-2">
                 <Label className="font-body text-sm text-gray-700">{t('dimensionsLabel')}</Label>
@@ -391,18 +409,31 @@ const ShippingQuoteDialog: React.FC<ShippingQuoteDialogProps> = ({
           )}
 
           {/* Estimated Cost */}
-          {shippingCost && (
-            <Card className="p-4 bg-gradient-to-br bg-gray-700 text-white rounded-2xl">
-              <div className="text-2xl font-bold text-center">{animatedCost.toLocaleString()} yen</div>
-              <p className="text-gray-300 text-sm text-center">{t('estimatedInternationalShipping')}</p>
-              <div className="border-t border-gray-200 mt-3 pt-3 space-y-1 text-sm">
-                <div className="flex justify-between">
-                  <span>USD</span>
-                  <span>${convertCurrency(shippingCost, 'usd')}</span>
+          {shippingCost && (() => {
+            let usdPrice = convertCurrency(shippingCost, 'usd');
+            if (shippingMethod === 'peru-maritime') {
+              const weightInKg = Math.ceil(numericWeight / 1000);
+              const priceEntry = PERU_MARITIME_SHIPPING.priceTable.find(
+                (entry) => entry.kg === weightInKg
+              );
+              if (priceEntry) {
+                usdPrice = priceEntry.usd.toFixed(2);
+              }
+            }
+            
+            return (
+              <Card className="p-4 bg-gradient-to-br bg-gray-700 text-white rounded-2xl">
+                <div className="text-2xl font-bold text-center">{animatedCost.toLocaleString()} yen</div>
+                <p className="text-gray-300 text-sm text-center">{t('estimatedInternationalShipping')}</p>
+                <div className="border-t border-gray-200 mt-3 pt-3 space-y-1 text-sm">
+                  <div className="flex justify-between">
+                    <span>USD</span>
+                    <span>${usdPrice}</span>
+                  </div>
                 </div>
-              </div>
-            </Card>
-          )}
+              </Card>
+            );
+          })()}
 
           {/* Address Form */}
           <div className="space-y-4">
