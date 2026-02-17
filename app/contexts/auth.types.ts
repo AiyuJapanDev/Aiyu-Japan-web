@@ -15,6 +15,7 @@ export interface Profile {
   user_personal_id?: string | null;
   city?: string | null;
   state?: string | null;
+  tax_vat_Id: string | null;
 }
 
 export interface AuthContextType {

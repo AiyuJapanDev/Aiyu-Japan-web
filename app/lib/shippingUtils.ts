@@ -555,22 +555,28 @@ export const calculateShippingCostByCountry = (
       const { ratePerKg, minWeight, maxWeight, step } = PARAGUAY_MARITIME_SHIPPING;
       
       let effectiveWeight = weight;
+      
+      // 1. Cálculo Volumétrico (si hay dimensiones)
       if (dimensions?.L && dimensions?.W && dimensions?.H) {
-        const volumetricKg = calculateVolumetricWeight(
-          dimensions.L, 
-          dimensions.W, 
-          dimensions.H
-        );
+        const volumetricKg = (dimensions.L * dimensions.W * dimensions.H) / 5000;
         const volumetricGrams = volumetricKg * 1000;
         effectiveWeight = Math.max(weight, volumetricGrams);
       }
 
+      // 2. Aplicar límites (mínimo 1kg, máximo 30kg)
       const clamped = Math.max(minWeight, Math.min(maxWeight, effectiveWeight));
+
+      // 3. Aplicar redondeo de la "barrita" (cada 200g)
+      // Ejemplo: 1100g -> se redondea a 1200g
       const rounded = Math.ceil(clamped / step) * step;
 
+      // 4. Calcular costo en USD y convertir a JPY para el sistema
       const weightInKg = rounded / 1000;
       const costInUSD = weightInKg * ratePerKg;
-      const costInJPY = costInUSD / currencyRates.usd;
+      
+      // Usamos el tipo de cambio inverso para obtener los Yenes
+      const costInJPY = costInUSD / currencyRates.usd; 
+      
       return costInJPY;
     }
     

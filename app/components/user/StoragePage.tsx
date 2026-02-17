@@ -256,19 +256,16 @@ export const StoragePage = () => {
 
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
-      // Get items that are not in any non-rejected/cancelled shipping quote
-      const available = items.filter(
+      // Get all items that have weight and are not part of an active shipping quote
+      const selectableItems = items.filter(
         (item) =>
+          item.weight !== null &&
+          item.weight !== undefined &&
           !shippingQuotes.some(
             (quote) =>
               !["rejected", "cancelled"].includes(quote.status) &&
               quote.items.some((quoteItem) => quoteItem.id === item.id)
           )
-      );
-      // Only select items that have weights and are NOT box items
-      const selectableItems = available.filter(
-        (item) =>
-          item.weight !== null && item.weight !== undefined && !item.is_box
       );
       setSelectedItems(new Set(selectableItems.map((item) => item.id)));
     } else {
@@ -279,43 +276,17 @@ export const StoragePage = () => {
   const handleSelectItem = (itemId: string, checked: boolean) => {
     const item = items.find((i) => i.id === itemId);
     // Don't allow selection if item doesn't have weight or is part of a shipping quote
-    if (item && (item.weight === null || item.weight === undefined)) {
+    if (
+      item &&
+      (item.weight === null ||
+        item.weight === undefined ||
+        shippingQuotes.some(
+          (quote) =>
+            !["rejected", "cancelled"].includes(quote.status) &&
+            quote.items.some((quoteItem) => quoteItem.id === itemId)
+        ))
+    ) {
       return;
-    }
-
-    // Check if item is part of a non-rejected/cancelled shipping quote
-    const isInShippingQuote = shippingQuotes.some(
-      (quote) =>
-        !["rejected", "cancelled"].includes(quote.status) &&
-        quote.items.some((quoteItem) => quoteItem.id === itemId)
-    );
-    if (isInShippingQuote) {
-      return;
-    }
-
-    // Prevent mixing box items with regular items
-    if (checked && item) {
-      // If trying to select a box item, check if any regular items are selected
-      if (item.is_box && selectedItems.size > 0) {
-        const hasRegularItems = items.some(
-          (i) => selectedItems.has(i.id) && !i.is_box
-        );
-        if (hasRegularItems) {
-          toast.error("Cannot mix address service items with regular items");
-          return;
-        }
-      }
-
-      // If trying to select a regular item, check if any box items are selected
-      if (!item.is_box && selectedItems.size > 0) {
-        const hasBoxItems = items.some(
-          (i) => selectedItems.has(i.id) && i.is_box
-        );
-        if (hasBoxItems) {
-          toast.error("Cannot mix regular items with address service items");
-          return;
-        }
-      }
     }
 
     const newSelected = new Set(selectedItems);
@@ -405,18 +376,17 @@ export const StoragePage = () => {
                     <TableHead className="w-12">
                       <Checkbox
                         checked={
+                          // Cambiado: Ahora comparamos contra TODOS los ítems que se pueden seleccionar
                           availableItems.filter(
                             (item) =>
                               item.weight !== null &&
-                              item.weight !== undefined &&
-                              !item.is_box
+                              item.weight !== undefined
                           ).length > 0 &&
                           selectedItems.size ===
                             availableItems.filter(
                               (item) =>
                                 item.weight !== null &&
-                                item.weight !== undefined &&
-                                !item.is_box
+                                item.weight !== undefined
                             ).length
                         }
                         onCheckedChange={handleSelectAll}
@@ -441,27 +411,10 @@ export const StoragePage = () => {
                         )
                     );
 
-                    // Check if this item should be disabled based on current selection
-                    const hasSelectedBoxItems =
-                      selectedItems.size > 0 &&
-                      items.some((i) => selectedItems.has(i.id) && i.is_box);
-                    const hasSelectedRegularItems =
-                      selectedItems.size > 0 &&
-                      items.some((i) => selectedItems.has(i.id) && !i.is_box);
-                    const isDisabledBySelection =
-                      (item.is_box && hasSelectedRegularItems) || // Box item disabled if regular items selected
-                      (!item.is_box && hasSelectedBoxItems); // Regular items disabled if box selected
-
                     return (
                       <TableRow
                         key={item.id}
-                        className={
-                          !hasWeight ||
-                          isInShippingQuote ||
-                          isDisabledBySelection
-                            ? "opacity-60"
-                            : ""
-                        }
+                        className={!hasWeight || isInShippingQuote ? "opacity-60" : ""}
                       >
                         <TableCell>
                           <Checkbox
@@ -469,11 +422,7 @@ export const StoragePage = () => {
                             onCheckedChange={(checked) =>
                               handleSelectItem(item.id, checked as boolean)
                             }
-                            disabled={
-                              !hasWeight ||
-                              isInShippingQuote ||
-                              isDisabledBySelection
-                            }
+                            disabled={!hasWeight || isInShippingQuote}
                           />
                         </TableCell>
                         <TableCell>
@@ -509,9 +458,7 @@ export const StoragePage = () => {
                                   title={item.product_url}
                                 >
                                   <Link className="h-3 w-3 flex-shrink-0" />
-                                  <span className="truncate">
-                                    {item.product_url}
-                                  </span>
+                                  <span className="truncate">{item.product_url}</span>
                                 </a>
                               )}
                             </div>

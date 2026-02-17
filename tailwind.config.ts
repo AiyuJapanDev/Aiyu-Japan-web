@@ -90,6 +90,10 @@ export default {
         full: "9999px",
       },
       keyframes: {
+        swim: {
+          '0%, 100%': { 'background-position': 'left center' },
+          '50%': { 'background-position': 'right center' },
+        },
         "accordion-down": {
           from: {
             height: "0",
@@ -147,6 +151,7 @@ export default {
         },
       },
       animation: {
+        swim: 'swim 25s ease-in-out infinite',
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
         "fade-in": "fade-in 0.3s ease-out",

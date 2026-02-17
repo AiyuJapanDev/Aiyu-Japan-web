@@ -1279,6 +1279,12 @@ export const ShippingPage = () => {
                               </span>{" "}
                               {quote.shipping_address.country}
                             </p>
+                            <p>
+                              <span className="font-medium">
+                                {t("taxVatIdShort")}
+                              </span>{" "}
+                              {quote.shipping_address.tax_vat_Id}
+                            </p>
                           </div>
                         </div>
                       )}
@@ -1726,9 +1732,9 @@ export const ShippingPage = () => {
                             </p>
                             <p>
                               <span className="font-medium">
-                                {t("country")}
+                                Tax/vatId
                               </span>{" "}
-                              {quote.shipping_address.country}
+                              {quote.shipping_address.tax_vat_Id}
                             </p>
                           </div>
                         </div>

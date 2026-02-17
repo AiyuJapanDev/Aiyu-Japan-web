@@ -222,16 +222,18 @@ export function ProductRequestForm() {
                     required
                     className="md:col-span-2"
                   />
-                  <Input
-                    type="number"
-                    placeholder={t("quantity")}
+                  <select
                     value={item.quantity}
-                    onChange={(e) =>
-                      updateItem(index, "quantity", e.target.value)
-                    }
-                    min="1"
+                    onChange={(e) => updateItem(index, "quantity", Number(e.target.value))}
                     required
-                  />
+                    style={{ maxHeight: "150px", overflowY: "auto" }}
+                  >
+                    {Array.from({ length: 100 }, (_, i) => (
+                      <option key={i + 1} value={i + 1}>
+                        {i + 1}
+                      </option>
+                    ))}
+                  </select>
                   <Input
                     placeholder={t("productNamePlaceholder")}
                     value={item.name}
