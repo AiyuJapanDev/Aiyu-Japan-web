@@ -342,7 +342,7 @@ export const OrdersPage = () => {
       // Step 1: Payment Confirmed
       if (index === 1) {
         if (["requested", "quoted"].includes(status)) {
-          return { ...step, status: "current" as StepStatus }; // Highlight for quoted/requested
+          return { ...step, status: "current" as StepStatus };
         }
         if (
           [
@@ -353,7 +353,7 @@ export const OrdersPage = () => {
             "all_received",
           ].includes(status)
         ) {
-          return { ...step, status: "completed" as StepStatus }; // ✅ mark completed once paid or later
+          return { ...step, status: "completed" as StepStatus }; 
         }
       }
 
@@ -766,6 +766,54 @@ export const OrdersPage = () => {
           </CollapsibleContent>
         </Collapsible>
 
+        {filteredOrders.length > 0 && totalPages > 1 && (
+          <Card className="bg-muted/30">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() =>
+                    setCurrentPage((prev) => Math.max(1, prev - 1))
+                  }
+                  disabled={currentPage === 1}
+                >
+                  <ChevronLeft className="h-4 w-4 mr-1" />
+                  {t("previous")}
+                </Button>
+
+                <div className="flex items-center gap-2">
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                    (page) => (
+                      <Button
+                        key={page}
+                        variant={currentPage === page ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setCurrentPage(page)}
+                        className="min-w-[40px]"
+                      >
+                        {page}
+                      </Button>
+                    ),
+                  )}
+                </div>
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() =>
+                    setCurrentPage((prev) => Math.min(totalPages, prev + 1))
+                  }
+                  disabled={currentPage === totalPages}
+                >
+                  {t("next")}
+                  <ChevronRight className="h-4 w-4 ml-1" />
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {paginatedOrders.map((order) => {
           const status = getOrderStatus(order);
           const statusSteps = getStatusSteps(status, order);
@@ -860,7 +908,7 @@ export const OrdersPage = () => {
                     {["paid"].includes(status) && (
                       <div className="mt-3 mb-4 p-3 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-lg">
                         <p className="text-sm text-blue-800 dark:text-blue-200">
-                          ℹ️ {t("paymentReceivedInfo")}
+                          ✅ {t("paymentReceivedInfo")}
                         </p>
                       </div>
                     )}
@@ -887,6 +935,14 @@ export const OrdersPage = () => {
                             </Button>
                           </div>
                         </div>
+                      </div>
+                    )}
+
+                    {status === "requested" && (
+                      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
+                        <p className="text-sm text-yellow-800">
+                          {t("productsInOrderWarning")}
+                        </p>
                       </div>
                     )}
 
@@ -962,7 +1018,6 @@ export const OrdersPage = () => {
                                   )}
                                 </div>
 
-                                {/* ✅ Fixed product link area */}
                                 <div className="max-w-[280px] truncate">
                                   <a
                                     href={item.product_request.product_url}
@@ -1005,7 +1060,6 @@ export const OrdersPage = () => {
                                   )}
                               </div>
 
-                              {/* ✅ Prevent badge from expanding the card */}
                               {!order.is_rejected && (
                                 <div className="flex-shrink-0 ml-3 self-start">
                                   {getProductStatusBadge(
@@ -1081,38 +1135,46 @@ export const OrdersPage = () => {
                               </div>
                             </div>
 
-                            <div className="flex flex-wrap items-center gap-2 sm:flex-nowrap">
-                              <Button
-                                variant="outline"
-                                onClick={() => setCancelOrderId(order.id)}
-                                className="text-destructive border-destructive hover:bg-destructive/10 w-full sm:w-auto"
-                              >
-                                {t("cancelOrder")}
-                              </Button>
-                              <Button
-                                variant="outline"
-                                onClick={() => handleEditOrder(order.id)}
-                                className="w-full sm:w-auto"
-                              >
-                                <Edit className="h-4 w-4 mr-2" />
-                                {t("editOrder")}
-                              </Button>
+                            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
                               <Button
                                 onClick={() =>
                                   handlePayment(productQuote.quote_url)
                                 }
-                                className="bg-primary hover:bg-primary/90 w-full sm:w-auto"
+                                className="w-full bg-primary hover:bg-primary/90 sm:w-auto"
                               >
-                                {t("payNow")}
+                                <span className="truncate font-bold">{t("payNow")}</span>
                               </Button>
+
+                              <section className="flex w-full gap-2 sm:w-auto sm:gap-4">
+                                <Button
+                                  variant="outline"
+                                  onClick={() => handleEditOrder(order.id)}
+                                  className="flex-1 min-w-0 px-2 text-xs sm:text-sm sm:w-auto sm:flex-none"
+                                >
+                                  <Edit className="h-4 w-4 mr-1 flex-shrink-0 sm:mr-2" />
+                                  <span className="truncate">
+                                    {t("editOrder")}
+                                  </span>
+                                </Button>
+
+                                <Button
+                                  variant="outline"
+                                  onClick={() => setCancelOrderId(order.id)}
+                                  className="flex-1 min-w-0 px-2 text-xs text-destructive border-destructive hover:bg-destructive/10 sm:text-sm sm:w-auto sm:flex-none"
+                                >
+                                  <span className="truncate">
+                                    {t("cancelOrder")}
+                                  </span>
+                                </Button>
+                              </section>
                             </div>
                           </div>
                         </div>
                       )}
 
                     {order.quotes && order.quotes.length > 0 && (
-                      <div className="mt-4 p-4 border border-blue-200 bg-blue-50/50 dark:bg-blue-950/30 dark:border-blue-800 rounded-xl">
-                        <p className="text-sm font-semibold text-blue-900 dark:text-blue-100 mb-2">
+                      <div className="mt-4 p-4 border border-green-500 bg-blue-50/50 dark:bg-blue-950/30 dark:border-blue-800 rounded-xl">
+                        <p className="text-sm font-bold text-green-900 dark:text-blue-100 mb-2">
                           {t("quoteInformation") || "Quote Information"}
                         </p>
 
@@ -1152,9 +1214,10 @@ export const OrdersPage = () => {
                                 className="bg-white/60 dark:bg-gray-800/60 rounded-lg p-3 border border-blue-100 dark:border-blue-900"
                               >
                                 <div className="flex flex-col gap-2 text-sm">
+                                    <p className="text-green-800 font-semibold">{quoteTypeText}</p>
                                   <div className="flex flex-col sm:flex-row sm:items-center sm:gap-3 gap-1">
-                                    <p className="text-blue-900 dark:text-blue-100 font-medium flex-shrink-0">
-                                      {quoteTypeText} - {t("status")}:{" "}
+                                    <p className="text-green-600">{t("infoPaidOrder")} - {t("status")}:{" "}</p>
+                                    <p className="text-green-600 dark:text-blue-100 font-medium flex-shrink-0">
                                       {formattedStatus}
                                     </p>
                                   </div>
@@ -1184,54 +1247,6 @@ export const OrdersPage = () => {
             </Collapsible>
           );
         })}
-
-        {filteredOrders.length > 0 && totalPages > 1 && (
-          <Card className="bg-muted/30">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() =>
-                    setCurrentPage((prev) => Math.max(1, prev - 1))
-                  }
-                  disabled={currentPage === 1}
-                >
-                  <ChevronLeft className="h-4 w-4 mr-1" />
-                  {t("previous")}
-                </Button>
-
-                <div className="flex items-center gap-2">
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                    (page) => (
-                      <Button
-                        key={page}
-                        variant={currentPage === page ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => setCurrentPage(page)}
-                        className="min-w-[40px]"
-                      >
-                        {page}
-                      </Button>
-                    ),
-                  )}
-                </div>
-
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() =>
-                    setCurrentPage((prev) => Math.min(totalPages, prev + 1))
-                  }
-                  disabled={currentPage === totalPages}
-                >
-                  {t("next")}
-                  <ChevronRight className="h-4 w-4 ml-1" />
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        )}
 
         {/* Cancel Order Confirmation Dialog */}
         <AlertDialog

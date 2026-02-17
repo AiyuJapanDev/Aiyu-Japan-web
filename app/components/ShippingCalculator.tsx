@@ -91,10 +91,10 @@ const ShippingCalculator = () => {
               { value: "dhl", label: t("dhlShipping") },
             ];
 
-  useEffect(() => {
+useEffect(() => {
     if (selectedCountry && !ratesLoading && !settingsLoading) {
       const dimensions =
-        (shippingMethod === "dhl" || shippingMethod === "paraguay") &&
+        (shippingMethod === "dhl" || shippingMethod === "paraguay" || shippingMethod === "paraguay-maritime") &&
         length &&
         width &&
         height
@@ -112,22 +112,45 @@ const ShippingCalculator = () => {
       if (cost) {
         let totalCost = typeof cost === "number" ? cost : cost.total;
 
+        // Costos adicionales específicos de DHL
         if (shippingMethod === "dhl") {
           const handlingFee = 500;
           const tax = (totalCost + handlingFee) * 0.1;
           totalCost = totalCost + handlingFee + tax;
         }
 
-        let usdPrice = convertCurrency(totalCost, "usd");
-        if (shippingMethod === "peru-maritime") {
+        let usdPrice: string;
+
+        // --- INICIO LÓGICA DE PRECIOS EN USD ---
+
+        // 1. Paraguay Marítimo: Forzar $12 USD por KG con saltos de 200g
+        if (shippingMethod === "paraguay-maritime") {
+          const step = 200;
+          const minWeight = 1000;
+          const maxWeight = 30000;
+          
+          // Aplicamos redondeo para la visualización en USD
+          const clampedWeight = Math.max(minWeight, Math.min(maxWeight, weight[0]));
+          const roundedWeight = Math.ceil(clampedWeight / step) * step;
+          
+          // Cálculo directo: (Gramos / 1000) * 12 USD
+          const finalUsd = (roundedWeight / 1000) * 12;
+          usdPrice = finalUsd.toFixed(2);
+        } 
+        // 2. Perú Marítimo: Usar tabla de precios definida
+        else if (shippingMethod === "peru-maritime") {
           const weightInKg = Math.ceil(weight[0] / 1000);
           const priceEntry = PERU_MARITIME_SHIPPING.priceTable.find(
             (entry) => entry.kg === weightInKg
           );
-          if (priceEntry) {
-            usdPrice = priceEntry.usd.toFixed(2);
-          }
+          usdPrice = priceEntry ? priceEntry.usd.toFixed(2) : convertCurrency(totalCost, "usd");
+        } 
+        // 3. Otros métodos: Conversión estándar basada en Yenes
+        else {
+          usdPrice = convertCurrency(totalCost, "usd");
         }
+
+        // --- FIN LÓGICA DE PRECIOS EN USD ---
 
         setShippingResults({
           shippingCost: totalCost,
@@ -337,7 +360,11 @@ const ShippingCalculator = () => {
               onValueChange={setWeight}
               min={weightRange.min}
               max={weightRange.max}
-              step={shippingMethod === "paraguay" ? 100 : shippingMethod === "paraguay-maritime" ? 200 : shippingMethod === "peru-maritime" ? 1000 : 50}
+              step={
+                shippingMethod === "paraguay-maritime" ? 200 : 
+                shippingMethod === "paraguay" ? 100 : 
+                shippingMethod === "peru-maritime" ? 1000 : 50
+              }
               className="flex-1"
             />
             <div className="flex justify-between text-xs text-gray-600 font-body mt-2">

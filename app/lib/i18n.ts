@@ -521,6 +521,7 @@ export const translations = {
     currentOrders: "Current Orders",
     cancelOrder: "Cancel Order",
     confirmCancelOrder: "Cancel Order?",
+    infoPaidOrder:"Your order payment has been received",
     cancelOrderWarning:
       "Are you sure you want to cancel this order? This action cannot be undone and you will need to submit a new request.",
     keepOrder: "Keep Order",
@@ -563,7 +564,7 @@ export const translations = {
     orderRejectReasons: "Review the reason and edit your order if needed",
     productIssues: "Product Issues",
     quoteInformation: "Quote Information",
-    productQuote: "Product Quote",
+    productQuote: "Invoice of your purchase",
     shippingQuote: "Shipping Quote",
     status: "Status",
     quotePrice: "Quote Price",
@@ -587,7 +588,7 @@ export const translations = {
     normalDeliveryInfo:
       "Normal orders may take from 3–5 days to arrive to our warehouse",
     paymentReceivedInfo:
-      "Payment received. We are going to proceed now to purchase/reserve your items",
+      "Payment received. We will proceed to purchase or reserve your products",
     paymentConfirmationNotice1:
       "Payment confirmation may take from a few minutes to several hours (during business hours).",
     paymentConfirmationNotice2:
@@ -770,6 +771,7 @@ export const translations = {
     // Edit Order Page
     editRejectedOrder: "Edit Rejected Order",
     orderRejectionReasonTitle: "Order Rejection Reason",
+    productsInOrderWarning: "We are checking the availability and pricing of your order; this could take minutes or hours, please wait.",
     productsInOrder: "Products in Order",
     editOrderDescription:
       "Edit the products below to fix any issues. Products marked with issues should be reviewed carefully.",
@@ -1758,6 +1760,7 @@ export const translations = {
 
     cancelOrder: "Cancelar Pedido",
     confirmCancelOrder: "Cancelar Pedido?",
+    infoPaidOrder:"Tu pago de la orden ha sido recibido",
     cancelOrderWarning:
       "¿Estás seguro de que quieres cancelar este pedido? Esta acción no puede ser deshecha y tendrás que enviar una nueva solicitud.",
     keepOrder: "Mantener Pedido",
@@ -1801,7 +1804,7 @@ export const translations = {
     orderRejectReasons: "Revisa el motivo y edita tu pedido si es necesario",
     productIssues: "Problemas del Producto",
     quoteInformation: "Información de Cotización",
-    productQuote: "Cotización de Producto",
+    productQuote: "Factura de su compra",
     shippingQuote: "Cotización de Envío",
     status: "Estado",
     quotePrice: "Precio de Cotización",
@@ -1825,7 +1828,7 @@ export const translations = {
     normalDeliveryInfo:
       "Los pedidos normales pueden tardar de 3 a 5 días en llegar a nuestro almacén",
     paymentReceivedInfo:
-      "Pago recibido. Procederemos ahora a comprar o reservar tus artículos",
+      "Pago recibido. Procederemos a realizar la compra o reserva de sus productos",
     paymentConfirmationNotice1:
       "La confirmación del pago puede tardar desde unos minutos hasta varias horas (durante el horario laboral).",
     paymentConfirmationNotice2:
@@ -2031,6 +2034,7 @@ export const translations = {
     // Edit Order Page
     editRejectedOrder: "Editar Pedido Rechazado",
     orderRejectionReasonTitle: "Motivo de Rechazo del Pedido",
+    productsInOrderWarning:"Estamos verificando disponibilidad y cotización de su orden, esto podría llevar minutos u horas, por favor espere.",
     productsInOrder: "Productos en el Pedido",
     editOrderDescription:
       "Edita los productos a continuación para corregir cualquier problema. Los productos marcados con problemas deben revisarse cuidadosamente.",
