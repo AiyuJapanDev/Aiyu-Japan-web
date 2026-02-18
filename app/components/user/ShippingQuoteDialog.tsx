@@ -89,6 +89,7 @@ const ShippingQuoteDialog: React.FC<ShippingQuoteDialogProps> = ({
   const [length, setLength] = useState("");
   const [width, setWidth] = useState("");
   const [height, setHeight] = useState("");
+  const [taxVatId, setTaxVatId] = useState("");
   const { t } = useApp();
 
   const zoneInfo = selectedCountry ? getZoneForCountry(selectedCountry) : null;
@@ -229,6 +230,7 @@ const ShippingQuoteDialog: React.FC<ShippingQuoteDialogProps> = ({
       setPostalCode(profile.postal_code || "");
       setCity(profile.city || "");
       setState(profile.state || "");
+      setTaxVatId(profile.tax_vat_Id || "");
     }
   }, [open, profile]);
 
@@ -240,8 +242,7 @@ const ShippingQuoteDialog: React.FC<ShippingQuoteDialogProps> = ({
       !selectedCountry ||
       !postalCode ||
       !city ||
-      !state ||
-      !profile?.tax_vat_Id
+      !state
     ) {
       toast({
         title: "Missing Information",
@@ -253,41 +254,45 @@ const ShippingQuoteDialog: React.FC<ShippingQuoteDialogProps> = ({
 
     setLoading(true);
     try {
+      const shippingAddress: any = {
+        full_name: fullName,
+        phone_number: phoneNumber,
+        address,
+        address_notes: addressNotes,
+        country: selectedCountry,
+        postal_code: postalCode,
+        city,
+        state,
+        ...((shippingMethod === "dhl" ||
+          shippingMethod === "paraguay" ||
+          shippingMethod === "paraguay-maritime" ||
+          shippingMethod === "peru-maritime") &&
+        length &&
+        width &&
+        height
+          ? {
+              dimensions: {
+                length: Number(length),
+                width: Number(width),
+                height: Number(height),
+              },
+              ...(shippingMethod === "dhl"
+                ? { fuel_percentage: systemSettings.dhlFuelPercentage }
+                : {}),
+            }
+          : {}),
+      };
+      if (taxVatId) {
+        shippingAddress.tax_vat_Id = taxVatId;
+      }
+
       const { error } = await supabase.from("shipping_quotes").insert({
         user_id: profile?.id,
         shipping_method: shippingMethod,
         destination: selectedCountry,
         total_weight: totalWeight,
         estimated_cost: shippingCost,
-        shipping_address: {
-          full_name: fullName,
-          phone_number: phoneNumber,
-          address,
-          address_notes: addressNotes,
-          country: selectedCountry,
-          postal_code: postalCode,
-          city,
-          state,
-          tax_vat_Id: profile.tax_vat_Id,
-          ...((shippingMethod === "dhl" ||
-            shippingMethod === "paraguay" ||
-            shippingMethod === "paraguay-maritime" ||
-            shippingMethod === "peru-maritime") &&
-          length &&
-          width &&
-          height
-            ? {
-                dimensions: {
-                  length: Number(length),
-                  width: Number(width),
-                  height: Number(height),
-                },
-                ...(shippingMethod === "dhl"
-                  ? { fuel_percentage: systemSettings.dhlFuelPercentage }
-                  : {}),
-            }
-          : {}),
-        },
+        shipping_address: shippingAddress,
         items: selectedItems.map((item) => ({
           order_item_id: item.id,
           order_id: item.order_id || "", // Handle optional order_id
@@ -609,9 +614,13 @@ const ShippingQuoteDialog: React.FC<ShippingQuoteDialogProps> = ({
               </div>
             </div>
             <div>
-              <p className="text-sm text-gray-700">
-                <strong>{t("taxVatIdLabel")}:</strong> {profile?.tax_vat_Id || t("notAvailable")}
-              </p>
+              <Label htmlFor="taxVatId">{t("taxVatIdLabel")}</Label>
+              <Input
+                id="taxVatId"
+                value={taxVatId}
+                onChange={(e) => setTaxVatId(e.target.value)}
+                placeholder={t("taxVatIdPlaceholder")}
+              />
             </div>
           </div>
           <div>
