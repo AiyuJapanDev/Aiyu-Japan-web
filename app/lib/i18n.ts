@@ -603,6 +603,8 @@ export const translations = {
     statusStepAllAtWarehouse: "All Items at Warehouse",
 
     // Storage Page
+    viewDetails: "View Details",
+    refresh: "Refresh",
     warehouseStorage: "Warehouse Storage",
     selectItemsToShip: "Select items to request a shipping quote",
     availableItems: "Available Items",
@@ -631,6 +633,7 @@ export const translations = {
     // Storage Page
 
     // Shipping Page
+    shippingActiveOrders: "Shipping Orders",
     shippingTitle: "Shipping",
     filterShipments: "Filter Shipments",
     statusAwaitingQuote: "Awaiting Quote",
@@ -1843,7 +1846,9 @@ export const translations = {
     statusStepAllAtWarehouse: "Todos los artículos en el almacén",
 
     // Storage Page
+    viewDetails: "Ver Detalles",
     warehouseStorage: "Almacenamiento en Bodega",
+    refresh: "Actualizar",
     selectItemsToShip:
       "Selecciona artículos para solicitar una cotización de envío",
     availableItems: "Artículos Disponibles",
@@ -1872,6 +1877,7 @@ export const translations = {
     addressService: "Servicio de casillero",
 
     // Shipping Page
+    shippingActiveOrders: "Ordenes de envio",
     shippingTitle: "Envíos",
     filterShipments: "Filtrar Envíos",
     statusAwaitingQuote: "Esperando Cotización",

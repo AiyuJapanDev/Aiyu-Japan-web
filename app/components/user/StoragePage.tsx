@@ -1,28 +1,18 @@
 import React, { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
   Package,
-  Truck,
-  AlertCircle,
   Scale,
   Info,
-  Globe,
-  ArrowRight,
-  Clock,
-  ChevronDown,
   Link,
   RefreshCw,
+  Clock,
+  ChevronDown,
+  ArrowRight,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { toast } from "sonner";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -33,29 +23,19 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import ShippingQuoteDialog from "@/components/user/ShippingQuoteDialog";
-import { calculateShippingCost, destinations } from "@/lib/shippingUtils";
 import { useNavigate } from "react-router";
 import { useApp } from "@/contexts/AppContext";
 
 interface StorageItem {
   id: string;
   product_request_id: string;
-  order_id?: string; // Made optional
+  order_id?: string;
   order_personal_id?: string;
   product_url: string;
   item_name?: string;
@@ -91,20 +71,24 @@ export const StoragePage = () => {
   const [loading, setLoading] = useState(true);
   const [quoteDialogOpen, setQuoteDialogOpen] = useState(false);
   const [shippingQuotes, setShippingQuotes] = useState<ShippingQuoteGroup[]>(
-    []
+    [],
   );
   const { t } = useApp();
 
-  // Calculate values for selected items
   const selectedItemsList = items.filter((item) => selectedItems.has(item.id));
   const totalWeight = selectedItemsList.reduce(
     (sum, item) => sum + (item.weight || 0),
-    0
+    0,
   );
 
+  const fetchData = async () => {
+    setLoading(true);
+    await Promise.all([fetchStorageItems(), fetchShippingQuotes()]);
+    setLoading(false);
+  };
+
   useEffect(() => {
-    fetchStorageItems();
-    fetchShippingQuotes();
+    fetchData();
   }, []);
 
   const fetchShippingQuotes = async () => {
@@ -113,7 +97,6 @@ export const StoragePage = () => {
         data: { user },
       } = await supabase.auth.getUser();
       if (!user) return;
-
       const { data, error } = await supabase
         .from("shipping_quotes")
         .select("*")
@@ -121,28 +104,14 @@ export const StoragePage = () => {
         .order("created_at", { ascending: false });
 
       if (error) throw error;
-
-      // Group items by shipping quote
-      const groups: ShippingQuoteGroup[] = [];
-      for (const quote of data || []) {
-        const itemIds = (quote.items as any[]).map(
-          (item) => item.order_item_id
-        );
-        const group: ShippingQuoteGroup = {
-          id: quote.id,
-          shipment_personal_id: quote.shipment_personal_id,
-          created_at: quote.created_at,
-          status: quote.status,
-          items: [],
-          total_weight: quote.total_weight,
-          destination: quote.destination,
-          shipping_method: quote.shipping_method,
-        };
-        groups.push(group);
-      }
-      setShippingQuotes(groups);
+      setShippingQuotes(
+        (data || []).map((q) => ({
+          ...q,
+          items: (q.items as any[]) || [],
+        })),
+      );
     } catch (error) {
-      console.error("Error fetching shipping quotes:", error);
+      console.error("Error quotes:", error);
     }
   };
 
@@ -153,29 +122,16 @@ export const StoragePage = () => {
       } = await supabase.auth.getUser();
       if (!user) return;
 
-      // Query product_requests directly with LEFT JOIN to orders
       const { data, error } = await supabase
         .from("product_requests")
         .select(
           `
-          id,
-          product_url,
-          item_name,
-          quantity,
-          status,
-          weight,
-          is_box,
-          local_tracking_number,
-          created_at,
+          id, product_url, item_name, quantity, status, weight, is_box,
+          local_tracking_number, created_at,
           order_items!left (
-            id,
-            order:orders!left (
-              id,
-              order_personal_id,
-              created_at
-            )
+            id, order:orders!left (id, order_personal_id, created_at)
           )
-        `
+        `,
         )
         .eq("user_id", user.id)
         .eq("status", "received")
@@ -183,444 +139,318 @@ export const StoragePage = () => {
 
       if (error) throw error;
 
-      // Transform the data into StorageItem format
-      const storageItems: StorageItem[] =
-        data?.map((item) => {
-          const orderItem = item.order_items?.[0];
-          const order = orderItem?.order;
-
-          return {
-            id: orderItem?.id || item.id, // Use order_item id if available, else product_request id
-            product_request_id: item.id,
-            order_id: order?.id,
-            order_personal_id: order?.order_personal_id,
-            product_url: item.product_url,
-            item_name: item.item_name,
+      setItems(
+        data?.map((item) => ({
+          id: item.order_items?.[0]?.id || item.id,
+          product_request_id: item.id,
+          order_id: item.order_items?.[0]?.order?.id,
+          order_personal_id: item.order_items?.[0]?.order?.order_personal_id,
+          product_url: item.product_url,
+          item_name: item.item_name,
+          quantity: item.quantity || 1,
+          weight: item.weight,
+          status: item.status,
+          created_at: item.created_at,
+          order_created_at:
+            item.order_items?.[0]?.order?.created_at || item.created_at,
+          is_box: item.is_box,
+          local_tracking_number: item.local_tracking_number,
+          product_request: {
+            item_name: item.item_name || "Producto",
             quantity: item.quantity || 1,
-            weight: item.weight,
-            status: item.status,
-            created_at: item.created_at,
-            order_created_at: order?.created_at || item.created_at,
-            is_box: item.is_box,
-            local_tracking_number: item.local_tracking_number,
-            product_request: {
-              item_name: item.item_name || "Unnamed Product",
-              quantity: item.quantity || 1,
-              product_url: item.product_url,
-            },
-          };
-        }) || [];
-
-      console.log("Fetched storage items:", storageItems.length, "items");
-      setItems(storageItems);
-
-      // Update shipping quotes with actual items
-      const { data: quotesData } = await supabase
-        .from("shipping_quotes")
-        .select("*")
-        .eq("user_id", user.id)
-        .order("created_at", { ascending: false });
-
-      const groups: ShippingQuoteGroup[] = [];
-      for (const quote of quotesData || []) {
-        const quoteItems: StorageItem[] = [];
-        for (const quoteItem of quote.items as any[]) {
-          const item = storageItems.find(
-            (si) => si.id === (quoteItem.order_item_id || quoteItem.id)
-          ); // Handle both field names for backward compatibility
-          if (item) {
-            quoteItems.push(item);
-          }
-        }
-        if (quoteItems.length > 0) {
-          groups.push({
-            id: quote.id,
-            shipment_personal_id: quote.shipment_personal_id,
-            created_at: quote.created_at,
-            status: quote.status,
-            items: quoteItems,
-            total_weight: quote.total_weight,
-            destination: quote.destination,
-            shipping_method: quote.shipping_method,
-          });
-        }
-      }
-      setShippingQuotes(groups);
-    } catch (error) {
-      console.error("Error fetching storage items:", error);
-      toast.error("Failed to load storage items");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleSelectAll = (checked: boolean) => {
-    if (checked) {
-      // Get all items that have weight and are not part of an active shipping quote
-      const selectableItems = items.filter(
-        (item) =>
-          item.weight !== null &&
-          item.weight !== undefined &&
-          !shippingQuotes.some(
-            (quote) =>
-              !["rejected", "cancelled"].includes(quote.status) &&
-              quote.items.some((quoteItem) => quoteItem.id === item.id)
-          )
+            product_url: item.product_url,
+          },
+        })) || [],
       );
-      setSelectedItems(new Set(selectableItems.map((item) => item.id)));
-    } else {
-      setSelectedItems(new Set());
+    } catch (error) {
+      toast.error(t("errorFetchingStorage"));
     }
   };
 
-  const handleSelectItem = (itemId: string, checked: boolean) => {
-    const item = items.find((i) => i.id === itemId);
-    // Don't allow selection if item doesn't have weight or is part of a shipping quote
-    if (
-      item &&
-      (item.weight === null ||
-        item.weight === undefined ||
-        shippingQuotes.some(
-          (quote) =>
-            !["rejected", "cancelled"].includes(quote.status) &&
-            quote.items.some((quoteItem) => quoteItem.id === itemId)
-        ))
-    ) {
-      return;
-    }
-
-    const newSelected = new Set(selectedItems);
-    if (checked) {
-      newSelected.add(itemId);
-    } else {
-      newSelected.delete(itemId);
-    }
-    setSelectedItems(newSelected);
-  };
-
-  const handleRequestShipping = () => {
-    if (selectedItems.size === 0) {
-      toast.error("Please select at least one item to ship");
-      return;
-    }
-
-    setQuoteDialogOpen(true);
-  };
-
-  if (loading) {
-    return (
-      <div className="flex justify-center p-8">Loading storage items...</div>
-    );
-  }
-
-  if (items.length === 0) {
-    return (
-      <Card>
-        <CardContent className="p-8 text-center">
-          <Package className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-          <p className="text-muted-foreground">{t("noItemsAtWarehouse")}</p>
-          <p className="text-sm text-muted-foreground mt-2">
-            {t("noItemsDescription")}
-          </p>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  // Get items that are not in any non-rejected/cancelled shipping quote
   const availableItems = items.filter(
     (item) =>
       !shippingQuotes.some(
-        (quote) =>
-          !["rejected", "cancelled"].includes(quote.status) &&
-          quote.items.some((quoteItem) => quoteItem.id === item.id)
-      )
+        (q) =>
+          !["rejected", "cancelled"].includes(q.status) &&
+          q.items.some((qi: any) => (qi.order_item_id || qi.id) === item.id),
+      ),
   );
 
+  const handleSelectItem = (id: string, checked: boolean) => {
+    const item = items.find((i) => i.id === id);
+    if (!item?.weight) return;
+    const newSelected = new Set(selectedItems);
+    if (checked) newSelected.add(id);
+    else newSelected.delete(id);
+    setSelectedItems(newSelected);
+  };
+
+  if (loading)
+    return (
+      <div className="flex flex-col items-center justify-center p-20 space-y-4">
+        <RefreshCw className="h-8 w-8 text-orange-300 animate-spin" />
+        <p className="text-sm text-slate-400 font-bold uppercase tracking-widest">
+          {t("loading")}
+        </p>
+      </div>
+    );
+
   return (
-    <div className="space-y-4">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+    <div className="max-w-[1200px] mx-auto px-4 py-8 space-y-8 pb-32">
+      {/* HEADER */}
+      <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold">{t("warehouseStorage")}</h2>
-          <p className="text-sm text-muted-foreground mt-1">
+          <h2 className="text-2xl font-bold tracking-tight text-slate-900">
+            {t("warehouseStorage")}
+          </h2>
+          <p className="text-sm text-slate-500 font-medium">
             {t("selectItemsToShip")}
           </p>
         </div>
-        <div className="flex items-center gap-2 flex-wrap">
-          <Button variant="outline" size="sm" onClick={fetchStorageItems}>
-            <RefreshCw className="h-4 w-4 mr-2" />
-            <span className="hidden sm:inline">Refresh</span>
-            <span className="sm:hidden">Refresh</span>
-          </Button>
-          <Badge
+        <div className="flex items-center gap-3">
+          <Button
             variant="outline"
-            className="text-xs sm:text-sm whitespace-nowrap"
+            size="sm"
+            onClick={fetchData}
+            className="rounded-lg bg-white h-10 border-slate-200 shadow-sm active:scale-95 transition-all"
           >
-            <Package className="h-3 w-3 mr-1" />
-            {availableItems.length}{" "}
-            <span className="hidden xs:inline">
-              {availableItems.length === 1 ? t("itemLabel") : t("itemsLabel")}
-            </span>
+            <RefreshCw className="h-4 w-4 mr-2" />
+            {t("refresh")}
+          </Button>
+          <Badge className="bg-slate-100 text-slate-600 border-none h-10 px-4 rounded-lg text-sm font-bold">
+            <Package className="h-4 w-4 mr-2" /> {availableItems.length}
           </Badge>
         </div>
-      </div>
+      </header>
 
-      {availableItems.length > 0 && (
-        <>
-          <h3 className="text-lg font-semibold">{t("availableItems")}</h3>
-          <Card>
-            <CardContent className="p-0">
+      {/* TABLA */}
+      <section className="space-y-4">
+        <h3 className="text-sm font-bold text-slate-800 px-1">
+          {t("availableItems")}
+        </h3>
+        <Card className="overflow-hidden border-slate-200 shadow-sm rounded-xl bg-white">
+          <CardContent className="p-0">
+            <div className="overflow-x-auto">
               <Table>
-                <TableHeader>
+                <TableHeader className="bg-slate-50/50">
                   <TableRow>
-                    <TableHead className="w-12">
+                    <TableHead className="w-12 px-6">
                       <Checkbox
                         checked={
-                          // Cambiado: Ahora comparamos contra TODOS los ítems que se pueden seleccionar
-                          availableItems.filter(
-                            (item) =>
-                              item.weight !== null &&
-                              item.weight !== undefined
-                          ).length > 0 &&
+                          selectedItems.size > 0 &&
                           selectedItems.size ===
-                            availableItems.filter(
-                              (item) =>
-                                item.weight !== null &&
-                                item.weight !== undefined
-                            ).length
+                            availableItems.filter((i) => i.weight).length
                         }
-                        onCheckedChange={handleSelectAll}
+                        onCheckedChange={(c) => {
+                          if (c)
+                            setSelectedItems(
+                              new Set(
+                                availableItems
+                                  .filter((i) => i.weight)
+                                  .map((i) => i.id),
+                              ),
+                            );
+                          else setSelectedItems(new Set());
+                        }}
                       />
                     </TableHead>
-                    <TableHead>{t("itemName")}</TableHead>
-                    <TableHead>{t("quantity")}</TableHead>
-                    <TableHead>{t("weight")}</TableHead>
-                    <TableHead>{t("orderNumberShort")}</TableHead>
-                    <TableHead>{t("arrived")}</TableHead>
+                    <TableHead className="text-[11px] font-bold uppercase text-slate-400">
+                      {t("itemName")}
+                    </TableHead>
+                    <TableHead className="text-[11px] font-bold uppercase text-slate-400 text-center">
+                      {t("quantity") || "Cant."}
+                    </TableHead>
+                    <TableHead className="text-[11px] font-bold uppercase text-slate-400 text-center">
+                      {t("weight")}
+                    </TableHead>
+                    <TableHead className="text-[11px] font-bold uppercase text-slate-400 text-center">
+                      {t("orderNumberShort")}
+                    </TableHead>
+                    <TableHead className="text-[11px] font-bold uppercase text-slate-400 text-right px-6">
+                      {t("arrived")}
+                    </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {availableItems.map((item) => {
-                    const hasWeight =
-                      item.weight !== null && item.weight !== undefined;
-                    const isInShippingQuote = shippingQuotes.some(
-                      (quote) =>
-                        !["rejected", "cancelled"].includes(quote.status) &&
-                        quote.items.some(
-                          (quoteItem) => quoteItem.id === item.id
-                        )
-                    );
-
-                    return (
+                  {availableItems.length === 0 ? (
+                    <TableRow>
+                      <TableCell
+                        colSpan={6}
+                        className="h-32 text-center text-slate-400 italic"
+                      >
+                        {t("noContent")}
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    availableItems.map((item) => (
                       <TableRow
                         key={item.id}
-                        className={!hasWeight || isInShippingQuote ? "opacity-60" : ""}
+                        className={`${!item.weight ? "opacity-50" : ""} hover:bg-slate-50/30`}
                       >
-                        <TableCell>
+                        <TableCell className="px-6">
                           <Checkbox
                             checked={selectedItems.has(item.id)}
-                            onCheckedChange={(checked) =>
-                              handleSelectItem(item.id, checked as boolean)
+                            onCheckedChange={(c) =>
+                              handleSelectItem(item.id, !!c)
                             }
-                            disabled={!hasWeight || isInShippingQuote}
+                            disabled={!item.weight}
                           />
                         </TableCell>
-                        <TableCell>
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <p className="font-medium">
-                                {item.item_name || t("unnamedProduct")}
-                              </p>
-                              {item.is_box && (
-                                <Badge
-                                  variant="secondary"
-                                  className="text-xs whitespace-nowrap"
-                                >
-                                  {t("addressService")}
-                                </Badge>
-                              )}
-                            </div>
-                            <div className="max-w-[280px] truncate">
-                              {item.is_box && item.local_tracking_number ? (
-                                <div className="flex items-center gap-1 text-sm text-muted-foreground mt-1">
-                                  <Package className="h-3 w-3 flex-shrink-0" />
-                                  <span className="font-medium">
-                                    Local Tracking #:
-                                  </span>
-                                  <span>{item.local_tracking_number}</span>
-                                </div>
-                              ) : (
-                                <a
-                                  href={item.product_url}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="inline-flex items-center gap-1 text-blue-600 hover:underline text-xs"
-                                  title={item.product_url}
-                                >
-                                  <Link className="h-3 w-3 flex-shrink-0" />
-                                  <span className="truncate">{item.product_url}</span>
-                                </a>
-                              )}
-                            </div>
+                        <TableCell className="py-4">
+                          <div className="flex flex-col">
+                            <span className="font-bold text-sm text-slate-700">
+                              {item.item_name}
+                            </span>
+                            {item.is_box && (
+                              <span className="text-[10px] text-blue-600 font-bold uppercase">
+                                {t("addressService")}
+                              </span>
+                            )}
+                            <a
+                              href={item.product_url}
+                              target="_blank"
+                              className="text-blue-500 text-[10px] truncate max-w-[180px] hover:underline"
+                            >
+                              {item.product_url}
+                            </a>
                           </div>
                         </TableCell>
-                        <TableCell>{item.quantity}</TableCell>
-                        <TableCell>
-                          {hasWeight ? (
-                            <div className="flex items-center gap-1">
-                              <Scale className="h-3 w-3 text-muted-foreground" />
-                              <span>{item.weight}g</span>
-                            </div>
-                          ) : (
-                            <div className="flex items-center gap-1 text-amber-600">
-                              <AlertCircle className="h-3 w-3" />
-                              <span className="text-sm">
-                                {t("awaitingWeighing")}
-                              </span>
-                            </div>
-                          )}
+                        <TableCell className="text-center font-semibold text-slate-600">
+                          {item.quantity}
                         </TableCell>
-                        <TableCell>
-                          <span className="text-xs font-mono">
-                            #
-                            {item.order_personal_id ||
-                              (item.order_id ? item.order_id.slice(0, 8) : "-")}
+                        <TableCell className="text-center">
+                          <span className="text-xs font-bold text-slate-500">
+                            {item.weight ? `${item.weight}g` : t("pending")}
                           </span>
                         </TableCell>
-                        <TableCell>
-                          <span className="text-sm text-muted-foreground">
-                            {new Date(
-                              item.order_created_at
-                            ).toLocaleDateString()}
-                          </span>
+                        <TableCell className="text-center text-xs font-mono font-bold text-slate-400">
+                          {item.order_personal_id
+                            ? `#${item.order_personal_id}`
+                            : "-"}
+                        </TableCell>
+                        <TableCell className="text-right px-6 text-[11px] font-bold text-slate-400">
+                          {new Date(item.order_created_at).toLocaleDateString()}
                         </TableCell>
                       </TableRow>
-                    );
-                  })}
+                    ))
+                  )}
                 </TableBody>
               </Table>
-            </CardContent>
-          </Card>
-          {selectedItems.size > 0 && (
-            <Card className="bg-primary/5 border-primary/20">
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-medium">
-                      {selectedItems.size}{" "}
-                      {selectedItems.size === 1
-                        ? t("itemSelected")
-                        : t("itemsSelected")}
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      {t("totalWeight")} {totalWeight}g
-                    </p>
-                  </div>
-                  <Button
-                    onClick={handleRequestShipping}
-                    className="bg-primary hover:bg-primary/90"
-                  >
-                    <Truck className="h-4 w-4 mr-2" />
-                    {t("requestShippingQuote")}
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-          <Alert>
-            <AlertCircle className="h-4 w-4" />
-            <AlertDescription>
-              <ul className="text-sm space-y-1 mt-2">
-                <li>• {t("storageAlert1")}</li>
-                <li>• {t("storageAlert2")}</li>
-                <li>• {t("storageAlert3")}</li>
-              </ul>
-            </AlertDescription>
-          </Alert>
-        </>
-      )}
+            </div>
+          </CardContent>
+        </Card>
+      </section>
 
-      {/* Show non-rejected shipping quotes */}
-      {shippingQuotes.filter(
-        (q) => q.status === "pending" || q.status === "quoted"
-      ).length > 0 && (
+      {/* SECCIÓN INFERIOR LADO A LADO */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+        <div className="p-6 bg-white border border-slate-200 rounded-xl flex gap-4 shadow-sm min-h-[160px]">
+          <Info className="h-5 w-5 text-slate-400 shrink-0 mt-0.5" />
+          <div className="text-[13px] text-slate-600 space-y-2 font-medium">
+            <p>• {t("storageAlert1")}</p>
+            <p>• {t("storageAlert2")}</p>
+            <p>
+              •{" "}
+              {t("storageAlert3") ||
+                "No hay límite de tiempo para almacenar los artículos"}
+            </p>
+          </div>
+        </div>
+
         <div className="space-y-4">
-          <h3 className="text-lg font-semibold">
+          <h3 className="text-sm font-bold text-slate-800 px-1">
             {t("shippingQuotesRequested")}
           </h3>
-          {shippingQuotes
-            .filter((q) => q.status === "pending" || q.status === "quoted")
-            .map((quote) => (
-              <Collapsible key={quote.id}>
-                <Card className="border-primary/20 bg-primary/5">
-                  <CardHeader>
-                    <CollapsibleTrigger className="w-full">
-                      <div className="flex items-center justify-between">
-                        <div className="text-left">
-                          <CardTitle className="text-base flex items-center gap-2">
-                            <Clock className="h-4 w-4" />
-                            {t("shipmentNumber")}
-                            {quote.shipment_personal_id || quote.id.slice(0, 8)}
-                          </CardTitle>
-                          <p className="text-sm text-muted-foreground mt-1">
-                            {quote.items.length} items • {quote.total_weight}g •{" "}
-                            {quote.destination} • {quote.shipping_method}
-                          </p>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Badge variant="outline" className="capitalize">
-                            {quote.status}
-                          </Badge>
-                          <ChevronDown className="h-4 w-4 transition-transform duration-200" />
-                        </div>
+          <div className="space-y-3">
+            {shippingQuotes
+              .filter((q) => ["pending", "quoted"].includes(q.status))
+              .map((quote) => (
+                <Collapsible
+                  key={quote.id}
+                  className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden"
+                >
+                  <CollapsibleTrigger className="w-full p-4 flex items-center justify-between hover:bg-slate-50/50 transition-colors">
+                    <div className="flex items-center gap-3">
+                      <Clock className="h-4 w-4 text-slate-400" />
+                      <div className="flex flex-col items-start">
+                        <span className="text-xs font-bold text-slate-700 uppercase">
+                          #{quote.shipment_personal_id || quote.id.slice(0, 6)}
+                        </span>
+                        <span className="text-[10px] text-slate-400 font-bold">
+                          {quote.items?.length} items • {quote.total_weight}g
+                        </span>
                       </div>
-                    </CollapsibleTrigger>
-                  </CardHeader>
-                  <CollapsibleContent className="overflow-hidden data-[state=open]:animate-collapsible-down data-[state=closed]:animate-collapsible-up">
-                    <CardContent>
-                      <div className="space-y-2">
-                        {quote.items.map((item) => (
-                          <div
-                            key={item.id}
-                            className="text-sm p-2 bg-background rounded"
-                          >
-                            <span className="font-medium">
-                              {item.item_name || "Unnamed Product"}
-                            </span>
-                            <span className="text-muted-foreground ml-2">
-                              x{item.quantity}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Badge className="bg-slate-100 text-slate-500 border-none font-bold text-[9px] uppercase">
+                        {quote.status}
+                      </Badge>
+                      <ChevronDown className="h-4 w-4 text-slate-400" />
+                    </div>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent className="border-t border-slate-100 p-4 bg-slate-50/30">
+                    <div className="space-y-2">
+                      {quote.items?.map((item: any, idx) => (
+                        <div
+                          key={idx}
+                          className="flex justify-between text-xs bg-white p-2 rounded border border-slate-100 font-bold"
+                        >
+                          <span className="text-slate-600 truncate mr-4">
+                            {item.item_name}
+                          </span>
+                          <span className="text-slate-400 shrink-0">
+                            {item.weight}g
+                          </span>
+                        </div>
+                      ))}
                       <Button
-                        variant="outline"
-                        className="w-full mt-4"
+                        variant="link"
+                        size="sm"
+                        className="text-orange-400 font-bold text-sm text-center p-0 h-auto mt-2"
                         onClick={() => navigate("/user-dashboard?tab=shipping")}
                       >
-                        <ArrowRight className="h-4 w-4 mr-2" />
-                        {t("viewInShipping")}
+                        {t("viewDetails")}{" "}
+                        <ArrowRight className="ml-1 h-3 w-3" />
                       </Button>
-                    </CardContent>
+                    </div>
                   </CollapsibleContent>
-                </Card>
-              </Collapsible>
-            ))}
+                </Collapsible>
+              ))}
+          </div>
+        </div>
+      </div>
+
+      {/* BARRA FLOTANTE */}
+      {selectedItems.size > 0 && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 w-[calc(100%-2rem)] max-w-[500px] animate-in slide-in-from-bottom-5">
+          <div className="bg-slate-900 text-white p-4 rounded-2xl shadow-2xl flex items-center justify-between border border-white/10">
+            <div className="flex flex-col pl-2">
+              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest leading-none mb-1">
+                {selectedItems.size} {t("selected")}
+              </span>
+              <span className="text-sm font-bold text-orange-400 italic">
+                {totalWeight}g {t("total")}
+              </span>
+            </div>
+            <Button
+              onClick={() => setQuoteDialogOpen(true)}
+              className="bg-orange-400 hover:bg-orange-500 text-white rounded-xl px-6 h-11 text-xs font-bold uppercase tracking-tight shadow-lg border-none active:scale-95 transition-all"
+            >
+              {t("requestShippingQuote")}{" "}
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
+          </div>
         </div>
       )}
 
-      {/* Shipping Quote Dialog */}
       <ShippingQuoteDialog
         open={quoteDialogOpen}
         onOpenChange={setQuoteDialogOpen}
         selectedItems={selectedItemsList}
         totalWeight={totalWeight}
         onSuccess={() => {
-          // Refresh data after successful quote creation
-          fetchStorageItems();
-          fetchShippingQuotes();
-          // Clear selected items
+          fetchData();
           setSelectedItems(new Set());
+          toast.success(t("quoteRequestedSuccess"));
         }}
       />
     </div>

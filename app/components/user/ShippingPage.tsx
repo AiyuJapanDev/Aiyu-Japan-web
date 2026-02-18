@@ -128,10 +128,10 @@ export const ShippingPage = () => {
 
   // Separate quotes by status
   const pendingQuotes = shippingQuotes.filter(
-    (quote) => quote.status === "pending"
+    (quote) => quote.status === "pending",
   );
   const processedQuotes = shippingQuotes.filter(
-    (quote) => quote.status !== "pending"
+    (quote) => quote.status !== "pending",
   );
   // ✅ Helper for consistent short link display
   const formatShortUrl = (url: string): string => {
@@ -206,7 +206,7 @@ export const ShippingPage = () => {
           () => {
             // Refetch data when shipping quotes are updated
             fetchData();
-          }
+          },
         )
         .subscribe();
 
@@ -270,7 +270,7 @@ export const ShippingPage = () => {
           console.log("=== PROCESSING QUOTE ===", quote.shipment_personal_id);
           console.log(
             "Quote items BEFORE enrichment:",
-            JSON.stringify(quote.items, null, 2)
+            JSON.stringify(quote.items, null, 2),
           );
 
           const enrichedItems = await Promise.all(
@@ -284,13 +284,13 @@ export const ShippingPage = () => {
                   await supabase
                     .from("product_requests")
                     .select(
-                      "product_url, item_name, quantity, weight, has_shipping_issue, shipping_issue_description, is_box, local_tracking_number"
+                      "product_url, item_name, quantity, weight, has_shipping_issue, shipping_issue_description, is_box, local_tracking_number",
                     )
                     .eq("id", item.order_item_id)
                     .maybeSingle();
 
                 console.log(
-                  `Query product_requests with id: ${item.order_item_id}`
+                  `Query product_requests with id: ${item.order_item_id}`,
                 );
                 console.log("Result:", productRequestData);
                 console.log("Error:", prError);
@@ -303,7 +303,7 @@ export const ShippingPage = () => {
                   };
                   console.log(
                     "✅ Enriched item (direct):",
-                    JSON.stringify(enrichedItem, null, 2)
+                    JSON.stringify(enrichedItem, null, 2),
                   );
                   return enrichedItem;
                 }
@@ -323,14 +323,14 @@ export const ShippingPage = () => {
                   const { data: productRequestData2 } = await supabase
                     .from("product_requests")
                     .select(
-                      "product_url, item_name, quantity, weight, has_shipping_issue, shipping_issue_description, is_box, local_tracking_number"
+                      "product_url, item_name, quantity, weight, has_shipping_issue, shipping_issue_description, is_box, local_tracking_number",
                     )
                     .eq("id", orderItemData.product_request_id)
                     .maybeSingle();
 
                   console.log(
                     "Product request via junction:",
-                    productRequestData2
+                    productRequestData2,
                   );
 
                   if (productRequestData2) {
@@ -342,7 +342,7 @@ export const ShippingPage = () => {
                     };
                     console.log(
                       "✅ Enriched item (via junction):",
-                      JSON.stringify(enrichedItem, null, 2)
+                      JSON.stringify(enrichedItem, null, 2),
                     );
                     return enrichedItem;
                   }
@@ -350,12 +350,12 @@ export const ShippingPage = () => {
               }
               console.log("❌ No enrichment, returning original");
               return item;
-            })
+            }),
           );
 
           console.log(
             "Quote items AFTER enrichment:",
-            JSON.stringify(enrichedItems, null, 2)
+            JSON.stringify(enrichedItems, null, 2),
           );
 
           return {
@@ -365,7 +365,7 @@ export const ShippingPage = () => {
               (quote.tracking_urls as unknown as TrackingUrlEntry[] | null) ||
               undefined,
           };
-        })
+        }),
       );
 
       setShippingQuotes(enrichedQuotes);
@@ -379,7 +379,7 @@ export const ShippingPage = () => {
           order_items (
             product_request:product_requests (*)
           )
-        `
+        `,
         )
         .eq("user_id", user.id)
         .eq("status", "shipped")
@@ -577,26 +577,26 @@ export const ShippingPage = () => {
     filteredShipments = allShipments.filter((s) => s.type === "pending_quote");
   } else if (statusFilter === "quoted") {
     filteredShipments = allShipments.filter(
-      (s) => s.type === "processed_quote" && s.status === "quoted"
+      (s) => s.type === "processed_quote" && s.status === "quoted",
     );
   } else if (statusFilter === "paid") {
     filteredShipments = allShipments.filter(
-      (s) => s.type === "processed_quote" && s.status === "paid"
+      (s) => s.type === "processed_quote" && s.status === "paid",
     );
   } else if (statusFilter === "shipped") {
     filteredShipments = allShipments.filter(
       (s) =>
         (s.type === "processed_quote" &&
           (s.status === "shipped" || s.status === "sent")) ||
-        s.type === "shipped_order"
+        s.type === "shipped_order",
     );
   } else if (statusFilter === "rejected") {
     filteredShipments = allShipments.filter(
-      (s) => s.type === "processed_quote" && s.status === "rejected"
+      (s) => s.type === "processed_quote" && s.status === "rejected",
     );
   } else if (statusFilter === "cancelled") {
     filteredShipments = allShipments.filter(
-      (s) => s.type === "processed_quote" && s.status === "cancelled"
+      (s) => s.type === "processed_quote" && s.status === "cancelled",
     );
   }
 
@@ -607,7 +607,7 @@ export const ShippingPage = () => {
         !(
           s.type === "processed_quote" &&
           (s.status === "rejected" || s.status === "cancelled")
-        )
+        ),
     );
   }
 
@@ -619,24 +619,36 @@ export const ShippingPage = () => {
 
   // Separate paginated shipments back into their types
   const paginatedPendingQuotes = paginatedShipments.filter(
-    (s) => s.type === "pending_quote"
+    (s) => s.type === "pending_quote",
   ) as (ShippingQuote & { type: "pending_quote" })[];
   const paginatedProcessedQuotes = paginatedShipments.filter(
-    (s) => s.type === "processed_quote"
+    (s) => s.type === "processed_quote",
   ) as (ShippingQuote & { type: "processed_quote" })[];
   const paginatedShippedOrders = paginatedShipments.filter(
-    (s) => s.type === "shipped_order"
+    (s) => s.type === "shipped_order",
   ) as (OrderWithDetails & { type: "shipped_order" })[];
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold mb-4">{t("shippingTitle")}</h2>
+      <h3 className="text-xl font-bold flex items-center gap-2">
+        <FileText className="h-10 w-8" />
+        {t("shipmentsTitle")}
+      </h3>
+      <p className="text-2xl flex gap-2">
+        <Badge className="text-gray-900 text-xl" variant="outline">
+          {processedQuotes.length}
+        </Badge>
+        {t("shippingActiveOrders")}
+      </p>
+      <p className="text-sm text-muted-foreground">
+        {t("shipmentsDescription")}
+      </p>
 
       {/* Filter Toggle Button */}
       <Button
         variant="outline"
         onClick={() => setIsFilterOpen(!isFilterOpen)}
-        className="mb-4 gap-2"
+        className="mb-4 gap-2 drop-shadow-md"
       >
         <Filter className="h-4 w-4" />
         {t("filterShipments")}
@@ -768,7 +780,7 @@ export const ShippingPage = () => {
       {/* Empty State for Filtered Shipments */}
       {filteredShipments.length === 0 &&
         (shippingQuotes.length > 0 || orders.length > 0) && (
-          <Card>
+          <Card className="">
             <CardContent className="p-8 text-center">
               <Truck className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
               <p className="text-muted-foreground">
@@ -801,7 +813,7 @@ export const ShippingPage = () => {
             const isOpen = openItems.has(`quote-${quote.id}`);
             const totalItems = quote.items.reduce(
               (sum, item) => sum + (item.quantity || 1),
-              0
+              0,
             );
 
             return (
@@ -956,7 +968,7 @@ export const ShippingPage = () => {
                         quote.status === "sent") &&
                         (() => {
                           const boxItems = quote.items.filter(
-                            (item) => item.is_box === true
+                            (item) => item.is_box === true,
                           );
                           console.log("Box Items:", boxItems);
 
@@ -976,14 +988,14 @@ export const ShippingPage = () => {
                                   {boxItems.map((boxItem, index) => {
                                     console.log(
                                       "Individual Box Item:",
-                                      boxItem
+                                      boxItem,
                                     );
                                     // Find matching tracking URL from tracking_urls array
                                     const trackingEntry =
                                       quote.tracking_urls?.find(
                                         (entry) =>
                                           entry.item_id ===
-                                          boxItem.order_item_id
+                                          boxItem.order_item_id,
                                       );
 
                                     return (
@@ -1014,7 +1026,7 @@ export const ShippingPage = () => {
                                             onClick={() =>
                                               window.open(
                                                 trackingEntry.tracking_url,
-                                                "_blank"
+                                                "_blank",
                                               )
                                             }
                                           >
@@ -1087,28 +1099,37 @@ export const ShippingPage = () => {
                         </div>
                       )}
 
-                      {(quote.status === 'quoted' || quote.status === 'paid' || quote.status === 'sent' || quote.status === 'shipped') && quote.quote_url && quote.actual_cost && (
-                        <div className="p-4 border border-blue-200 bg-blue-50/50 rounded-xl">
-                          <p className="text-sm font-semibold text-blue-900 mb-2">Quote Information</p>
-                          <div className="bg-white/60 rounded-lg p-3 border border-blue-100">
-                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-sm">
-                              <p className="text-blue-900 font-medium">
-                                Price: ¥{quote.actual_cost.toLocaleString()}
-                              </p>
-                              <a
-                                href={quote.quote_url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="flex items-center gap-1 text-blue-600 hover:text-blue-700 hover:underline break-all"
-                                title={quote.quote_url}
-                              >
-                                <Link className="h-3 w-3 flex-shrink-0" />
-                                {quote.quote_url.length > 40 ? `${quote.quote_url.substring(0, 40)}...` : quote.quote_url}
-                              </a>
+                      {(quote.status === "quoted" ||
+                        quote.status === "paid" ||
+                        quote.status === "sent" ||
+                        quote.status === "shipped") &&
+                        quote.quote_url &&
+                        quote.actual_cost && (
+                          <div className="p-4 border border-blue-200 bg-blue-50/50 rounded-xl">
+                            <p className="text-sm font-semibold text-blue-900 mb-2">
+                              Quote Information
+                            </p>
+                            <div className="bg-white/60 rounded-lg p-3 border border-blue-100">
+                              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-sm">
+                                <p className="text-blue-900 font-medium">
+                                  Price: ¥{quote.actual_cost.toLocaleString()}
+                                </p>
+                                <a
+                                  href={quote.quote_url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="flex items-center gap-1 text-blue-600 hover:text-blue-700 hover:underline break-all"
+                                  title={quote.quote_url}
+                                >
+                                  <Link className="h-3 w-3 flex-shrink-0" />
+                                  {quote.quote_url.length > 40
+                                    ? `${quote.quote_url.substring(0, 40)}...`
+                                    : quote.quote_url}
+                                </a>
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      )}
+                        )}
 
                       {/* Items */}
                       <div className="space-y-2">
@@ -1168,7 +1189,7 @@ export const ShippingPage = () => {
                                     </div>
                                   </div>
                                 );
-                              }
+                              },
                             )
                           : // For non-rejected shipments, show current live data
                             quote.items.map(
@@ -1224,7 +1245,7 @@ export const ShippingPage = () => {
                                     </div>
                                   </div>
                                 );
-                              }
+                              },
                             )}
                       </div>
 
@@ -1300,27 +1321,19 @@ export const ShippingPage = () => {
       {/* Shipments Section (Processed Quotes) */}
       {paginatedProcessedQuotes.length > 0 && (
         <div className="space-y-4">
-          <h3 className="text-lg font-semibold flex items-center gap-2">
-            <FileText className="h-5 w-5" />
-            {t("shipmentsTitle")}
-            <Badge variant="outline">{processedQuotes.length}</Badge>
-          </h3>
-          <p className="text-sm text-muted-foreground">
-            {t("shipmentsDescription")}
-          </p>
           {paginatedProcessedQuotes.map((quote) => {
             const isOpen = openItems.has(`quote-${quote.id}`);
             const totalItems = quote.items.reduce(
               (sum, item) => sum + (item.quantity || 1),
-              0
+              0,
             );
 
             return (
               <Collapsible key={quote.id} open={isOpen}>
-                <Card className="border-primary/20">
+                <Card className="border-2 drop-shadow-xl">
                   <CardHeader
                     onClick={() => toggleItem(`quote-${quote.id}`)}
-                    className="cursor-pointer hover:bg-muted/50 transition-colors border-b border-gray-200"
+                    className="cursor-pointer hover:bg-muted/50 transition-colors border-yellow-400 border-r-2"
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-4">
@@ -1479,7 +1492,8 @@ export const ShippingPage = () => {
                                       <p className="text-sm text-purple-900">
                                         {quote.items.find(
                                           (item) =>
-                                            item.order_item_id === entry.item_id
+                                            item.order_item_id ===
+                                            entry.item_id,
                                         )?.item_name || "Package"}
                                       </p>
                                     </div>
@@ -1554,28 +1568,37 @@ export const ShippingPage = () => {
                         </div>
                       )}
 
-                      {(quote.status === 'quoted' || quote.status === 'paid' || quote.status === 'sent' || quote.status === 'shipped') && quote.quote_url && quote.actual_cost && (
-                        <div className="p-4 border border-blue-200 bg-blue-50/50 rounded-xl">
-                          <p className="text-sm font-semibold text-blue-900 mb-2">Quote Information</p>
-                          <div className="bg-white/60 rounded-lg p-3 border border-blue-100">
-                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-sm">
-                              <p className="text-blue-900 font-medium">
-                                Price: ¥{quote.actual_cost.toLocaleString()}
-                              </p>
-                              <a
-                                href={quote.quote_url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="flex items-center gap-1 text-blue-600 hover:text-blue-700 hover:underline break-all"
-                                title={quote.quote_url}
-                              >
-                                <Link className="h-3 w-3 flex-shrink-0" />
-                                {quote.quote_url.length > 40 ? `${quote.quote_url.substring(0, 40)}...` : quote.quote_url}
-                              </a>
+                      {(quote.status === "quoted" ||
+                        quote.status === "paid" ||
+                        quote.status === "sent" ||
+                        quote.status === "shipped") &&
+                        quote.quote_url &&
+                        quote.actual_cost && (
+                          <div className="p-4 border border-blue-200 bg-blue-50/50 rounded-xl">
+                            <p className="text-sm font-semibold text-blue-900 mb-2">
+                              Quote Information
+                            </p>
+                            <div className="bg-white/60 rounded-lg p-3 border border-blue-100">
+                              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-sm">
+                                <p className="text-blue-900 font-medium">
+                                  Price: ¥{quote.actual_cost.toLocaleString()}
+                                </p>
+                                <a
+                                  href={quote.quote_url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="flex items-center gap-1 text-blue-600 hover:text-blue-700 hover:underline break-all"
+                                  title={quote.quote_url}
+                                >
+                                  <Link className="h-3 w-3 flex-shrink-0" />
+                                  {quote.quote_url.length > 40
+                                    ? `${quote.quote_url.substring(0, 40)}...`
+                                    : quote.quote_url}
+                                </a>
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      )}
+                        )}
 
                       {/* Items */}
                       <div className="space-y-2">
@@ -1632,7 +1655,7 @@ export const ShippingPage = () => {
                                     </div>
                                   </div>
                                 );
-                              }
+                              },
                             )
                           : // For non-rejected shipments, show current live data
                             quote.items.map((item, index) => {
@@ -1731,9 +1754,7 @@ export const ShippingPage = () => {
                               {quote.shipping_address.postal_code}
                             </p>
                             <p>
-                              <span className="font-medium">
-                                Tax/vatId
-                              </span>{" "}
+                              <span className="font-medium">Tax/vatId</span>{" "}
                               {quote.shipping_address.tax_vat_Id}
                             </p>
                           </div>
@@ -1760,7 +1781,7 @@ export const ShippingPage = () => {
             const totalItems =
               order.order_items?.reduce(
                 (sum, item) => sum + (item.product_request.quantity || 1),
-                0
+                0,
               ) || 0;
 
             return (
@@ -1872,7 +1893,7 @@ export const ShippingPage = () => {
                     >
                       {page}
                     </Button>
-                  )
+                  ),
                 )}
               </div>
 

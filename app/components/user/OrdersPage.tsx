@@ -353,7 +353,7 @@ export const OrdersPage = () => {
             "all_received",
           ].includes(status)
         ) {
-          return { ...step, status: "completed" as StepStatus }; 
+          return { ...step, status: "completed" as StepStatus };
         }
       }
 
@@ -844,7 +844,7 @@ export const OrdersPage = () => {
               <Card id={`order-${order.id}`}>
                 <CardHeader
                   onClick={() => toggleOrder(order.id)}
-                  className="cursor-pointer hover:bg-muted/50 transition-colors border-b border-gray-200"
+                  className="cursor-pointer hover:bg-muted/50 transition-colors border-2 border-r-yellow-400"
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-4">
@@ -1142,7 +1142,9 @@ export const OrdersPage = () => {
                                 }
                                 className="w-full bg-primary hover:bg-primary/90 sm:w-auto"
                               >
-                                <span className="truncate font-bold">{t("payNow")}</span>
+                                <span className="truncate font-bold">
+                                  {t("payNow")}
+                                </span>
                               </Button>
 
                               <section className="flex w-full gap-2 sm:w-auto sm:gap-4">
@@ -1214,9 +1216,13 @@ export const OrdersPage = () => {
                                 className="bg-white/60 dark:bg-gray-800/60 rounded-lg p-3 border border-blue-100 dark:border-blue-900"
                               >
                                 <div className="flex flex-col gap-2 text-sm">
-                                    <p className="text-green-800 font-semibold">{quoteTypeText}</p>
+                                  <p className="text-green-800 font-semibold">
+                                    {quoteTypeText}
+                                  </p>
                                   <div className="flex flex-col sm:flex-row sm:items-center sm:gap-3 gap-1">
-                                    <p className="text-green-600">{t("infoPaidOrder")} - {t("status")}:{" "}</p>
+                                    <p className="text-green-600">
+                                      {t("infoPaidOrder")} - {t("status")}:{" "}
+                                    </p>
                                     <p className="text-green-600 dark:text-blue-100 font-medium flex-shrink-0">
                                       {formattedStatus}
                                     </p>
