@@ -1021,6 +1021,16 @@ export const ShippingRequestsManagement = React.memo(
       );
     }
 
+    const getVisiblePages = (current: number, total: number) => {
+      if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+
+      if (current <= 4) return [1, 2, 3, 4, 5, "...", total];
+      if (current >= total - 3)
+        return [1, "...", total - 4, total - 3, total - 2, total - 1, total];
+
+      return [1, "...", current - 1, current, current + 1, "...", total];
+    };
+
     return (
       <>
         <Card>
@@ -1590,7 +1600,6 @@ export const ShippingRequestsManagement = React.memo(
                                         </div>
                                       )}
 
-                                      {/* ✅ Other Products */}
                                       {request.rejection_details.product_issues.some(
                                         (i: any) => !i.has_issue,
                                       ) && (
@@ -1843,53 +1852,73 @@ export const ShippingRequestsManagement = React.memo(
 
             {/* Pagination Controls */}
             {filteredRequests.length > 0 && totalPages > 1 && (
-              <Card className="bg-muted/30 mt-6">
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() =>
-                        setCurrentPage((prev) => Math.max(1, prev - 1))
-                      }
-                      disabled={currentPage === 1}
-                    >
-                      <ChevronLeft className="h-4 w-4 mr-1" />
-                      Previous
-                    </Button>
+              <div className="mt-8 px-4 py-6 bg-background border border-border/60 rounded-2xl shadow-sm flex flex-col gap-6 items-center justify-between md:flex-row md:px-6">
+                {/* Info de página: se centra en móvil, se alinea a la izquierda en desktop */}
+                <div className="flex flex-col gap-1 items-center md:items-start order-2 md:order-1">
+                  <p className="text-sm md:text-base font-bold text-foreground">
+                    Página {currentPage} de {totalPages}
+                  </p>
+                  <p className="text-[10px] md:text-xs text-muted-foreground tracking-widest uppercase font-medium">
+                    {filteredRequests.length} resultados totales
+                  </p>
+                </div>
 
-                    <div className="flex items-center gap-2">
-                      {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                        (page) => (
-                          <Button
-                            key={page}
-                            variant={
-                              currentPage === page ? "default" : "outline"
-                            }
-                            size="sm"
-                            onClick={() => setCurrentPage(page)}
-                            className="min-w-[40px]"
-                          >
-                            {page}
-                          </Button>
-                        ),
-                      )}
-                    </div>
+                {/* Contenedor de botones: Wrap habilitado para móviles */}
+                <div className="flex items-center justify-center gap-1 md:gap-2 order-1 md:order-2 w-full md:w-auto">
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="h-9 w-9 md:h-11 md:w-11 rounded-xl shrink-0"
+                    onClick={() =>
+                      setCurrentPage((prev) => Math.max(1, prev - 1))
+                    }
+                    disabled={currentPage === 1}
+                  >
+                    <ChevronLeft className="h-4 w-4 md:h-5 md:w-5" />
+                  </Button>
 
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() =>
-                        setCurrentPage((prev) => Math.min(totalPages, prev + 1))
-                      }
-                      disabled={currentPage === totalPages}
-                    >
-                      Next
-                      <ChevronRight className="h-4 w-4 ml-1" />
-                    </Button>
+                  {/* Los números se envuelven (wrap) si la pantalla es muy pequeña */}
+                  <div className="flex flex-wrap items-center justify-center gap-1 md:gap-1.5 max-w-[200px] sm:max-w-none">
+                    {getVisiblePages(currentPage, totalPages).map(
+                      (page, index) => (
+                        <React.Fragment key={index}>
+                          {page === "..." ? (
+                            <span className="px-1 text-muted-foreground font-bold text-xs md:text-sm">
+                              ...
+                            </span>
+                          ) : (
+                            <Button
+                              variant={
+                                currentPage === page ? "default" : "ghost"
+                              }
+                              onClick={() => setCurrentPage(page as number)}
+                              className={`h-8 w-8 md:h-11 md:min-w-[2.75rem] rounded-lg md:rounded-xl text-xs md:text-sm font-bold transition-all ${
+                                currentPage === page
+                                  ? "bg-[#0f172a] text-white shadow-md md:scale-110 z-10"
+                                  : "text-muted-foreground hover:bg-muted"
+                              }`}
+                            >
+                              {page}
+                            </Button>
+                          )}
+                        </React.Fragment>
+                      ),
+                    )}
                   </div>
-                </CardContent>
-              </Card>
+
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="h-9 w-9 md:h-11 md:w-11 rounded-xl shrink-0"
+                    onClick={() =>
+                      setCurrentPage((prev) => Math.min(totalPages, prev + 1))
+                    }
+                    disabled={currentPage === totalPages}
+                  >
+                    <ChevronRight className="h-4 w-4 md:h-5 md:w-5" />
+                  </Button>
+                </div>
+              </div>
             )}
           </CardContent>
         </Card>

@@ -627,7 +627,7 @@ export const translations = {
     storageAlert1: "Items are stored securely in our warehouse",
     storageAlert2: "You can consolidate multiple items into one shipment",
     storageAlert3: "There is no time limit to how long items can be stored",
-    addressService: "Japanese Address Service – No Consolidation",
+    addressService: "Locker service",
     // Storage Page
 
     // Shipping Page
@@ -811,7 +811,7 @@ export const translations = {
       "Economic/Standard Shipping (15-21 days - Small Packet)",
     expressShippingLabel:
       "Express Shipping (4-10 business days - Express mail service)",
-    paraguayShippingLabel: "Paraguay Shipping",
+    paraguayShippingLabel: "Private shipping to Paraguay (departure 15-30 each month)",
     paraguayMaritimeShippingLabel: "Maritime Shipping (3 months)",
     peruMaritimeShippingLabel: "Maritime Shipping (3 months)",
     estimatedInternationalShipping: "Estimated International Shipping Cost",
@@ -887,7 +887,7 @@ export const translations = {
     phoneNumberRequired: "Phone number is required",
     phoneNumberTooShort: "Phone number must have at least 9 digits",
     phoneNumberTooLong: "Phone number cannot exceed 14 digits",
-    taxVatIdLabel: "Tax/VAT ID, CUIL or similar",
+    taxVatIdLabel: "RFC - CUIL - VAT or similar",
     taxVatIdLabelShort: "Tax/VAT ID (important for delivering your orders)",
     taxVatIdShort: "Tax/VAT ID",
     optional: "optional",
@@ -1869,7 +1869,7 @@ export const translations = {
       "Los artículos se almacenan de forma segura en nuestro almacén",
     storageAlert2: "Puedes consolidar varios artículos en un solo envío",
     storageAlert3: "No hay límite de tiempo para almacenar los artículos",
-    addressService: "Servicio de dirección japonesa – Sin consolidación",
+    addressService: "Servicio de casillero",
 
     // Shipping Page
     shippingTitle: "Envíos",
@@ -2077,7 +2077,7 @@ export const translations = {
       "Envío Económico/Estándar (15-21 días - Small Packet)",
     expressShippingLabel:
       "Envío Exprés (4-10 días hábiles - Express mail service)",
-    paraguayShippingLabel: "Envío a Paraguay",
+    paraguayShippingLabel: "Envio privado a Paraguay (salida 15-30 cada mes)",
     paraguayMaritimeShippingLabel: "Envío Marítimo (3 meses)",
     peruMaritimeShippingLabel: "Envío Marítimo (3 meses)",
     estimatedInternationalShipping: "Costo Estimado de Envío Internacional",
@@ -2155,7 +2155,7 @@ export const translations = {
     phoneNumberTooLong: "El número de teléfono no puede exceder 14 dígitos",
     firstNamePlaceholder: "Nombre",
     lastNamePlaceholder: "Apellido",
-    taxVatIdLabel: "Número de identificación fiscal, CUIL o similar",
+    taxVatIdLabel: "RFC - CUIL - VAT o similar",
     taxVatIdLabelShort: "Número de identificación fiscal (importante para hacer llegar tus pedidos)",
     taxVatIdShort: "ID Fiscal",
     optional: "opcional",

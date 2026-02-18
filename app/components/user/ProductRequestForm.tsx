@@ -1,30 +1,18 @@
-import { useState } from "react";
-import { Plus, X } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Plus, X, Trash2, Link as LinkIcon, ShoppingCart } from "lucide-react";
 import { Link } from "react-router";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { notifyAllAdmins } from "@/lib/notificationUtils";
 import { useApp } from "@/contexts/AppContext";
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
 interface ProductItem {
@@ -36,26 +24,35 @@ interface ProductItem {
 
 export function ProductRequestForm() {
   const { t } = useApp();
-  const [items, setItems] = useState<ProductItem[]>([
-    { url: "", name: "", quantity: 1, notes: "" },
-  ]);
+  const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
-  const { toast } = useToast();
 
-  const addItem = () => {
-    setItems([...items, { url: "", name: "", quantity: 1, notes: "" }]);
-  };
+  const [items, setItems] = useState<ProductItem[]>(() => {
+    const saved = localStorage.getItem("product_request_draft");
+    return saved ? JSON.parse(saved) : [{ url: "", name: "", quantity: 1, notes: "" }];
+  });
 
+  useEffect(() => {
+    localStorage.setItem("product_request_draft", JSON.stringify(items));
+  }, [items]);
+
+  const addItem = () => setItems([...items, { url: "", name: "", quantity: 1, notes: "" }]);
+  
   const removeItem = (index: number) => {
-    setItems(items.filter((_, i) => i !== index));
+    if (items.length === 1) {
+      clearForm();
+    } else {
+      setItems(items.filter((_, i) => i !== index));
+    }
   };
 
-  const updateItem = (
-    index: number,
-    field: keyof ProductItem,
-    value: string | number
-  ) => {
+  const clearForm = () => {
+    setItems([{ url: "", name: "", quantity: 1, notes: "" }]);
+    localStorage.removeItem("product_request_draft");
+  };
+
+  const updateItem = (index: number, field: keyof ProductItem, value: string | number) => {
     const newItems = [...items];
     if (field === "quantity") {
       newItems[index][field] = Number(value) || 1;
@@ -67,50 +64,34 @@ export function ProductRequestForm() {
 
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-
-    // Validate before showing dialog
-    const validItems = items.filter((item) => item.url.trim());
+    const validItems = items.filter(item => item.url.trim());
     if (validItems.length === 0) {
-      toast({
-        title: "Error",
-        description: t("atLeastOneProduct"),
-        variant: "destructive",
-      });
+      toast({ title: "Error", description: t("atLeastOneProduct"), variant: "destructive" });
       return;
     }
-
     setShowConfirmDialog(true);
   };
 
   const handleConfirmSubmit = async () => {
     setShowConfirmDialog(false);
     setIsSubmitting(true);
-
     try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
-      const validItems = items.filter((item) => item.url.trim());
-
-      // Create order with product requests
-      const { data, error } = await supabase.rpc(
-        "create_order_with_product_requests",
-        {
-          p_user_id: user.id,
-          p_product_requests: validItems.map((item) => ({
-            product_url: item.url.trim(),
-            item_name: item.name.trim() || null,
-            quantity: item.quantity,
-            notes: item.notes.trim() || null,
-          })),
-        }
-      );
+      const validItems = items.filter(item => item.url.trim());
+      const { data, error } = await supabase.rpc("create_order_with_product_requests", {
+        p_user_id: user.id,
+        p_product_requests: validItems.map(item => ({
+          product_url: item.url.trim(),
+          item_name: item.name.trim() || null,
+          quantity: item.quantity,
+          notes: item.notes.trim() || null,
+        })),
+      });
 
       if (error) throw error;
 
-      // Fetch order_personal_id for display
       let orderPersonalId = "new";
       if (data?.[0]?.order_id) {
         const { data: orderData } = await supabase
@@ -118,168 +99,174 @@ export function ProductRequestForm() {
           .select("order_personal_id")
           .eq("id", data[0].order_id)
           .single();
-        orderPersonalId =
-          orderData?.order_personal_id || data[0].order_id.slice(0, 8);
+        orderPersonalId = orderData?.order_personal_id || data[0].order_id.slice(0, 8);
       }
 
-      // Create short readable ID
-      let shortOrderId = orderPersonalId;
-      if (data?.[0]?.order_id) {
-        shortOrderId =
-          typeof data[0].order_id === "string"
-            ? data[0].order_id.slice(0, 8).toUpperCase()
-            : "";
-      }
-
-      // 🟢 Fetch the user's profile (for name & personal ID)
       const { data: profile } = await supabase
         .from("profiles")
         .select("full_name, user_personal_id")
         .eq("id", user.id)
         .single();
 
-      const customerName = profile?.full_name || "Unknown User";
-      const customerId = profile?.user_personal_id
-        ? `#${profile.user_personal_id}`
-        : "";
-
-      // 📨 Notify all admins with detailed message
       if (data?.[0]) {
         await notifyAllAdmins(
           "new_product_request",
-          `New product request from ${customerName} ${customerId}. Order #${shortOrderId} with ${validItems.length} item${validItems.length > 1 ? "s" : ""}.`,
+          `New product request from ${profile?.full_name || "User"} #${profile?.user_personal_id || ""}. Order #${orderPersonalId.toUpperCase()} with ${validItems.length} items.`,
           data[0].order_id
         );
       }
 
-      toast({
-        title: "Success",
-        description: t("requestSubmittedSuccess"),
-      });
-
-      setItems([{ url: "", name: "", quantity: 1, notes: "" }]);
+      toast({ title: "Success", description: t("requestSubmittedSuccess") });
+      clearForm();
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || t("requestSubmittedError"),
-        variant: "destructive",
-      });
+      toast({ title: "Error", description: error.message || t("requestSubmittedError"), variant: "destructive" });
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-row justify-between items-center gap-2 sm:gap-3 mb-2">
-        <Button
-          variant="default"
-          asChild
-          className="flex-1 min-w-0 text-center w-full border-2 border-black-800 text-black bg-white hover:bg-capybara-orange hover:text-white transition-colors px-3 py-2.5 sm:px-4 sm:py-3 text-xs sm:text-sm font-medium whitespace-normal"
-        >
-          <Link to="/store-guide/popular-markets">
-            {t("seeJapaneseStores")}
+    <div className="max-w-4xl mx-auto space-y-6 px-4">
+      <div className="grid grid-cols-2 gap-4">
+        <Button variant="outline" asChild className="h-12 border-2 hover:bg-gray-50 transition-all shadow-sm">
+          <Link to="/store-guide/popular-markets" className="flex flex-col">
+            <span className="font-bold text-black uppercase text-[10px] sm:text-xs tracking-tight">
+              {t("seeJapaneseStores")}
+            </span>
           </Link>
         </Button>
-
-        <Button
-          variant="default"
-          asChild
-          className="flex-1 min-w-0 text-center w-full border-2 border-black-800 text-black bg-white hover:bg-capybara-orange hover:text-white transition-colors px-3 py-2.5 sm:px-4 sm:py-3 text-xs sm:text-sm font-medium whitespace-normal"
-        >
-          <Link to="/calculator">{t("calculateEstimatedCost")}</Link>
+        <Button variant="outline" asChild className="h-12 border-2 hover:bg-gray-50 transition-all shadow-sm">
+          <Link to="/calculator" className="flex flex-col">
+            <span className="font-bold text-black uppercase text-[10px] sm:text-xs tracking-tight">
+              {t("calculateEstimatedCost")}
+            </span>
+          </Link>
         </Button>
       </div>
-      <Card>
-        <CardHeader>
-          <CardTitle>{t("productRequestTitle")}</CardTitle>
-          <CardDescription>{t("productRequestSubtitle")}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleFormSubmit} className="space-y-4">
-            {items.map((item, index) => (
-              <div key={index} className="space-y-2 p-4 border rounded-lg">
-                <div className="flex justify-between items-center mb-2">
-                  <Label>
-                    {t("products")} {index + 1}
-                  </Label>
-                  {items.length > 1 && (
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => removeItem(index)}
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                  )}
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                  <Input
-                    placeholder={t("productUrlPlaceholder")}
-                    value={item.url}
-                    onChange={(e) => updateItem(index, "url", e.target.value)}
-                    required
-                    className="md:col-span-2"
-                  />
-                  <select
-                    value={item.quantity}
-                    onChange={(e) => updateItem(index, "quantity", Number(e.target.value))}
-                    required
-                    style={{ maxHeight: "150px", overflowY: "auto" }}
-                  >
-                    {Array.from({ length: 100 }, (_, i) => (
-                      <option key={i + 1} value={i + 1}>
-                        {i + 1}
-                      </option>
-                    ))}
-                  </select>
-                  <Input
-                    placeholder={t("productNamePlaceholder")}
-                    value={item.name}
-                    onChange={(e) => updateItem(index, "name", e.target.value)}
-                  />
 
-                  <Textarea
-                    placeholder={t("productNotesPlaceholder")}
-                    value={item.notes}
-                    onChange={(e) => updateItem(index, "notes", e.target.value)}
-                    className="md:col-span-2"
-                    rows={2}
-                  />
+      <Card className="shadow-md border-t-4 border-t-orange-300">
+        <CardHeader className="pb-4">
+          <div className="flex justify-between items-center">
+            <div>
+              <CardTitle className="text-xl flex items-center gap-2 text-gray-800">
+                <ShoppingCart className="h-5 w-5 text-orange-400" />
+                {t("productRequestTitle")}
+              </CardTitle>
+              <CardDescription>{t("productRequestSubtitle")}</CardDescription>
+            </div>
+            <Button variant="ghost" size="icon" onClick={clearForm} title="Clear all">
+              <Trash2 className="h-5 w-5 text-muted-foreground hover:text-red-400" />
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <form onSubmit={handleFormSubmit} className="space-y-8">
+            {items.map((item, index) => (
+              <div key={index} className="relative p-6 rounded-xl border bg-gray-50/30 hover:bg-white hover:shadow-sm transition-all">
+                <div className="absolute -left-2 -top-2 w-7 h-7 rounded-full bg-orange-100 text-orange-700 flex items-center justify-center font-bold text-xs shadow-sm border border-orange-200">
+                  {index + 1}
+                </div>
+                
+                <div className="flex justify-end absolute right-2 top-2">
+                   <Button type="button" variant="ghost" size="icon" onClick={() => removeItem(index)} className="h-7 w-7 text-muted-foreground hover:bg-red-50 hover:text-red-400">
+                      <X className="h-4 w-4" />
+                   </Button>
+                </div>
+
+                <div className="space-y-4 pt-1">
+                  <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
+                    <div className="md:col-span-9 space-y-2">
+                      <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-500">URL</Label>
+                      <div className="relative">
+                        <LinkIcon className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                        <Input
+                          placeholder="https://amazon.co.jp/item-example"
+                          value={item.url}
+                          onChange={(e) => updateItem(index, "url", e.target.value)}
+                          required
+                          className="pl-10 border-gray-200 focus-visible:ring-orange-100"
+                        />
+                      </div>
+                    </div>
+                    
+                    <div className="md:col-span-3 space-y-2">
+                      <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-500">Qty</Label>
+                      <select
+                        className="flex h-10 w-full rounded-md border border-gray-200 bg-white px-3 py-2 text-sm focus:ring-2 focus:ring-orange-100 outline-none transition-shadow"
+                        value={item.quantity}
+                        onChange={(e) => updateItem(index, "quantity", e.target.value)}
+                        required
+                      >
+                        {Array.from({ length: 100 }, (_, i) => (
+                          <option key={i + 1} value={i + 1}>{i + 1}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-500">
+                        {t("productNamePlaceholder")}
+                      </Label>
+                      <Input
+                        placeholder="e.g. Pikachu Plushie Limited Ed."
+                        value={item.name}
+                        onChange={(e) => updateItem(index, "name", e.target.value)}
+                        className="border-gray-200 focus-visible:ring-orange-100"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-500">
+                        {t("productNotesPlaceholder")}
+                      </Label>
+                      <Textarea
+                        placeholder="Size XL, Color: Red, Gift wrap..."
+                        value={item.notes}
+                        onChange={(e) => updateItem(index, "notes", e.target.value)}
+                        className="border-gray-200 min-h-[42px] py-2 resize-none focus-visible:ring-orange-100"
+                        rows={1}
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
             ))}
 
-            <Button
-              type="button"
-              variant="outline"
-              onClick={addItem}
-              className="w-full"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              {t("addProduct")}
-            </Button>
+            <div className="flex flex-col sm:flex-row gap-3 pt-2">
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={addItem} 
+                className="flex-1 h-11 border-dashed border-2 border-orange-200 bg-orange-50/20 text-black hover:bg-orange-50 hover:border-orange-300 transition-all font-medium text-sm"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                {t("addProduct")}
+              </Button>
 
-            <Button type="submit" className="w-full" disabled={isSubmitting}>
-              {isSubmitting ? t("submitting") : t("submitRequestButton")}
-            </Button>
+              <Button 
+                type="submit" 
+                className="flex-1 h-11 bg-orange-400 hover:bg-orange-500 text-white font-bold text-sm shadow-md transition-all active:scale-[0.98]" 
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? t("submitting") : t("submitRequestButton")}
+              </Button>
+            </div>
           </form>
         </CardContent>
       </Card>
 
       <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
-        <AlertDialogContent>
+        <AlertDialogContent className="rounded-xl">
           <AlertDialogHeader>
             <AlertDialogTitle>Confirm Submission</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to submit this product request? You will
-              receive a quote once we process your order.
+              Are you sure you want to submit this product request? You will receive a quote once we process your order.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleConfirmSubmit}>
+            <AlertDialogCancel className="border-0">Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmSubmit} className="bg-orange-400 hover:bg-orange-500">
               Submit Request
             </AlertDialogAction>
           </AlertDialogFooter>
