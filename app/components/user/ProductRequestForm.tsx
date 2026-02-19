@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { Plus, X, Trash2, Link as LinkIcon, ShoppingCart } from "lucide-react";
-import { Link } from "react-router";
+import { Plus, X, Trash2, Link as LinkIcon, ShoppingCart, CheckCircle2, Package, Store, Calculator } from "lucide-react";
+import { Link, useNavigate } from "react-router";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,6 +14,9 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  Dialog, DialogContent,
+} from "@/components/ui/dialog";
 
 interface ProductItem {
   url: string;
@@ -25,8 +28,10 @@ interface ProductItem {
 export function ProductRequestForm() {
   const { t } = useApp();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [showSuccessDialog, setShowSuccessDialog] = useState(false);
 
   const [items, setItems] = useState<ProductItem[]>(() => {
     const saved = localStorage.getItem("product_request_draft");
@@ -116,8 +121,8 @@ export function ProductRequestForm() {
         );
       }
 
-      toast({ title: "Success", description: t("requestSubmittedSuccess") });
       clearForm();
+      setShowSuccessDialog(true);
     } catch (error: any) {
       toast({ title: "Error", description: error.message || t("requestSubmittedError"), variant: "destructive" });
     } finally {
@@ -127,21 +132,25 @@ export function ProductRequestForm() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-6 px-4">
-      <div className="grid grid-cols-2 gap-4">
-        <Button variant="outline" asChild className="h-12 border-2 hover:bg-gray-50 transition-all shadow-sm">
-          <Link to="/store-guide/popular-markets" className="flex flex-col">
-            <span className="font-bold text-black uppercase text-[10px] sm:text-xs tracking-tight">
-              {t("seeJapaneseStores")}
-            </span>
-          </Link>
-        </Button>
-        <Button variant="outline" asChild className="h-12 border-2 hover:bg-gray-50 transition-all shadow-sm">
-          <Link to="/calculator" className="flex flex-col">
-            <span className="font-bold text-black uppercase text-[10px] sm:text-xs tracking-tight">
-              {t("calculateEstimatedCost")}
-            </span>
-          </Link>
-        </Button>
+      <div className="grid grid-cols-2 gap-3">
+        <Link
+          to="/store-guide/popular-markets"
+          className="group flex items-center gap-2.5 p-3 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 transition-all"
+        >
+          <Store className="h-4 w-4 text-orange-400 shrink-0" />
+          <span className="font-semibold text-slate-600 text-xs sm:text-sm leading-tight">
+            {t("seeJapaneseStores")}
+          </span>
+        </Link>
+        <Link
+          to="/calculator"
+          className="group flex items-center gap-2.5 p-3 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 transition-all"
+        >
+          <Calculator className="h-4 w-4 text-blue-400 shrink-0" />
+          <span className="font-semibold text-slate-600 text-xs sm:text-sm leading-tight">
+            {t("calculateEstimatedCost")}
+          </span>
+        </Link>
       </div>
 
       <Card className="shadow-md border-t-4 border-t-orange-300">
@@ -176,7 +185,7 @@ export function ProductRequestForm() {
                 <div className="space-y-4 pt-1">
                   <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
                     <div className="md:col-span-9 space-y-2">
-                      <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-500">URL</Label>
+                      <Label className="text-xs font-semibold uppercase tracking-wide text-gray-500">URL</Label>
                       <div className="relative">
                         <LinkIcon className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                         <Input
@@ -190,7 +199,7 @@ export function ProductRequestForm() {
                     </div>
                     
                     <div className="md:col-span-3 space-y-2">
-                      <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-500">Qty</Label>
+                      <Label className="text-xs font-semibold uppercase tracking-wide text-gray-500">{t("quantity")}</Label>
                       <select
                         className="flex h-10 w-full rounded-md border border-gray-200 bg-white px-3 py-2 text-sm focus:ring-2 focus:ring-orange-100 outline-none transition-shadow"
                         value={item.quantity}
@@ -206,7 +215,7 @@ export function ProductRequestForm() {
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-500">
+                      <Label className="text-xs font-semibold uppercase tracking-wide text-gray-500">
                         {t("productNamePlaceholder")}
                       </Label>
                       <Input
@@ -217,7 +226,7 @@ export function ProductRequestForm() {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-500">
+                      <Label className="text-xs font-semibold uppercase tracking-wide text-gray-500">
                         {t("productNotesPlaceholder")}
                       </Label>
                       <Textarea
@@ -256,6 +265,7 @@ export function ProductRequestForm() {
         </CardContent>
       </Card>
 
+      {/* Confirm Submission Dialog */}
       <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
         <AlertDialogContent className="rounded-xl">
           <AlertDialogHeader>
@@ -272,6 +282,45 @@ export function ProductRequestForm() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Success Dialog */}
+      <Dialog open={showSuccessDialog} onOpenChange={setShowSuccessDialog}>
+        <DialogContent className="sm:max-w-md rounded-2xl p-0 overflow-hidden border-0">
+          <div className="bg-gradient-to-br from-green-400 to-emerald-500 p-8 flex justify-center">
+            <div className="w-20 h-20 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center animate-bounce">
+              <CheckCircle2 className="w-12 h-12 text-white" />
+            </div>
+          </div>
+          <div className="p-6 text-center space-y-4">
+            <h3 className="text-xl font-bold text-gray-800">
+              {t("successModalTitle")}
+            </h3>
+            <p className="text-sm text-gray-500 leading-relaxed">
+              {t("successModalMessage")}
+            </p>
+            <div className="flex flex-col sm:flex-row gap-3 pt-2">
+              <Button
+                variant="outline"
+                className="flex-1 h-11 rounded-xl"
+                onClick={() => setShowSuccessDialog(false)}
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                {t("successModalNewRequest")}
+              </Button>
+              <Button
+                className="flex-1 h-11 rounded-xl bg-orange-400 hover:bg-orange-500 text-white font-semibold"
+                onClick={() => {
+                  setShowSuccessDialog(false);
+                  navigate("/user-dashboard?tab=orders");
+                }}
+              >
+                <Package className="h-4 w-4 mr-2" />
+                {t("successModalGoToOrders")}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -42,7 +42,8 @@ const UserManagement: React.FC<UserManagementProps> = ({
   const filteredUsers = users.filter((user) => {
     const matchesSearch =
       user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.full_name.toLowerCase().includes(searchTerm.toLowerCase());
+      user.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.user_personal_id.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesSearch;
   });
 

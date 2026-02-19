@@ -8,13 +8,13 @@ export const translations = {
     minRead: "min read",
 
     // Navigation
-    newUser: "Are you new to Aiyu Japan?",
+    newUser: "First time in AiyuJapan?",
     stores: "Stores",
     moreInfo: "More Info",
     home: "Home",
     services: "Services",
     calculator: "Cost Simulator",
-    storeGuide: "First Time?",
+    storeGuide: "Guides & Tutorials",
     simulator: "Simulator",
     dashboard: "Dashboard",
     login: "Login",
@@ -26,6 +26,7 @@ export const translations = {
       "Buy from any <span class='text-blue-600'>japanese</span> store!",
 
     // Home Page
+    startShopping: "Start",
     heroSlide1Title: "From Japan to Your Home Anyday",
     heroSlide1TitleSubtitle:
       "Aiyu Japan is passionate about connecting different cultures and building great services.",
@@ -493,10 +494,15 @@ export const translations = {
 
     // User Dashboard Navigation
     submitRequest: "Submit Request",
+    submitRequestDesc: "Send links to the product you want to buy",
     orders: "Orders",
+    ordersDesc: "Manage the status of your orders",
     storage: "Storage",
+    storageDesc: "Request and manage your products stored in Japan",
     shipping: "Shipping",
+    shippingDesc: "Track your shipments",
     profile: "Account",
+    profileDesc: "Your profile & settings",
     notifications: "Notifications",
 
     // Product Request Form
@@ -516,12 +522,17 @@ export const translations = {
     atLeastOneProduct: "Please add at least one product URL",
     requestSubmittedSuccess: "Product request submitted successfully",
     requestSubmittedError: "Failed to submit product request",
+    successModalTitle: "Request Received!",
+    successModalMessage: "Your request was received successfully. You can track its progress in the Orders section. An administrator will review it shortly.",
+    successModalGoToOrders: "Go to Orders",
+    successModalNewRequest: "New Request",
 
     // Orders Page
     currentOrders: "Current Orders",
     cancelOrder: "Cancel Order",
     confirmCancelOrder: "Cancel Order?",
     infoPaidOrder:"Your order payment has been received",
+    infoPendingPayment:"Payment pending",
     cancelOrderWarning:
       "Are you sure you want to cancel this order? This action cannot be undone and you will need to submit a new request.",
     keepOrder: "Keep Order",
@@ -1227,13 +1238,13 @@ export const translations = {
     minRead: "mins. de lectura",
 
     // Navigation
-    newUser: "¿Eres Nuevo Usuario?",
+    newUser: "¿Primera vez en AiyuJapan?",
     stores: "Tiendas",
     moreInfo: "Más Info",
     home: "Inicio",
     services: "Servicios",
     calculator: "Calculadora de costos",
-    storeGuide: "¿Primera Vez?",
+    storeGuide: "Guías & Tutoriales",
     simulator: "Calculadora Beta",
     dashboard: "Panel principal",
     login: "Iniciar Sesión",
@@ -1267,6 +1278,7 @@ export const translations = {
     viewMoreReviews: "Ver más reseñas",
 
     // Home Page
+    startShopping: "Comenzar",
     heroSlide1Title: "Desde Japón a Tu Casa Cualquier Día",
     heroSlide1TitleSubtitle:
       "En Aiyu Japan somos apasionados por conectar diferentes culturas y creado excelentes servicios.",
@@ -1732,10 +1744,15 @@ export const translations = {
 
     // User Dashboard Navigation
     submitRequest: "Enviar Links",
+    submitRequestDesc: "Envía links del producto que deseas comprar",
     orders: "Pedidos",
+    ordersDesc: "Gestiona el estado de tus pedidos",
     storage: "Almacenamiento",
+    storageDesc: "Solicita el envio y gestiona tus productos guardados en Japón",
     shipping: "Envíos",
+    shippingDesc: "Seguimiento de tus paquetes",
     profile: "Cuenta",
+    profileDesc: "Tu perfil y configuración",
     notifications: "Notificaciones",
 
     // Product Request Form
@@ -1757,6 +1774,10 @@ export const translations = {
     atLeastOneProduct: "Por favor añade al menos una URL de producto",
     requestSubmittedSuccess: "Solicitud de producto enviada con éxito",
     requestSubmittedError: "Error al enviar solicitud de producto",
+    successModalTitle: "¡Solicitud Recibida!",
+    successModalMessage: "Tu solicitud fue recibida con éxito. Puedes ver su progreso en la sección de Pedidos. Un administrador la gestionará pronto.",
+    successModalGoToOrders: "Ir a Pedidos",
+    successModalNewRequest: "Nueva Solicitud",
 
     // Orders Page
     currentOrders: "Pedidos Actuales",
@@ -1764,6 +1785,7 @@ export const translations = {
     cancelOrder: "Cancelar Pedido",
     confirmCancelOrder: "Cancelar Pedido?",
     infoPaidOrder:"Tu pago de la orden ha sido recibido",
+    infoPendingPayment:"Pago pendiente",
     cancelOrderWarning:
       "¿Estás seguro de que quieres cancelar este pedido? Esta acción no puede ser deshecha y tendrás que enviar una nueva solicitud.",
     keepOrder: "Mantener Pedido",
@@ -2084,8 +2106,8 @@ export const translations = {
     expressShippingLabel:
       "Envío Exprés (4-10 días hábiles - Express mail service)",
     paraguayShippingLabel: "Envio privado a Paraguay (salida 15-30 cada mes)",
-    paraguayMaritimeShippingLabel: "Envío Marítimo (3 meses)",
-    peruMaritimeShippingLabel: "Envío Marítimo (3 meses)",
+    paraguayMaritimeShippingLabel: "Envio maritimo (3 meses) consulte las proximas salidas.",
+    peruMaritimeShippingLabel: "Envio maritimo (3 meses) consulte las proximas salidas.",
     estimatedInternationalShipping: "Costo Estimado de Envío Internacional",
     shippingAddressLabel: "Dirección de Envío",
     addressLabel: "Dirección",

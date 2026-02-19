@@ -187,11 +187,12 @@ export const StoragePage = () => {
 
   if (loading)
     return (
-      <div className="flex flex-col items-center justify-center p-20 space-y-4">
+      <div className="flex flex-col items-center justify-center min-h-[50vh] p-8 space-y-4">
         <RefreshCw className="h-8 w-8 text-orange-300 animate-spin" />
         <p className="text-sm text-slate-400 font-bold uppercase tracking-widest">
           {t("loading")}
         </p>
+        <img src="/KapyShoppingBags.png" alt="Loading" className="w-32 h-32 object-contain opacity-60 mt-4" />
       </div>
     );
 
@@ -421,19 +422,21 @@ export const StoragePage = () => {
 
       {/* BARRA FLOTANTE */}
       {selectedItems.size > 0 && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 w-[calc(100%-2rem)] max-w-[500px] animate-in slide-in-from-bottom-5">
-          <div className="bg-slate-900 text-white p-4 rounded-2xl shadow-2xl flex items-center justify-between border border-white/10">
-            <div className="flex flex-col pl-2">
-              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest leading-none mb-1">
-                {selectedItems.size} {t("selected")}
-              </span>
-              <span className="text-sm font-bold text-orange-400 italic">
-                {totalWeight}g {t("total")}
-              </span>
+        <div className="fixed bottom-20 sm:bottom-6 left-1/2 -translate-x-1/2 z-50 w-[calc(100%-2rem)] max-w-[500px] animate-in slide-in-from-bottom-5">
+          <div className="bg-slate-900 text-white p-3 sm:p-4 rounded-2xl shadow-2xl flex flex-col sm:flex-row items-center gap-2 sm:justify-between border border-white/10">
+            <div className="flex items-center gap-3 w-full sm:w-auto">
+              <div className="flex flex-col pl-1">
+                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest leading-none mb-1">
+                  {selectedItems.size} {t("selected")}
+                </span>
+                <span className="text-sm font-bold text-orange-400 italic">
+                  {totalWeight}g {t("total")}
+                </span>
+              </div>
             </div>
             <Button
               onClick={() => setQuoteDialogOpen(true)}
-              className="bg-orange-400 hover:bg-orange-500 text-white rounded-xl px-6 h-11 text-xs font-bold uppercase tracking-tight shadow-lg border-none active:scale-95 transition-all"
+              className="bg-orange-400 hover:bg-orange-500 text-white rounded-xl px-4 sm:px-6 h-10 sm:h-11 text-xs font-bold uppercase tracking-tight shadow-lg border-none active:scale-95 transition-all w-full sm:w-auto"
             >
               {t("requestShippingQuote")}{" "}
               <ArrowRight className="ml-2 h-4 w-4" />

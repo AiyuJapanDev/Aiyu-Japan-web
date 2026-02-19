@@ -545,7 +545,13 @@ export const ShippingPage = () => {
 
   if (loading) {
     return (
-      <div className="flex justify-center p-8">{t("loadingShipments")}</div>
+      <div className="flex flex-col items-center justify-center min-h-[50vh] p-8 space-y-4">
+        <RefreshCw className="h-8 w-8 text-orange-300 animate-spin" />
+        <p className="text-sm text-slate-400 font-bold uppercase tracking-widest">
+          {t("loadingShipments")}
+        </p>
+        <img src="/KapyShoppingBags.png" alt="Loading" className="w-32 h-32 object-contain opacity-60 mt-4" />
+      </div>
     );
   }
 

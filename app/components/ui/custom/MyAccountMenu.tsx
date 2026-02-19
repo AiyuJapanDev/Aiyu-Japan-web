@@ -36,7 +36,7 @@ export default function MyAccountMenu() {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger className="flex items-center gap-2 py-2.5 px-3 rounded-lg hover:bg-accent transition-colors">
+      <DropdownMenuTrigger className="flex items-center gap-2 py-2.5 rounded-lg hover:bg-accent transition-colors">
         <Avatar className="rounded-lg h-8 w-8">
           <AvatarFallback className="rounded-lg bg-capybara-orange text-primary-foreground">
             {displayName[0]?.toUpperCase() || "U"}

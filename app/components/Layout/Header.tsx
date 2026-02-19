@@ -16,6 +16,7 @@ import {
   Calculator,
   Crown,
   ArrowRight,
+  ShoppingCart,
 } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { useNotifications } from "@/hooks/useNotifications";
@@ -191,7 +192,7 @@ const Header = () => {
          *
          *
          * */}
-        <nav className="px-2 pt-2 max-w-7xl mx-auto  sm:px-6 lg:px-6">
+        <nav className="px-2 pt-2 max-w-8xl mx-auto  sm:px-6 lg:px-6">
           {/*
            *
            * Centered Desktop Navigation
@@ -319,6 +320,22 @@ const Header = () => {
                     </Link>
                   </div>
 
+                   {
+                    isAdmin ?
+                      null
+                     : <Link to="/user-dashboard">
+                        <div>
+                          <div className="flex justify-end">
+                          <Button className="bubble-btn-primary w-28 hover:bg-yellow-400">
+                            {t("startShopping")}
+                            <ShoppingCart className="w-4 h-4" />
+                          </Button>
+                            <div className="h-2 w-2 bg-yellow-500 rounded-full animate-pulse"></div>
+                          </div>
+                        </div>
+                      </Link>
+                  }
+
                   <div className="hidden lg:flex items-center gap-2">
                     <MyAccountMenu />
                   </div>
@@ -356,6 +373,8 @@ const Header = () => {
                 </Button>
               </Link>
 
+              
+
               {/* Notifications bell */}
               {user && (
                 <Link
@@ -379,6 +398,12 @@ const Header = () => {
                   </Button>
                 </Link>
               )}
+
+              <Link to="/user-dashboard">
+                    <Button className="w-10 h-10 bg-capybara-orange border-2 hover:bg-yellow-400 rounded-full">
+                      <ShoppingCart className="w-4 h-4 text-white font-bold" />
+                    </Button>
+              </Link>
 
               {/* Mobile menu toggle */}
               <Button

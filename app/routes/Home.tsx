@@ -38,6 +38,31 @@ export function meta() {
       content:
         "We are passionate about connecting different cultures and building great services. Login to use our service and find out more!.",
     },
+    {
+      property: "og:description",
+      content:
+        "We are passionate about connecting different cultures and building great services. Login to use our service and find out more!.",
+    },
+    {
+      property: "og:image",
+      content: "https://aiyujapan.com/aiyupreview.png",
+    },
+    {
+      property: "og:url",
+      content: "https://aiyujapan.com",
+    },
+    {
+      property: "og:type",
+      content: "website",
+    },
+    {
+      name: "twitter:card",
+      content: "summary_large_image",
+    },
+    {
+      name: "twitter:image",
+      content: "https://aiyujapan.com/aiyupreview.png",
+    },
   ];
 }
 
