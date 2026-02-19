@@ -60,7 +60,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
                     <Scripts />
                   </main>
                   <Footer />
-                  <ProductRequestButton />
                 </div>
               </AuthProvider>
             </AppProvider>

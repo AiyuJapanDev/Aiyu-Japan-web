@@ -353,7 +353,7 @@ export const OrdersPage = () => {
             "all_received",
           ].includes(status)
         ) {
-          return { ...step, status: "completed" as StepStatus }; 
+          return { ...step, status: "completed" as StepStatus };
         }
       }
 
@@ -555,7 +555,15 @@ export const OrdersPage = () => {
   };
 
   if (loading) {
-    return <div className="flex justify-center p-8">{t("loadingOrders")}</div>;
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[50vh] p-8 space-y-4">
+        <RefreshCw className="h-8 w-8 text-orange-300 animate-spin" />
+        <p className="text-sm text-slate-400 font-bold uppercase tracking-widest">
+          {t("loadingOrders")}
+        </p>
+        <img src="/KapyShoppingBags.png" alt="Loading" className="w-32 h-32 object-contain opacity-60 mt-4" />
+      </div>
+    );
   }
 
   // Filter orders by status and rejected
@@ -844,7 +852,7 @@ export const OrdersPage = () => {
               <Card id={`order-${order.id}`}>
                 <CardHeader
                   onClick={() => toggleOrder(order.id)}
-                  className="cursor-pointer hover:bg-muted/50 transition-colors border-b border-gray-200"
+                  className="cursor-pointer hover:bg-muted/50 transition-colors border-2 border-r-yellow-400"
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-4">
@@ -1142,7 +1150,9 @@ export const OrdersPage = () => {
                                 }
                                 className="w-full bg-primary hover:bg-primary/90 sm:w-auto"
                               >
-                                <span className="truncate font-bold">{t("payNow")}</span>
+                                <span className="truncate font-bold">
+                                  {t("payNow")}
+                                </span>
                               </Button>
 
                               <section className="flex w-full gap-2 sm:w-auto sm:gap-4">
@@ -1172,9 +1182,11 @@ export const OrdersPage = () => {
                         </div>
                       )}
 
-                    {order.quotes && order.quotes.length > 0 && (
-                      <div className="mt-4 p-4 border border-green-500 bg-blue-50/50 dark:bg-blue-950/30 dark:border-blue-800 rounded-xl">
-                        <p className="text-sm font-bold text-green-900 dark:text-blue-100 mb-2">
+                    {order.quotes && order.quotes.length > 0 && (() => {
+                      const allPaid = order.quotes.every((q) => q.status === 'paid');
+                      return (
+                      <div className={`mt-4 p-4 border-2 rounded-xl ${allPaid ? 'border-green-500 bg-green-50 dark:bg-green-950/30 dark:border-green-700' : 'border-orange-400 bg-amber-50 dark:bg-orange-950/30 dark:border-orange-700'}`}>
+                        <p className={`text-sm font-bold mb-3 ${allPaid ? 'text-green-800 dark:text-green-100' : 'text-orange-700 dark:text-orange-100'}`}>
                           {t("quoteInformation") || "Quote Information"}
                         </p>
 
@@ -1211,13 +1223,17 @@ export const OrdersPage = () => {
                             return (
                               <div
                                 key={quote.id}
-                                className="bg-white/60 dark:bg-gray-800/60 rounded-lg p-3 border border-blue-100 dark:border-blue-900"
+                                className={`rounded-lg p-3 border-l-4 ${quote.status === 'paid' ? 'bg-white border-l-green-500 dark:bg-green-900/20' : 'bg-white border-l-orange-400 dark:bg-orange-900/20'}`}
                               >
                                 <div className="flex flex-col gap-2 text-sm">
-                                    <p className="text-green-800 font-semibold">{quoteTypeText}</p>
+                                  <p className={`font-semibold ${quote.status === 'paid' ? 'text-green-800' : 'text-amber-800'}`}>
+                                    {quoteTypeText}
+                                  </p>
                                   <div className="flex flex-col sm:flex-row sm:items-center sm:gap-3 gap-1">
-                                    <p className="text-green-600">{t("infoPaidOrder")} - {t("status")}:{" "}</p>
-                                    <p className="text-green-600 dark:text-blue-100 font-medium flex-shrink-0">
+                                    <p className={`${quote.status === 'paid' ? 'text-green-700' : 'text-orange-700'} font-medium`}>
+                                      {quote.status === 'paid' ? t("infoPaidOrder") : t("infoPendingPayment")} - {t("status")}:{" "}
+                                    </p>
+                                    <p className={`${quote.status === 'paid' ? 'text-green-700' : 'text-orange-700'} font-bold flex-shrink-0`}>
                                       {formattedStatus}
                                     </p>
                                   </div>
@@ -1240,7 +1256,8 @@ export const OrdersPage = () => {
                           })}
                         </div>
                       </div>
-                    )}
+                      );
+                    })()}
                   </CardContent>
                 </CollapsibleContent>
               </Card>

@@ -756,45 +756,24 @@ export const ShippingRequestsManagement = React.memo(
     };
 
     const handleMarkAsSent = (request: ShippingRequest) => {
-      // Find box items in this shipment
-      const boxItems = request.items.filter((item) => item.is_box);
-
-      setCurrentShipmentBoxItems(boxItems);
       setTrackingRequestId(request.id);
       setTrackingDialogOpen(true);
 
       // Pre-populate if editing existing tracking
-      if (boxItems.length > 0 && request.tracking_urls) {
-        const urlsMap: { [key: string]: string } = {};
-        request.tracking_urls.forEach((entry) => {
-          urlsMap[entry.item_id] = entry.tracking_url;
-        });
-        setTrackingUrls(urlsMap);
-      } else if (request.tracking_url) {
+      if (request.tracking_url) {
         setTrackingUrl(request.tracking_url);
       } else {
         setTrackingUrl("");
-        setTrackingUrls({});
       }
     };
 
     const handleConfirmSent = () => {
       if (!trackingRequestId) return;
 
-      // Build tracking_urls array from trackingUrls object
-      const trackingUrlsArray = Object.entries(trackingUrls)
-        .filter(([_, url]) => url.trim() !== "")
-        .map(([itemId, url]) => ({
-          item_id: itemId,
-          tracking_url: url,
-        }));
-
       updateStatusMutation.mutate({
         requestId: trackingRequestId,
         status: "sent",
         tracking_url: trackingUrl || undefined,
-        tracking_urls:
-          trackingUrlsArray.length > 0 ? trackingUrlsArray : undefined,
       });
     };
 
@@ -1020,6 +999,16 @@ export const ShippingRequestsManagement = React.memo(
         </Card>
       );
     }
+
+    const getVisiblePages = (current: number, total: number) => {
+      if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+
+      if (current <= 4) return [1, 2, 3, 4, 5, "...", total];
+      if (current >= total - 3)
+        return [1, "...", total - 4, total - 3, total - 2, total - 1, total];
+
+      return [1, "...", current - 1, current, current + 1, "...", total];
+    };
 
     return (
       <>
@@ -1317,134 +1306,48 @@ export const ShippingRequestsManagement = React.memo(
                           </div>
 
                           {/* Tracking Information (if sent) */}
-                          {(() => {
-                            const boxItems = request.items.filter(
-                              (item) => item.is_box,
-                            );
-
-                            if (
-                              boxItems.length > 0 &&
-                              request.status === "sent"
-                            ) {
-                              return (
-                                <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                                  <h4 className="font-medium text-blue-800 mb-3">
-                                    Box Items Tracking
+                          {request.status === "sent" && (
+                            <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                              <div className="flex items-center justify-between">
+                                <div>
+                                  <h4 className="font-medium text-blue-800 mb-1">
+                                    Tracking Information
                                   </h4>
-                                  <div className="space-y-3">
-                                    {boxItems.map((item, index) => {
-                                      const trackingEntry =
-                                        request.tracking_urls?.find(
-                                          (entry) => entry.item_id === item.id,
-                                        );
-
-                                      return (
-                                        <div
-                                          key={item.id}
-                                          className="flex items-center justify-between py-2 border-b last:border-b-0"
-                                        >
-                                          <div className="flex items-center gap-3">
-                                            <Package className="h-4 w-4 text-blue-700" />
-                                            <div>
-                                              <p className="text-sm font-medium text-blue-900">
-                                                Box {index + 1}:{" "}
-                                                {item.item_name || "Box"}
-                                              </p>
-                                              <p className="text-xs text-blue-600">
-                                                {trackingEntry?.tracking_url ||
-                                                  "No tracking URL assigned"}
-                                              </p>
-                                            </div>
-                                          </div>
-                                          <div className="flex items-center gap-2">
-                                            {trackingEntry?.tracking_url && (
-                                              <a
-                                                href={
-                                                  trackingEntry.tracking_url
-                                                }
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="text-sm text-blue-700 hover:underline flex items-center gap-1"
-                                              >
-                                                <Link className="h-3 w-3" />
-                                                View
-                                              </a>
-                                            )}
-                                            <Button
-                                              size="sm"
-                                              variant="ghost"
-                                              onClick={() =>
-                                                handleEditBoxTrackingUrl(
-                                                  request.id,
-                                                  item.id,
-                                                  trackingEntry?.tracking_url ||
-                                                    "",
-                                                )
-                                              }
-                                              className="text-blue-700 hover:bg-blue-100 h-7 px-2"
-                                            >
-                                              <Edit className="h-3 w-3 mr-1" />
-                                              {trackingEntry?.tracking_url
-                                                ? "Edit"
-                                                : "Add"}
-                                            </Button>
-                                          </div>
-                                        </div>
-                                      );
-                                    })}
-                                  </div>
-                                </div>
-                              );
-                            }
-
-                            // Se muestra aunque request.tracking_url esté vacío para permitir agregarla
-                            if (request.status === "sent") {
-                              return (
-                                <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                                  <div className="flex items-center justify-between">
-                                    <div>
-                                      <h4 className="font-medium text-blue-800 mb-1">
-                                        Tracking Information
-                                      </h4>
-                                      {request.tracking_url ? (
-                                        <a
-                                          href={request.tracking_url}
-                                          target="_blank"
-                                          rel="noopener noreferrer"
-                                          className="text-sm text-blue-700 hover:underline flex items-center gap-1"
-                                        >
-                                          <Link className="h-3 w-3" />
-                                          {request.tracking_url}
-                                        </a>
-                                      ) : (
-                                        <p className="text-sm text-blue-400 italic">
-                                          No tracking URL assigned yet
-                                        </p>
-                                      )}
-                                    </div>
-                                    <Button
-                                      size="sm"
-                                      variant="outline"
-                                      onClick={() =>
-                                        handleEditTrackingUrl(
-                                          request.id,
-                                          request.tracking_url || "",
-                                        )
-                                      }
-                                      className="border-blue-500 text-blue-700 hover:bg-blue-100"
+                                  {request.tracking_url ? (
+                                    <a
+                                      href={request.tracking_url}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="text-sm text-blue-700 hover:underline flex items-center gap-1"
                                     >
-                                      <Edit className="h-3 w-3 mr-1" />
-                                      {request.tracking_url
-                                        ? "Edit URL"
-                                        : "Add URL"}
-                                    </Button>
-                                  </div>
+                                      <Link className="h-3 w-3" />
+                                      {request.tracking_url}
+                                    </a>
+                                  ) : (
+                                    <p className="text-sm text-blue-400 italic">
+                                      No tracking URL assigned yet
+                                    </p>
+                                  )}
                                 </div>
-                              );
-                            }
-
-                            return null;
-                          })()}
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() =>
+                                    handleEditTrackingUrl(
+                                      request.id,
+                                      request.tracking_url || "",
+                                    )
+                                  }
+                                  className="border-blue-500 text-blue-700 hover:bg-blue-100"
+                                >
+                                  <Edit className="h-3 w-3 mr-1" />
+                                  {request.tracking_url
+                                    ? "Edit URL"
+                                    : "Add URL"}
+                                </Button>
+                              </div>
+                            </div>
+                          )}
 
                           {/* Customer Information */}
                           <div className="mb-4 p-3 bg-accent/20 rounded-lg">
@@ -1590,7 +1493,6 @@ export const ShippingRequestsManagement = React.memo(
                                         </div>
                                       )}
 
-                                      {/* ✅ Other Products */}
                                       {request.rejection_details.product_issues.some(
                                         (i: any) => !i.has_issue,
                                       ) && (
@@ -1843,53 +1745,73 @@ export const ShippingRequestsManagement = React.memo(
 
             {/* Pagination Controls */}
             {filteredRequests.length > 0 && totalPages > 1 && (
-              <Card className="bg-muted/30 mt-6">
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() =>
-                        setCurrentPage((prev) => Math.max(1, prev - 1))
-                      }
-                      disabled={currentPage === 1}
-                    >
-                      <ChevronLeft className="h-4 w-4 mr-1" />
-                      Previous
-                    </Button>
+              <div className="mt-8 px-4 py-6 bg-background border border-border/60 rounded-2xl shadow-sm flex flex-col gap-6 items-center justify-between md:flex-row md:px-6">
+                {/* Info de página: se centra en móvil, se alinea a la izquierda en desktop */}
+                <div className="flex flex-col gap-1 items-center md:items-start order-2 md:order-1">
+                  <p className="text-sm md:text-base font-bold text-foreground">
+                    Página {currentPage} de {totalPages}
+                  </p>
+                  <p className="text-[10px] md:text-xs text-muted-foreground tracking-widest uppercase font-medium">
+                    {filteredRequests.length} resultados totales
+                  </p>
+                </div>
 
-                    <div className="flex items-center gap-2">
-                      {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                        (page) => (
-                          <Button
-                            key={page}
-                            variant={
-                              currentPage === page ? "default" : "outline"
-                            }
-                            size="sm"
-                            onClick={() => setCurrentPage(page)}
-                            className="min-w-[40px]"
-                          >
-                            {page}
-                          </Button>
-                        ),
-                      )}
-                    </div>
+                {/* Contenedor de botones: Wrap habilitado para móviles */}
+                <div className="flex items-center justify-center gap-1 md:gap-2 order-1 md:order-2 w-full md:w-auto">
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="h-9 w-9 md:h-11 md:w-11 rounded-xl shrink-0"
+                    onClick={() =>
+                      setCurrentPage((prev) => Math.max(1, prev - 1))
+                    }
+                    disabled={currentPage === 1}
+                  >
+                    <ChevronLeft className="h-4 w-4 md:h-5 md:w-5" />
+                  </Button>
 
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() =>
-                        setCurrentPage((prev) => Math.min(totalPages, prev + 1))
-                      }
-                      disabled={currentPage === totalPages}
-                    >
-                      Next
-                      <ChevronRight className="h-4 w-4 ml-1" />
-                    </Button>
+                  {/* Los números se envuelven (wrap) si la pantalla es muy pequeña */}
+                  <div className="flex flex-wrap items-center justify-center gap-1 md:gap-1.5 max-w-[200px] sm:max-w-none">
+                    {getVisiblePages(currentPage, totalPages).map(
+                      (page, index) => (
+                        <React.Fragment key={index}>
+                          {page === "..." ? (
+                            <span className="px-1 text-muted-foreground font-bold text-xs md:text-sm">
+                              ...
+                            </span>
+                          ) : (
+                            <Button
+                              variant={
+                                currentPage === page ? "default" : "ghost"
+                              }
+                              onClick={() => setCurrentPage(page as number)}
+                              className={`h-8 w-8 md:h-11 md:min-w-[2.75rem] rounded-lg md:rounded-xl text-xs md:text-sm font-bold transition-all ${
+                                currentPage === page
+                                  ? "bg-[#0f172a] text-white shadow-md md:scale-110 z-10"
+                                  : "text-muted-foreground hover:bg-muted"
+                              }`}
+                            >
+                              {page}
+                            </Button>
+                          )}
+                        </React.Fragment>
+                      ),
+                    )}
                   </div>
-                </CardContent>
-              </Card>
+
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="h-9 w-9 md:h-11 md:w-11 rounded-xl shrink-0"
+                    onClick={() =>
+                      setCurrentPage((prev) => Math.min(totalPages, prev + 1))
+                    }
+                    disabled={currentPage === totalPages}
+                  >
+                    <ChevronRight className="h-4 w-4 md:h-5 md:w-5" />
+                  </Button>
+                </div>
+              </div>
             )}
           </CardContent>
         </Card>
@@ -2073,65 +1995,70 @@ export const ShippingRequestsManagement = React.memo(
 
         {/* Tracking URL Dialog */}
         <Dialog open={trackingDialogOpen} onOpenChange={setTrackingDialogOpen}>
-          <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogContent>
             <DialogHeader>
               <DialogTitle>Mark Shipment as Sent</DialogTitle>
               <DialogDescription>
-                {currentShipmentBoxItems.length > 0
-                  ? `This shipment contains ${currentShipmentBoxItems.length} box(es). Please enter a tracking URL for each box.`
-                  : "Enter the tracking URL for this shipment (optional)."}
+                Enter the tracking URL for this shipment (optional).
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4">
-              {currentShipmentBoxItems.length > 0 ? (
-                // Multiple tracking URLs for box items
-                currentShipmentBoxItems.map((item, index) => (
-                  <div
-                    key={item.id}
-                    className="space-y-2 p-4 border rounded-lg"
-                  >
-                    <div className="flex items-center gap-2 text-sm font-medium">
-                      <Package className="h-4 w-4" />
-                      <span>Box {index + 1}</span>
-                    </div>
-                    <div className="text-sm text-muted-foreground">
-                      {item.local_tracking_number && (
-                        <p>Local Tracking: {item.local_tracking_number}</p>
-                      )}
-                      {item.item_name && <p>Item: {item.item_name}</p>}
-                    </div>
-                    <div>
-                      <Label htmlFor={`tracking-url-${item.id}`}>
-                        Tracking URL (Optional)
+              {/* Items included in this shipment */}
+              {(() => {
+                const currentRequest = shippingRequests?.find(
+                  (r) => r.id === trackingRequestId,
+                );
+                if (currentRequest && currentRequest.items?.length > 0) {
+                  return (
+                    <div className="p-3 bg-accent/20 rounded-lg">
+                      <Label className="text-sm font-medium mb-2 block">
+                        Items in this shipment ({currentRequest.items.length})
                       </Label>
-                      <Input
-                        id={`tracking-url-${item.id}`}
-                        type="url"
-                        value={trackingUrls[item.id] || ""}
-                        onChange={(e) =>
-                          setTrackingUrls((prev) => ({
-                            ...prev,
-                            [item.id]: e.target.value,
-                          }))
-                        }
-                        placeholder="https://tracking.example.com/..."
-                      />
+                      <ol className="space-y-1 list-decimal list-inside">
+                        {currentRequest.items.map((item, index) => (
+                          <li key={item.id || index} className="text-sm">
+                            <span className="font-medium">
+                              {item.item_name || `Item ${index + 1}`}
+                            </span>
+                            {" — "}
+                            <span className="text-muted-foreground">
+                              Qty: {item.quantity}
+                            </span>
+                            {item.product_url && (
+                              <a
+                                href={item.product_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="ml-2 text-xs text-blue-600 hover:underline break-all"
+                              >
+                                {item.product_url.length > 50
+                                  ? item.product_url.substring(0, 50) + "..."
+                                  : item.product_url}
+                              </a>
+                            )}
+                            {item.local_tracking_number && (
+                              <span className="ml-2 text-xs text-muted-foreground">
+                                (Local: {item.local_tracking_number})
+                              </span>
+                            )}
+                          </li>
+                        ))}
+                      </ol>
                     </div>
-                  </div>
-                ))
-              ) : (
-                // Single tracking URL for regular items
-                <div>
-                  <Label htmlFor="tracking-url">Tracking URL (Optional)</Label>
-                  <Input
-                    id="tracking-url"
-                    type="url"
-                    value={trackingUrl}
-                    onChange={(e) => setTrackingUrl(e.target.value)}
-                    placeholder="https://tracking.example.com/..."
-                  />
-                </div>
-              )}
+                  );
+                }
+                return null;
+              })()}
+              <div>
+                <Label htmlFor="tracking-url">Tracking URL (Optional)</Label>
+                <Input
+                  id="tracking-url"
+                  type="url"
+                  value={trackingUrl}
+                  onChange={(e) => setTrackingUrl(e.target.value)}
+                  placeholder="https://tracking.example.com/..."
+                />
+              </div>
             </div>
             <DialogFooter>
               <Button
@@ -2139,8 +2066,6 @@ export const ShippingRequestsManagement = React.memo(
                 onClick={() => {
                   setTrackingDialogOpen(false);
                   setTrackingUrl("");
-                  setTrackingUrls({});
-                  setCurrentShipmentBoxItems([]);
                   setTrackingRequestId(null);
                 }}
               >
