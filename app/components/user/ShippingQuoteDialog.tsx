@@ -20,7 +20,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card } from "@/components/ui/card";
-import { Package, MapPin, Phone, User, Truck, Globe } from "lucide-react";
+import { Package, MapPin, Phone, User, Truck, Globe, JapaneseYen } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useAuth } from "@/contexts/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -90,6 +91,7 @@ const ShippingQuoteDialog: React.FC<ShippingQuoteDialogProps> = ({
   const [width, setWidth] = useState("");
   const [height, setHeight] = useState("");
   const [taxVatId, setTaxVatId] = useState("");
+  const [useCredit, setUseCredit] = useState(false);
   const { t } = useApp();
 
   const zoneInfo = selectedCountry ? getZoneForCountry(selectedCountry) : null;
@@ -231,8 +233,12 @@ const ShippingQuoteDialog: React.FC<ShippingQuoteDialogProps> = ({
       setCity(profile.city || "");
       setState(profile.state || "");
       setTaxVatId(profile.tax_vat_Id || "");
+      setUseCredit(false);
     }
   }, [open, profile]);
+
+  const userCreditBalance = (profile as any)?.credit_balance ?? 0;
+  const hasCredits = userCreditBalance > 0;
 
   const handleSubmit = async () => {
     if (
@@ -291,8 +297,9 @@ const ShippingQuoteDialog: React.FC<ShippingQuoteDialogProps> = ({
         shipping_method: shippingMethod,
         destination: selectedCountry,
         total_weight: totalWeight,
-        estimated_cost: shippingCost,
+        estimated_cost: Math.round(shippingCost),
         shipping_address: shippingAddress,
+        use_credit_request: useCredit,
         items: selectedItems.map((item) => ({
           order_item_id: item.id,
           order_id: item.order_id || "", // Handle optional order_id
@@ -398,7 +405,7 @@ const ShippingQuoteDialog: React.FC<ShippingQuoteDialogProps> = ({
             </Label>
             <Select value={selectedCountry} onValueChange={setSelectedCountry}>
               <SelectTrigger className="rounded-full border-2 border-capybara-orange/20 focus:border-capybara-orange text-sm px-3 py-2">
-                <SelectValue placeholder="Select Country" />
+                <SelectValue placeholder={t("selectCountryLabel")} />
               </SelectTrigger>
               <SelectContent className="rounded-2xl border-2 border-capybara-orange/20 max-h-[300px]">
                 {ALL_COUNTRIES.map((country) => (
@@ -416,7 +423,7 @@ const ShippingQuoteDialog: React.FC<ShippingQuoteDialogProps> = ({
             )}
             {isDHLOnly && (
               <p className="text-xs text-gray-600 text-center">
-                DHL Shipping Only
+                {t("dhlOnlyNote")}
               </p>
             )}
           </div>
@@ -424,7 +431,7 @@ const ShippingQuoteDialog: React.FC<ShippingQuoteDialogProps> = ({
           {/* Shipping Method */}
           <div className="space-y-2">
             <Label className="font-body text-sm text-gray-700">
-              Shipping Method
+              {t("shippingMethod")}
             </Label>
             <RadioGroup
               value={shippingMethod}
@@ -546,9 +553,9 @@ const ShippingQuoteDialog: React.FC<ShippingQuoteDialogProps> = ({
 
               return (
                 <Card className="p-4 bg-gradient-to-br bg-gray-700 text-white rounded-2xl">
-                  <div className="text-2xl font-bold text-center">
-                    {animatedCost.toLocaleString()} yen
-                  </div>
+                    <div className="text-2xl font-bold text-center">
+                    {animatedCost.toLocaleString()} {t("yen")}
+                    </div>
                   <p className="text-gray-300 text-sm text-center">
                     {t("estimatedInternationalShipping")}
                   </p>
@@ -561,6 +568,30 @@ const ShippingQuoteDialog: React.FC<ShippingQuoteDialogProps> = ({
                 </Card>
               );
             })()}
+
+          {/* Use Credits Section */}
+          {hasCredits && (
+            <div className="flex items-center space-x-3 p-4 rounded-2xl bg-amber-50 border border-amber-200 shadow-sm transition-all hover:shadow-md">
+              <Checkbox
+                id="useCreditsShipping"
+                checked={useCredit}
+                onCheckedChange={(checked) => setUseCredit(checked === true)}
+                className="w-5 h-5 border-2 border-amber-400 data-[state=checked]:bg-amber-500 data-[state=checked]:border-amber-500"
+              />
+              <div className="grid gap-1.5 leading-none cursor-pointer" onClick={() => setUseCredit(!useCredit)}>
+                <label
+                  htmlFor="useCreditsShipping"
+                  className="text-sm font-semibold text-amber-900 leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex items-center gap-2"
+                >
+                  <JapaneseYen className="w-4 h-4 text-amber-600" />
+                  {t("useCreditsForShipping")}
+                </label>
+                <p className="text-xs text-amber-700/80">
+                  {t("availableBalance")} <span className="font-bold">{userCreditBalance.toLocaleString('en-US')}</span>
+                </p>
+              </div>
+            </div>
+          )}
 
           {/* Address Form */}
           <div className="space-y-4">

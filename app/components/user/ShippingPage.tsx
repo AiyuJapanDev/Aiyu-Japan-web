@@ -19,6 +19,7 @@ import {
   Truck,
   Package,
   CheckCircle,
+  XCircle,
   MapPin,
   FileText,
   CreditCard,
@@ -41,6 +42,7 @@ import {
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useApp } from "@/contexts/AppContext";
+import { useAuth } from "@/contexts/useAuth";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -125,6 +127,7 @@ export const ShippingPage = () => {
   const [cancelShipmentId, setCancelShipmentId] = useState<string | null>(null);
   const [isCancellingShipment, setIsCancellingShipment] = useState(false);
   const { t } = useApp();
+  const { refreshProfile } = useAuth();
 
   // Separate quotes by status
   const pendingQuotes = shippingQuotes.filter(
@@ -420,6 +423,7 @@ export const ShippingPage = () => {
       if (error) throw error;
 
       toast.success(t("shipmentCancelledSuccess"));
+      await refreshProfile();
       await fetchData();
     } catch (error) {
       console.error("Error cancelling shipment:", error);
@@ -550,7 +554,11 @@ export const ShippingPage = () => {
         <p className="text-sm text-slate-400 font-bold uppercase tracking-widest">
           {t("loadingShipments")}
         </p>
-        <img src="/KapyShoppingBags.png" alt="Loading" className="w-32 h-32 object-contain opacity-60 mt-4" />
+        <img
+          src="/KapyShoppingBags.png"
+          alt="Loading"
+          className="w-32 h-32 object-contain opacity-60 mt-4"
+        />
       </div>
     );
   }
@@ -878,7 +886,7 @@ export const ShippingPage = () => {
                     <p className="text-sm text-muted-foreground mt-1">
                       {t("requestedOn")}{" "}
                       {new Date(quote.created_at).toLocaleDateString()} •
-                      {totalItems} {totalItems === 1 ? "item" : "items"} •
+                      {totalItems} {totalItems === 1 ? t("itemLabel") : t("itemsLabel")} •
                       {quote.total_weight}g •{quote.destination} •
                       {quote.shipping_method}
                     </p>
@@ -889,13 +897,39 @@ export const ShippingPage = () => {
                       {/* Status Flow */}
                       <StatusFlow steps={getShippingQuoteSteps(quote.status)} />
 
-                      {/* Rejection Reason */}
-                      {quote.status === "rejected" &&
+                      {/* Rejection/Cancellation Reason */}
+                      {(quote.status === "rejected" ||
+                        quote.status === "cancelled") &&
                         quote.rejection_reason && (
-                          <Alert variant="destructive">
-                            <AlertCircle className="h-4 w-4" />
-                            <AlertTitle>{t("rejectionReasonTitle")}</AlertTitle>
-                            <AlertDescription>
+                          <Alert
+                            variant={
+                              quote.status === "rejected"
+                                ? "destructive"
+                                : "default"
+                            }
+                            className={
+                              quote.status === "cancelled"
+                                ? "bg-gray-50 border-gray-200"
+                                : ""
+                            }
+                          >
+                            {quote.status === "rejected" ? (
+                              <AlertCircle className="h-4 w-4" />
+                            ) : (
+                              <XCircle className="h-4 w-4 text-gray-600" />
+                            )}
+                            <AlertTitle>
+                              {quote.status === "rejected"
+                                ? t("rejectionReasonTitle")
+                                : t("shipmentCancelled")}
+                            </AlertTitle>
+                            <AlertDescription
+                              className={
+                                quote.status === "cancelled"
+                                  ? "text-gray-700"
+                                  : ""
+                              }
+                            >
                               {quote.rejection_reason}
                             </AlertDescription>
                           </Alert>
@@ -984,10 +1018,10 @@ export const ShippingPage = () => {
                               <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
                                 <div className="mb-3">
                                   <p className="text-sm font-medium text-purple-900">
-                                    Track Your Boxes
+                                    {t("trackBoxes")}
                                   </p>
                                   <p className="text-xs text-purple-700 mt-1">
-                                    Each box can be tracked individually
+                                    {t("trackBoxesDesc")}
                                   </p>
                                 </div>
                                 <div className="space-y-3">
@@ -1013,12 +1047,11 @@ export const ShippingPage = () => {
                                           <Package className="h-4 w-4 text-purple-700" />
                                           <div>
                                             <p className="text-sm font-medium text-purple-900">
-                                              {boxItem.item_name ||
-                                                `Box ${index + 1}`}
+                                              {t("boxLabel")} {index + 1}
                                             </p>
                                             {boxItem.local_tracking_number && (
                                               <p className="text-xs text-purple-600">
-                                                Tracking:{" "}
+                                                {t("trackingLabel")}{" "}
                                                 {boxItem.local_tracking_number}
                                               </p>
                                             )}
@@ -1087,7 +1120,7 @@ export const ShippingPage = () => {
                                   {t("estimatedCost")}
                                 </p>
                                 <p className="text-lg font-semibold">
-                                  ¥{quote.estimated_cost.toLocaleString()}
+                                  ¥{Math.round(quote.estimated_cost).toLocaleString()}
                                 </p>
                               </div>
                             )}
@@ -1113,12 +1146,12 @@ export const ShippingPage = () => {
                         quote.actual_cost && (
                           <div className="p-4 border border-blue-200 bg-blue-50/50 rounded-xl">
                             <p className="text-sm font-semibold text-blue-900 mb-2">
-                              Quote Information
+                              {t("quoteInformation")}
                             </p>
                             <div className="bg-white/60 rounded-lg p-3 border border-blue-100">
                               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-sm">
                                 <p className="text-blue-900 font-medium">
-                                  Price: ¥{quote.actual_cost.toLocaleString()}
+                                  {t("priceLabel")} ¥{quote.actual_cost.toLocaleString()}
                                 </p>
                                 <a
                                   href={quote.quote_url}
@@ -1168,7 +1201,7 @@ export const ShippingPage = () => {
                                             className={`text-sm font-medium ${hasIssue ? "text-destructive" : ""}`}
                                           >
                                             {issue.item_name ||
-                                              "Unnamed Product"}
+                                              t("unnamedProduct")}
                                           </p>
 
                                           <ItemIdentifier item={issue} />
@@ -1185,7 +1218,7 @@ export const ShippingPage = () => {
                                     </div>
                                     <div className="text-right">
                                       <span className="text-sm text-muted-foreground">
-                                        Qty: {issue.quantity || 1}
+                                        {t("qty")} {issue.quantity || 1}
                                       </span>
                                       {issue.weight && (
                                         <span className="text-xs text-muted-foreground block">
@@ -1223,7 +1256,7 @@ export const ShippingPage = () => {
                                             className={`text-sm font-medium ${hasIssue ? "text-destructive" : ""}`}
                                           >
                                             {item.item_name ||
-                                              "Unnamed Product"}
+                                              t("unnamedProduct")}
                                           </p>
                                           <ItemIdentifier item={item} />
 
@@ -1241,7 +1274,7 @@ export const ShippingPage = () => {
                                     </div>
                                     <div className="text-right">
                                       <span className="text-sm text-muted-foreground">
-                                        Qty: {item.quantity || 1}
+                                        {t("qty")} {item.quantity || 1}
                                       </span>
                                       {item.weight && (
                                         <span className="text-xs text-muted-foreground block">
@@ -1386,7 +1419,7 @@ export const ShippingPage = () => {
                     <p className="text-sm text-muted-foreground mt-1">
                       {t("requestedOn")}{" "}
                       {new Date(quote.created_at).toLocaleDateString()} •
-                      {totalItems} {totalItems === 1 ? "item" : "items"} •
+                      {totalItems} {totalItems === 1 ? t("itemLabel") : t("itemsLabel")} •
                       {quote.total_weight}g •{quote.destination} •
                       {quote.shipping_method}
                     </p>
@@ -1397,13 +1430,30 @@ export const ShippingPage = () => {
                       {/* Status Flow */}
                       <StatusFlow steps={getShippingQuoteSteps(quote.status)} />
 
-                      {/* Rejection Reason */}
-                      {quote.status === "rejected" &&
+                      {(quote.status === "rejected" ||
+                        quote.status === "cancelled") &&
                         quote.rejection_reason && (
-                          <Alert variant="destructive">
-                            <AlertCircle className="h-4 w-4" />
-                            <AlertTitle>{t("rejectionReasonTitle")}</AlertTitle>
-                            <AlertDescription>
+                          <Alert
+                            variant={
+                              quote.status === "rejected"
+                                ? "destructive"
+                                : "default"
+                            }
+                            className={`mt-4 ${quote.status === "cancelled" ? "bg-slate-50 border-slate-200" : ""}`}
+                          >
+                            {quote.status === "rejected" ? (
+                              <AlertCircle className="h-4 w-4" />
+                            ) : (
+                              <XCircle className="h-4 w-4 text-slate-600" />
+                            )}
+                            <AlertTitle className="font-bold">
+                              {quote.status === "rejected"
+                                ? t("rejectionReasonTitle") ||
+                                  "Motivo de Rechazo"
+                                : t("shipmentCancelled") || "Envío Cancelado"}
+                            </AlertTitle>
+                            <AlertDescription className="mt-1 text-sm text-slate-700">
+                              {/* Esto mostrará el texto de tu imagen */}
                               {quote.rejection_reason}
                             </AlertDescription>
                           </Alert>
@@ -1556,7 +1606,7 @@ export const ShippingPage = () => {
                                   {t("estimatedCost")}
                                 </p>
                                 <p className="text-lg font-semibold">
-                                  ¥{quote.estimated_cost.toLocaleString()}
+                                  ¥{Math.round(quote.estimated_cost).toLocaleString()}
                                 </p>
                               </div>
                             )}

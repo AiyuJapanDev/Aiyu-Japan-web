@@ -45,13 +45,13 @@ export default function MyAccountMenu() {
           </AvatarFallback>
         </Avatar>
         <div className="text-start flex flex-col">
-          <p className="text-xs font-medium">{"My Account"}</p>
+          <p className="text-xs font-medium">{t("myAccountLabel")}</p>
           <p className="text-xs text-muted-foreground truncate max-w-[150px]">
             {user.email}
           </p>
           <section className="flex items-center gap-1 text-xs text-muted-foreground">
             <JapaneseYen className="h-3.5 w-3.5 shrink-0" color="orange" />
-            <span className="text-xs">Credit:</span>
+            <span className="text-xs">{t("creditLabel")}</span>
             <span className="text-sm font-medium">
               {profile?.credit_balance?.toLocaleString('en-US') ?? '0'}
             </span>

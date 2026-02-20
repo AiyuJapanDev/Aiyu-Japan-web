@@ -24,10 +24,20 @@ import {
   XCircle,
   JapaneseYen,
 } from "lucide-react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -51,16 +61,24 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { toast as sonnerToast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/useAuth";
 import type { ProductRequest, Order, Quote } from "@/types/orders";
 import type { Database } from "@/integrations/supabase/types";
 import { StatusFlow } from "@/components/ui/status-flow";
 import { createNotification } from "@/lib/notificationUtils";
 
-type ProductRequestStatus = Database["public"]["Enums"]["product_request_status"];
+type ProductRequestStatus =
+  Database["public"]["Enums"]["product_request_status"];
 
 interface ProductRequestWithIssue extends ProductRequest {
   has_purchase_issue?: boolean;
@@ -88,17 +106,23 @@ interface OrderWithDetails extends Order {
     full_name: string | null;
     email: string | null;
     user_personal_id?: string | null;
+    credit_balance?: number;
   } | null;
   quotes?: Quote[];
   items: ProductRequestWithIssue[];
+  use_credits_request?: boolean;
+  credit_amount_applied?: number;
 }
 
 interface ProductRequestsManagementProps {
   orderId?: string | null;
 }
 
-export function ProductRequestsManagement({ orderId }: ProductRequestsManagementProps) {
+export function ProductRequestsManagement({
+  orderId,
+}: ProductRequestsManagementProps) {
   const queryClient = useQueryClient();
+  const { refreshProfile } = useAuth();
   const [refreshing, setRefreshing] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [openOrders, setOpenOrders] = useState<Set<string>>(new Set());
@@ -108,55 +132,86 @@ export function ProductRequestsManagement({ orderId }: ProductRequestsManagement
   const [hideCancelled, setHideCancelled] = useState(false);
   const [itemsPerPage, setItemsPerPage] = useState(10);
 
-  const [selectedOrder, setSelectedOrder] = useState<OrderWithDetails | null>(null);
+  const [selectedOrder, setSelectedOrder] = useState<OrderWithDetails | null>(
+    null,
+  );
   const [quotePrice, setQuotePrice] = useState("");
   const [quoteInvoiceUrl, setQuoteInvoiceUrl] = useState("");
   const [quoteCreditAmount, setQuoteCreditAmount] = useState("");
   const [rejectionReason, setRejectionReason] = useState("");
-  const [productIssues, setProductIssues] = useState<Map<string, { hasIssue: boolean; description: string }>>(
-    new Map(),
-  );
+  const [productIssues, setProductIssues] = useState<
+    Map<string, { hasIssue: boolean; description: string }>
+  >(new Map());
   const [showShippingDialog, setShowShippingDialog] = useState(false);
   const [shippingPrice, setShippingPrice] = useState("");
   const [shippingInvoiceUrl, setShippingInvoiceUrl] = useState("");
   const [showTrackingDialog, setShowTrackingDialog] = useState(false);
   const [trackingNumber, setTrackingNumber] = useState("");
   const [showCancelDialog, setShowCancelDialog] = useState(false);
-  const [orderToCancel, setOrderToCancel] = useState<OrderWithDetails | null>(null);
+  const [orderToCancel, setOrderToCancel] = useState<OrderWithDetails | null>(
+    null,
+  );
   const [isCancelling, setIsCancelling] = useState(false);
   const [cancelCreditAmount, setCancelCreditAmount] = useState("");
   const [cancelCreditReason, setCancelCreditReason] = useState("");
 
-  const [showConfirmPaymentDialog, setShowConfirmPaymentDialog] = useState(false);
-  const [orderForPayment, setOrderForPayment] = useState<OrderWithDetails | null>(null);
+  const [showConfirmPaymentDialog, setShowConfirmPaymentDialog] =
+    useState(false);
+  const [orderForPayment, setOrderForPayment] =
+    useState<OrderWithDetails | null>(null);
   const [isConfirmingPayment, setIsConfirmingPayment] = useState(false);
 
   const [showMarkPurchasedDialog, setShowMarkPurchasedDialog] = useState(false);
   const [showQuoteDialog, setShowQuoteDialog] = useState(false);
   const [showRejectDialog, setShowRejectDialog] = useState(false);
-  const [orderForPurchased, setOrderForPurchased] = useState<OrderWithDetails | null>(null);
+  const [orderForPurchased, setOrderForPurchased] =
+    useState<OrderWithDetails | null>(null);
   const [isMarkingPurchased, setIsMarkingPurchased] = useState(false);
 
-  const [showMarkAllReceivedDialog, setShowMarkAllReceivedDialog] = useState(false);
-  const [orderForAllReceived, setOrderForAllReceived] = useState<OrderWithDetails | null>(null);
-  const [dimensionsForAllReceived, setDimensionsForAllReceived] = useState<Map<string, {weight?: number, width?: number, length?: number, height?: number}>>(new Map());
+  const [showMarkAllReceivedDialog, setShowMarkAllReceivedDialog] =
+    useState(false);
+  const [orderForAllReceived, setOrderForAllReceived] =
+    useState<OrderWithDetails | null>(null);
+  const [dimensionsForAllReceived, setDimensionsForAllReceived] = useState<
+    Map<
+      string,
+      { weight?: number; width?: number; length?: number; height?: number }
+    >
+  >(new Map());
   const [isMarkingAllReceived, setIsMarkingAllReceived] = useState(false);
   const [itemsWithoutWeight, setItemsWithoutWeight] = useState<string[]>([]);
 
   const [showMarkReceivedDialog, setShowMarkReceivedDialog] = useState(false);
-  const [itemForReceived, setItemForReceived] = useState<{id: string, itemName?: string, weight?: number, width?: number, length?: number, height?: number} | null>(null);
+  const [itemForReceived, setItemForReceived] = useState<{
+    id: string;
+    itemName?: string;
+    weight?: number;
+    width?: number;
+    length?: number;
+    height?: number;
+  } | null>(null);
   const [isMarkingReceived, setIsMarkingReceived] = useState(false);
 
-  const [showMarkIndividualPurchasedDialog, setShowMarkIndividualPurchasedDialog] = useState(false);
-  const [itemForPurchased, setItemForPurchased] = useState<{id: string} | null>(null);
-  const [isMarkingIndividualPurchased, setIsMarkingIndividualPurchased] = useState(false);
+  const [
+    showMarkIndividualPurchasedDialog,
+    setShowMarkIndividualPurchasedDialog,
+  ] = useState(false);
+  const [itemForPurchased, setItemForPurchased] = useState<{
+    id: string;
+  } | null>(null);
+  const [isMarkingIndividualPurchased, setIsMarkingIndividualPurchased] =
+    useState(false);
 
   const { toast } = useToast();
 
-  const { data: orders = [], isLoading: loading, refetch, error } = useQuery({
-    queryKey: ['admin-orders', hideRejected, hideCancelled],
+  const {
+    data: orders = [],
+    isLoading: loading,
+    refetch,
+    error,
+  } = useQuery({
+    queryKey: ["admin-orders", hideRejected, hideCancelled],
     queryFn: async () => {
-
       let ordersQuery = supabase.from("orders").select(
         `
           *,
@@ -175,8 +230,10 @@ export function ProductRequestsManagement({ orderId }: ProductRequestsManagement
         ordersQuery = ordersQuery.eq("is_cancelled", false);
       }
 
-      const { data: ordersData, error: ordersError } = await ordersQuery
-        .order("created_at", { ascending: false });
+      const { data: ordersData, error: ordersError } = await ordersQuery.order(
+        "created_at",
+        { ascending: false },
+      );
 
       if (ordersError) throw ordersError;
 
@@ -189,9 +246,9 @@ export function ProductRequestsManagement({ orderId }: ProductRequestsManagement
 
       const productRequestIdsArray = Array.from(allProductRequestIds);
       const BATCH_SIZE = 100;
-      
+
       const requestsMap = new Map<string, ProductRequestWithIssue>();
-    
+
       for (let i = 0; i < productRequestIdsArray.length; i += BATCH_SIZE) {
         const batch = productRequestIdsArray.slice(i, i + BATCH_SIZE);
         const { data: batchRequests, error: requestsError } = await supabase
@@ -200,13 +257,13 @@ export function ProductRequestsManagement({ orderId }: ProductRequestsManagement
           .in("id", batch);
 
         if (requestsError) throw requestsError;
-        
+
         (batchRequests || []).forEach((request) => {
           requestsMap.set(request.id, request);
         });
       }
 
-      const userIds = [...new Set((ordersData || []).map(o => o.user_id))];
+      const userIds = [...new Set((ordersData || []).map((o) => o.user_id))];
 
       const { data: profiles, error: profilesError } = await supabase
         .from("profiles")
@@ -215,22 +272,35 @@ export function ProductRequestsManagement({ orderId }: ProductRequestsManagement
 
       if (profilesError) throw profilesError;
 
-      // Fetch credit balances separately to avoid TypeScript issues with generated types
-      const { data: creditData } = await supabase
+      const { data: creditData } = (await supabase
         .from("profiles")
         .select("id, credit_balance" as any)
-        .in("id", userIds) as any;
+        .in("id", userIds)) as any;
 
-      const creditMap = new Map((creditData || []).map((c: any) => [c.id, c.credit_balance ?? 0]));
+      const creditMap = new Map(
+        (creditData || []).map((c: any) => [c.id, c.credit_balance ?? 0]),
+      );
 
-      const profileMap = new Map((profiles || []).map(p => [p.id, { ...p, credit_balance: creditMap.get(p.id) ?? 0 }]));
+      const profileMap = new Map(
+        (profiles || []).map((p) => [
+          p.id,
+          { ...p, credit_balance: creditMap.get(p.id) ?? 0 },
+        ]),
+      );
 
-      const ordersWithDetails = (ordersData || []).map(order => {
+      const ordersWithDetails = (ordersData || []).map((order) => {
         let items: ProductRequestWithIssue[];
 
-        if (order.is_rejected && order.rejection_details && typeof order.rejection_details === "object") {
+        if (
+          order.is_rejected &&
+          order.rejection_details &&
+          typeof order.rejection_details === "object"
+        ) {
           const rejectionDetails = order.rejection_details as any;
-          if (rejectionDetails.product_issues && Array.isArray(rejectionDetails.product_issues)) {
+          if (
+            rejectionDetails.product_issues &&
+            Array.isArray(rejectionDetails.product_issues)
+          ) {
             items = rejectionDetails.product_issues.map((issue: any) => ({
               id: issue.product_id,
               user_id: order.user_id,
@@ -259,10 +329,10 @@ export function ProductRequestsManagement({ orderId }: ProductRequestsManagement
         };
       });
 
-      return ordersWithDetails.map((order) => ({
+      return (ordersWithDetails as any[]).map((order) => ({
         ...order,
         rejection_details: order.rejection_details as any,
-      }));
+      })) as OrderWithDetails[];
     },
     staleTime: 1000 * 60,
     gcTime: 1000 * 60 * 5,
@@ -271,10 +341,10 @@ export function ProductRequestsManagement({ orderId }: ProductRequestsManagement
 
   useEffect(() => {
     if (orderId && orders.length > 0) {
-      setOpenOrders(prev => new Set(prev).add(orderId));
+      setOpenOrders((prev) => new Set(prev).add(orderId));
       setTimeout(() => {
         const element = document.getElementById(`order-${orderId}`);
-        element?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        element?.scrollIntoView({ behavior: "smooth", block: "center" });
       }, 100);
     }
   }, [orderId, orders.length]);
@@ -311,7 +381,9 @@ export function ProductRequestsManagement({ orderId }: ProductRequestsManagement
     if (!selectedOrder || !quoteInvoiceUrl) return;
 
     try {
-      const creditAmount = quoteCreditAmount ? parseFloat(quoteCreditAmount) : null;
+      const creditAmount = quoteCreditAmount
+        ? parseFloat(quoteCreditAmount)
+        : null;
       const userBalance = (selectedOrder?.profiles as any)?.credit_balance ?? 0;
 
       if (creditAmount && creditAmount < 0) {
@@ -326,19 +398,22 @@ export function ProductRequestsManagement({ orderId }: ProductRequestsManagement
       if (creditAmount && creditAmount > userBalance) {
         toast({
           title: "Invalid Credit Amount",
-          description: `Credit amount (¥${creditAmount.toLocaleString('en-US')}) exceeds user's balance (¥${userBalance.toLocaleString('en-US')}).`,
+          description: `Credit amount (¥${creditAmount.toLocaleString("en-US")}) exceeds user's balance (¥${userBalance.toLocaleString("en-US")}).`,
           variant: "destructive",
         });
         return;
       }
 
-      const { error: quoteError } = await (supabase.from("quotes").insert as any)({
+      const { error: quoteError } = await (
+        supabase.from("quotes").insert as any
+      )({
         type: "product",
         order_id: selectedOrder.id,
         price_jpy: null,
         status: "sent",
         quote_url: quoteInvoiceUrl,
-        credit_amount_applied: creditAmount && creditAmount > 0 ? creditAmount : 0,
+        credit_amount_applied:
+          creditAmount && creditAmount > 0 ? creditAmount : 0,
       });
 
       if (quoteError) throw quoteError;
@@ -351,7 +426,7 @@ export function ProductRequestsManagement({ orderId }: ProductRequestsManagement
 
       if (updateError) throw updateError;
 
-      queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
+      queryClient.invalidateQueries({ queryKey: ["admin-orders"] });
 
       await createNotification(
         selectedOrder.user_id,
@@ -359,12 +434,13 @@ export function ProductRequestsManagement({ orderId }: ProductRequestsManagement
         `Your product quote for Order #${selectedOrder.order_personal_id} is ready. Please review and complete payment.`,
         selectedOrder.order_personal_id,
         null,
-        selectedOrder.id
+        selectedOrder.id,
       );
 
       toast({
         title: "Quote Created",
-        description: "Order quote has been sent to the customer. The status will update shortly.",
+        description:
+          "Order quote has been sent to the customer. The status will update shortly.",
       });
 
       setShowQuoteDialog(false);
@@ -372,7 +448,7 @@ export function ProductRequestsManagement({ orderId }: ProductRequestsManagement
       setQuoteInvoiceUrl("");
       setQuoteCreditAmount("");
       setProductIssues(new Map());
-      queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
+      queryClient.invalidateQueries({ queryKey: ["admin-orders"] });
     } catch (error: any) {
       toast({
         title: "Error",
@@ -381,7 +457,6 @@ export function ProductRequestsManagement({ orderId }: ProductRequestsManagement
       });
     }
   };
-
 
   const rejectOrder = async () => {
     if (!selectedOrder || !rejectionReason.trim()) {
@@ -454,19 +529,20 @@ export function ProductRequestsManagement({ orderId }: ProductRequestsManagement
         `Your Order #${selectedOrder.order_personal_id} has been rejected. Reason: ${rejectionReason.substring(0, 100)}${rejectionReason.length > 100 ? "..." : ""}`,
         selectedOrder.order_personal_id,
         null,
-        selectedOrder.id
+        selectedOrder.id,
       );
 
       toast({
         title: "Order Rejected",
-        description: "Order has been rejected and customer will be notified. The status will update shortly.",
+        description:
+          "Order has been rejected and customer will be notified. The status will update shortly.",
       });
 
       setShowRejectDialog(false);
       setSelectedOrder(null);
       setRejectionReason("");
       setProductIssues(new Map());
-      queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
+      queryClient.invalidateQueries({ queryKey: ["admin-orders"] });
     } catch (error: any) {
       toast({
         title: "Error",
@@ -478,16 +554,19 @@ export function ProductRequestsManagement({ orderId }: ProductRequestsManagement
 
   const adminCancelOrder = async () => {
     if (!orderToCancel) return;
-    
-    const hasPurchasedItems = orderToCancel.items.some(item => item.status === "purchased");
-    
+
+    const hasPurchasedItems = orderToCancel.items.some(
+      (item) => item.status === "purchased",
+    );
+
     // Validate credit fields if order has purchased items
     if (hasPurchasedItems) {
       const creditNum = parseFloat(cancelCreditAmount);
       if (!cancelCreditAmount || isNaN(creditNum) || creditNum < 0) {
         toast({
           title: "Credit amount required",
-          description: "Please enter a valid credit amount for this cancelled order.",
+          description:
+            "Please enter a valid credit amount for this cancelled order.",
           variant: "destructive",
         });
         return;
@@ -501,26 +580,41 @@ export function ProductRequestsManagement({ orderId }: ProductRequestsManagement
         return;
       }
     }
-    
+
     setIsCancelling(true);
     try {
-      const { error } = await supabase.rpc('admin_cancel_order', { 
-        p_order_id: orderToCancel.id 
+      const { error } = await supabase.rpc("admin_cancel_order", {
+        p_order_id: orderToCancel.id,
       });
-      
+
       if (error) throw error;
-      
+
+      // Store cancellation reason in the order
+      if (cancelCreditReason.trim()) {
+        await supabase
+          .from("orders")
+          .update({ rejection_reason: cancelCreditReason.trim() })
+          .eq("id", orderToCancel.id);
+      }
+
       // If order has purchased items, assign credit to user
-      if (hasPurchasedItems && cancelCreditAmount && parseFloat(cancelCreditAmount) > 0) {
-        const { error: creditError } = await (supabase.rpc as any)('cancel_order_with_credit', {
-          target_user_id: orderToCancel.user_id,
-          credit_amount: parseFloat(cancelCreditAmount),
-          cancel_reason: cancelCreditReason.trim(),
-          target_order_id: orderToCancel.id,
-        });
-        
+      if (
+        hasPurchasedItems &&
+        cancelCreditAmount &&
+        parseFloat(cancelCreditAmount) > 0
+      ) {
+        const { error: creditError } = await (supabase.rpc as any)(
+          "cancel_order_with_credit",
+          {
+            target_user_id: orderToCancel.user_id,
+            credit_amount: parseFloat(cancelCreditAmount),
+            cancel_reason: cancelCreditReason.trim(),
+            target_order_id: orderToCancel.id,
+          },
+        );
+
         if (creditError) {
-          console.error('Credit assignment error:', creditError);
+          console.error("Credit assignment error:", creditError);
           toast({
             title: "Order Cancelled but Credit Failed",
             description: `Order was cancelled but credit assignment failed: ${creditError.message}`,
@@ -528,17 +622,20 @@ export function ProductRequestsManagement({ orderId }: ProductRequestsManagement
           });
         }
       }
-      
+
       toast({
         title: "Order Cancelled",
-        description: `Order #${orderToCancel.order_personal_id} has been cancelled.${hasPurchasedItems && cancelCreditAmount ? ` Credit of ${cancelCreditAmount} assigned.` : ''}`,
+        description: `Order #${orderToCancel.order_personal_id} has been cancelled.${hasPurchasedItems && cancelCreditAmount ? ` Credit of ${cancelCreditAmount} assigned.` : ""}`,
       });
-      
+
       setShowCancelDialog(false);
       setOrderToCancel(null);
       setCancelCreditAmount("");
       setCancelCreditReason("");
-      queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
+      queryClient.invalidateQueries({ queryKey: ["admin-orders"] });
+      
+      // Refresh user profile to update balance display
+      refreshProfile();
     } catch (error: any) {
       toast({
         title: "Error",
@@ -550,7 +647,11 @@ export function ProductRequestsManagement({ orderId }: ProductRequestsManagement
     }
   };
 
-const updateProductIssue = (productId: string, hasIssue: boolean, description: string) => {
+  const updateProductIssue = (
+    productId: string,
+    hasIssue: boolean,
+    description: string,
+  ) => {
     setProductIssues((prev) => {
       const newMap = new Map(prev);
       newMap.set(productId, { hasIssue, description });
@@ -561,7 +662,9 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
   const confirmProductPayment = async (order: OrderWithDetails) => {
     try {
       // Find the sent quote
-      const sentQuote = order.quotes?.find((q) => q.status === "sent" && q.type === "product");
+      const sentQuote = order.quotes?.find(
+        (q) => q.status === "sent" && q.type === "product",
+      );
       if (!sentQuote) {
         toast({
           title: "Error",
@@ -585,15 +688,18 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
         `Your payment for Order #${order.order_personal_id} has been confirmed! We will now purchase your items.`,
         order.order_personal_id,
         null,
-        order.id
+        order.id,
       );
 
       toast({
         title: "Payment Confirmed",
-        description: "Payment has been confirmed. The product status will update shortly.",
+        description:
+          "Payment has been confirmed. The product status will update shortly.",
       });
 
-      queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
+      queryClient.invalidateQueries({ queryKey: ["admin-orders"] });
+      refetch();
+      refreshProfile();
     } catch (error: any) {
       toast({
         title: "Error",
@@ -635,11 +741,11 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
     if (!itemForReceived) return;
     setIsMarkingReceived(true);
     await markIndividualProductAsReceived(
-      itemForReceived.id, 
+      itemForReceived.id,
       itemForReceived.weight,
       itemForReceived.width,
       itemForReceived.length,
-      itemForReceived.height
+      itemForReceived.height,
     );
     setIsMarkingReceived(false);
     setShowMarkReceivedDialog(false);
@@ -655,9 +761,17 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
     setItemForPurchased(null);
   };
 
-  const markProductsAsReceived = async (order: OrderWithDetails, dimensions: Map<string, {weight?: number, width?: number, length?: number, height?: number}>) => {
+  const markProductsAsReceived = async (
+    order: OrderWithDetails,
+    dimensions: Map<
+      string,
+      { weight?: number; width?: number; length?: number; height?: number }
+    >,
+  ) => {
     try {
-      const purchasedItems = order.items.filter((item) => item.status === "purchased");
+      const purchasedItems = order.items.filter(
+        (item) => item.status === "purchased",
+      );
       if (purchasedItems.length === 0) {
         toast({
           title: "No Items Found",
@@ -673,12 +787,16 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
           status: "received" as ProductRequestStatus,
           updated_at: new Date().toISOString(),
         };
-        
-        if (itemDimensions?.weight !== undefined) updateData.weight = itemDimensions.weight;
-        if (itemDimensions?.width !== undefined) updateData.width = itemDimensions.width;
-        if (itemDimensions?.length !== undefined) updateData.length = itemDimensions.length;
-        if (itemDimensions?.height !== undefined) updateData.height = itemDimensions.height;
-        
+
+        if (itemDimensions?.weight !== undefined)
+          updateData.weight = itemDimensions.weight;
+        if (itemDimensions?.width !== undefined)
+          updateData.width = itemDimensions.width;
+        if (itemDimensions?.length !== undefined)
+          updateData.length = itemDimensions.length;
+        if (itemDimensions?.height !== undefined)
+          updateData.height = itemDimensions.height;
+
         await supabase
           .from("product_requests")
           .update(updateData)
@@ -687,15 +805,17 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
 
       const { data: allOrderItems } = await supabase
         .from("order_items")
-        .select(`
+        .select(
+          `
           product_request_id,
           product_requests!inner(status)
-        `)
+        `,
+        )
         .eq("order_id", order.id);
 
       // Check if every item in the order is now 'received'
-      const allReceived = allOrderItems?.every((item: any) => 
-        item.product_requests.status === "received"
+      const allReceived = allOrderItems?.every(
+        (item: any) => item.product_requests.status === "received",
       );
 
       if (allReceived && allOrderItems && allOrderItems.length > 0) {
@@ -705,7 +825,7 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
           `All your items for Order #${order.order_personal_id} have arrived at our warehouse!`,
           order.order_personal_id,
           null,
-          order.id
+          order.id,
         );
       }
 
@@ -714,7 +834,7 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
         description: `${purchasedItems.length} product(s) marked as received. The status will update shortly.`,
       });
 
-      queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
+      queryClient.invalidateQueries({ queryKey: ["admin-orders"] });
     } catch (error: any) {
       toast({
         title: "Error",
@@ -753,7 +873,7 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
         title: "Products Marked",
         description: `${updates.length} product(s) marked as purchased. The status will update shortly.`,
       });
-      queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
+      queryClient.invalidateQueries({ queryKey: ["admin-orders"] });
     } catch (error: any) {
       toast({
         title: "Error",
@@ -762,7 +882,6 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
       });
     }
   };
-
 
   const markIndividualProductAsPurchased = async (productId: string) => {
     try {
@@ -778,9 +897,10 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
 
       toast({
         title: "Product Marked",
-        description: "Product marked as purchased. The status will update shortly.",
+        description:
+          "Product marked as purchased. The status will update shortly.",
       });
-      queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
+      queryClient.invalidateQueries({ queryKey: ["admin-orders"] });
     } catch (error: any) {
       toast({
         title: "Error",
@@ -790,13 +910,12 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
     }
   };
 
-
   const markIndividualProductAsReceived = async (
-    productRequestId: string, 
+    productRequestId: string,
     weight?: number,
     width?: number,
     length?: number,
-    height?: number
+    height?: number,
   ) => {
     try {
       const updateData: any = {
@@ -809,7 +928,10 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
       if (length !== undefined) updateData.length = length;
       if (height !== undefined) updateData.height = height;
 
-      const { error } = await supabase.from("product_requests").update(updateData).eq("id", productRequestId);
+      const { error } = await supabase
+        .from("product_requests")
+        .update(updateData)
+        .eq("id", productRequestId);
 
       if (error) throw error;
 
@@ -833,7 +955,9 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
           .eq("order_id", orderItems.order_id);
 
         // Check if all items are 'received'
-        const allReceived = allOrderItems?.every((item: any) => item.product_requests.status === "received");
+        const allReceived = allOrderItems?.every(
+          (item: any) => item.product_requests.status === "received",
+        );
 
         if (allReceived && allOrderItems && allOrderItems.length > 0) {
           // Get order user_id
@@ -858,9 +982,10 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
 
       toast({
         title: "Product Marked",
-        description: "Product marked as received. The status will update shortly.",
+        description:
+          "Product marked as received. The status will update shortly.",
       });
-      queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
+      queryClient.invalidateQueries({ queryKey: ["admin-orders"] });
     } catch (error: any) {
       toast({
         title: "Error",
@@ -869,9 +994,6 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
       });
     }
   };
-
-
-
 
   const createShippingQuote = async (order: OrderWithDetails) => {
     if (!shippingPrice || !shippingInvoiceUrl) return;
@@ -901,7 +1023,10 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
       // Update order status
       const { error: orderError } = await supabase
         .from("orders")
-        .update({ status: "awaiting_shipping_payment" as Database["public"]["Enums"]["order_status"] })
+        .update({
+          status:
+            "awaiting_shipping_payment" as Database["public"]["Enums"]["order_status"],
+        })
         .eq("id", order.id);
 
       if (orderError) throw orderError;
@@ -913,7 +1038,7 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
       setShowShippingDialog(false);
       setShippingPrice("");
       setShippingInvoiceUrl("");
-      queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
+      queryClient.invalidateQueries({ queryKey: ["admin-orders"] });
     } catch (error: any) {
       toast({
         title: "Error",
@@ -926,11 +1051,15 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
   const confirmShippingPayment = async (order: OrderWithDetails) => {
     try {
       // Update shipping quote status to paid
-      const shippingQuote = order.quotes?.find((q) => q.type === "shipping" && q.status === "sent");
+      const shippingQuote = order.quotes?.find(
+        (q) => q.type === "shipping" && q.status === "sent",
+      );
       if (shippingQuote) {
         const { error: quoteError } = await supabase
           .from("quotes")
-          .update({ status: "paid" as Database["public"]["Enums"]["quote_status"] })
+          .update({
+            status: "paid" as Database["public"]["Enums"]["quote_status"],
+          })
           .eq("id", shippingQuote.id);
 
         if (quoteError) throw quoteError;
@@ -948,9 +1077,10 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
 
       toast({
         title: "Shipping Payment Confirmed",
-        description: "Shipping payment has been confirmed. The status will update shortly.",
+        description:
+          "Shipping payment has been confirmed. The status will update shortly.",
       });
-      queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
+      queryClient.invalidateQueries({ queryKey: ["admin-orders"] });
     } catch (error: any) {
       toast({
         title: "Error",
@@ -988,11 +1118,12 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
 
       toast({
         title: "Order Shipped",
-        description: "Order has been marked as shipped. The status will update shortly.",
+        description:
+          "Order has been marked as shipped. The status will update shortly.",
       });
       setShowTrackingDialog(false);
       setTrackingNumber("");
-      queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
+      queryClient.invalidateQueries({ queryKey: ["admin-orders"] });
     } catch (error: any) {
       toast({
         title: "Error",
@@ -1009,7 +1140,9 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
 
     // Check product statuses for more accurate status
     const productStatuses = order.items.map((item) => item.status);
-    const allSameStatus = productStatuses.every((status) => status === productStatuses[0]);
+    const allSameStatus = productStatuses.every(
+      (status) => status === productStatuses[0],
+    );
 
     if (allSameStatus && productStatuses[0]) {
       switch (productStatuses[0]) {
@@ -1043,7 +1176,8 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
     }
 
     // Fallback to order status
-    if (order.status === "awaiting_shipping_payment") return "Awaiting Shipping Payment";
+    if (order.status === "awaiting_shipping_payment")
+      return "Awaiting Shipping Payment";
     if (order.status === "weighing") return "Weighing";
     if (order.status === "preparing") return "Preparing";
     return "New";
@@ -1095,8 +1229,6 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
     }
   };
 
-
-
   const getStatusSteps = (order: OrderWithDetails) => {
     type StepStatus = "completed" | "current" | "rejected" | "upcoming";
 
@@ -1104,10 +1236,22 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
 
     // Check purchase and transit progress
     const allPurchased = order.items.every((item) =>
-      ["purchased", "received", "shipping_quoted", "shipping_paid", "shipped"].includes(item.status),
+      [
+        "purchased",
+        "received",
+        "shipping_quoted",
+        "shipping_paid",
+        "shipped",
+      ].includes(item.status),
     );
     const somePurchased = order.items.some((item) =>
-      ["purchased", "received", "shipping_quoted", "shipping_paid", "shipped"].includes(item.status),
+      [
+        "purchased",
+        "received",
+        "shipping_quoted",
+        "shipping_paid",
+        "shipped",
+      ].includes(item.status),
     );
     const hasReceived = order.items.some((item) => item.status === "received");
     const allReceived = order.items.every((item) => item.status === "received");
@@ -1115,23 +1259,39 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
     // Determine dynamic labels for purchase and transit steps
     const purchaseLabel =
       allPurchased ||
-        status === "Partial Processing" ||
-        status === "Weighing" ||
-        status === "Awaiting Shipping Payment" ||
-        allReceived
+      status === "Partial Processing" ||
+      status === "Weighing" ||
+      status === "Awaiting Shipping Payment" ||
+      allReceived
         ? "Items Purchased"
         : "Item(s) being purchased";
 
     const steps = [
-      { label: "Request Submitted", status: "upcoming" as StepStatus, icon: <Clock className="h-4 w-4" /> },
-      { label: "Payment Confirmed", status: "upcoming" as StepStatus, icon: <CheckCircle className="h-4 w-4" /> },
-      { label: purchaseLabel, status: "upcoming" as StepStatus, icon: <ShoppingCart className="h-4 w-4" /> },
+      {
+        label: "Request Submitted",
+        status: "upcoming" as StepStatus,
+        icon: <Clock className="h-4 w-4" />,
+      },
+      {
+        label: "Payment Confirmed",
+        status: "upcoming" as StepStatus,
+        icon: <CheckCircle className="h-4 w-4" />,
+      },
+      {
+        label: purchaseLabel,
+        status: "upcoming" as StepStatus,
+        icon: <ShoppingCart className="h-4 w-4" />,
+      },
       {
         label: "Item(s) on the way to warehouse",
         status: "upcoming" as StepStatus,
         icon: <Truck className="h-4 w-4" />,
       },
-      { label: "All Items at Warehouse", status: "upcoming" as StepStatus, icon: <Home className="h-4 w-4" /> },
+      {
+        label: "All Items at Warehouse",
+        status: "upcoming" as StepStatus,
+        icon: <Home className="h-4 w-4" />,
+      },
     ];
 
     const statusMap: Record<string, number> = {
@@ -1151,14 +1311,15 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
     if (status === "Rejected") {
       return steps.map((step, index) => ({
         ...step,
-        status: (index === currentIndex ? "rejected" : "upcoming") as StepStatus,
+        status: (index === currentIndex
+          ? "rejected"
+          : "upcoming") as StepStatus,
       }));
     }
 
     return steps.map((step, index) => {
       // Request Submitted (index 0) is always completed for any order
       if (index === 0) return { ...step, status: "completed" as StepStatus };
-
 
       if (index === 1) {
         const normalizedStatus = status.toLowerCase();
@@ -1169,7 +1330,11 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
         }
 
         // For paid or later → mark as completed
-        if (["paid", "purchased", "weighing", "shipped"].includes(normalizedStatus)) {
+        if (
+          ["paid", "purchased", "weighing", "shipped"].includes(
+            normalizedStatus,
+          )
+        ) {
           return { ...step, status: "completed" as StepStatus };
         }
       }
@@ -1187,10 +1352,12 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
         }
       }
 
-
-
       // Special case: mark all steps as completed when items are at warehouse
-      if (status === "Stored" || status === "Awaiting Shipping Payment" || status === "Ready to Ship") {
+      if (
+        status === "Stored" ||
+        status === "Awaiting Shipping Payment" ||
+        status === "Ready to Ship"
+      ) {
         if (index <= 4) return { ...step, status: "completed" as StepStatus };
       }
 
@@ -1202,11 +1369,14 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
         return { ...step, status: "upcoming" as StepStatus };
       }
 
-      if (index < currentIndex) return { ...step, status: "completed" as StepStatus };
-      if (index === currentIndex) return { ...step, status: "current" as StepStatus };
+      if (index < currentIndex)
+        return { ...step, status: "completed" as StepStatus };
+      if (index === currentIndex)
+        return { ...step, status: "current" as StepStatus };
 
       // Special case: if we're at transit (step 3), mark purchase step (step 2) as completed
-      if (status === "Partial Processing" && index === 2) return { ...step, status: "completed" as StepStatus };
+      if (status === "Partial Processing" && index === 2)
+        return { ...step, status: "completed" as StepStatus };
 
       return { ...step, status: "upcoming" as StepStatus };
     });
@@ -1216,14 +1386,16 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
     return (
       <Card>
         <CardContent className="p-6">
-          <div className="text-center text-muted-foreground">Loading orders...</div>
+          <div className="text-center text-muted-foreground">
+            Loading orders...
+          </div>
         </CardContent>
       </Card>
     );
   }
 
   // Apply search filter
-  let filteredOrders = orders.filter(order => {
+  let filteredOrders = orders.filter((order) => {
     const searchLower = searchTerm.toLowerCase();
     return (
       order.profiles?.full_name?.toLowerCase().includes(searchLower) ||
@@ -1252,8 +1424,7 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
       const path = parsed.pathname + parsed.search + parsed.hash;
 
       // Show only first 40 characters after the domain
-      const shortenedPath =
-        path.length > 40 ? path.slice(0, 40) + "..." : path;
+      const shortenedPath = path.length > 40 ? path.slice(0, 40) + "..." : path;
 
       return `${domain}${shortenedPath}`;
     } catch {
@@ -1282,9 +1453,13 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
           <div className="flex flex-col items-center justify-center space-y-4">
             <AlertCircle className="h-12 w-12 text-red-500" />
             <div className="text-center">
-              <p className="text-lg font-semibold text-red-900">Error loading orders</p>
+              <p className="text-lg font-semibold text-red-900">
+                Error loading orders
+              </p>
               <p className="text-sm text-muted-foreground mt-2">
-                {error instanceof Error ? error.message : 'An unexpected error occurred'}
+                {error instanceof Error
+                  ? error.message
+                  : "An unexpected error occurred"}
               </p>
             </div>
             <Button onClick={() => refetch()} variant="outline">
@@ -1302,8 +1477,13 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
       <Card>
         <CardHeader>
           <CardTitle>Order Management</CardTitle>
-          <p className="text-sm text-muted-foreground mt-1">Remember: Order status is automatically updated 1 minute after performing an action.</p>
-          <CardDescription>Manage customer orders and product requests</CardDescription>
+          <p className="text-sm text-muted-foreground mt-1">
+            Remember: Order status is automatically updated 1 minute after
+            performing an action.
+          </p>
+          <CardDescription>
+            Manage customer orders and product requests
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           {/* Filters and Controls */}
@@ -1325,7 +1505,10 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
                 <div className="flex flex-wrap items-center gap-3">
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-medium">Status:</span>
-                    <Select value={statusFilter} onValueChange={setStatusFilter}>
+                    <Select
+                      value={statusFilter}
+                      onValueChange={setStatusFilter}
+                    >
                       <SelectTrigger className="w-[140px] sm:w-[180px]">
                         <SelectValue />
                       </SelectTrigger>
@@ -1335,8 +1518,12 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
                         <SelectItem value="quoted">Quoted</SelectItem>
                         <SelectItem value="paid">Paid</SelectItem>
                         <SelectItem value="purchased">Purchased</SelectItem>
-                        <SelectItem value="partially purchased">Partially Purchased</SelectItem>
-                        <SelectItem value="partial processing">Partial Processing</SelectItem>
+                        <SelectItem value="partially purchased">
+                          Partially Purchased
+                        </SelectItem>
+                        <SelectItem value="partial processing">
+                          Partial Processing
+                        </SelectItem>
                         <SelectItem value="weighing">Weighing</SelectItem>
                         <SelectItem value="rejected">Rejected</SelectItem>
                         <SelectItem value="cancelled">Cancelled</SelectItem>
@@ -1344,8 +1531,16 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
                     </Select>
                   </div>
 
-                  <Button variant="outline" size="sm" onClick={handleRefresh} disabled={refreshing} className="gap-2">
-                    <RefreshCw className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`} />
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleRefresh}
+                    disabled={refreshing}
+                    className="gap-2"
+                  >
+                    <RefreshCw
+                      className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`}
+                    />
                     {refreshing ? "Refreshing..." : "Update"}
                   </Button>
                 </div>
@@ -1356,9 +1551,14 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
                     <Checkbox
                       id="hide-rejected-products"
                       checked={hideRejected}
-                      onCheckedChange={(checked) => setHideRejected(checked === true)}
+                      onCheckedChange={(checked) =>
+                        setHideRejected(checked === true)
+                      }
                     />
-                    <label htmlFor="hide-rejected-products" className="text-sm font-medium cursor-pointer">
+                    <label
+                      htmlFor="hide-rejected-products"
+                      className="text-sm font-medium cursor-pointer"
+                    >
                       Hide rejected
                     </label>
                   </div>
@@ -1366,9 +1566,14 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
                     <Checkbox
                       id="hide-cancelled-products"
                       checked={hideCancelled}
-                      onCheckedChange={(checked) => setHideCancelled(checked === true)}
+                      onCheckedChange={(checked) =>
+                        setHideCancelled(checked === true)
+                      }
                     />
-                    <label htmlFor="hide-cancelled-products" className="text-sm font-medium cursor-pointer">
+                    <label
+                      htmlFor="hide-cancelled-products"
+                      className="text-sm font-medium cursor-pointer"
+                    >
                       Hide cancelled
                     </label>
                   </div>
@@ -1377,7 +1582,10 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
                 {/* Show per page - separate row on mobile */}
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-medium">Show:</span>
-                  <Select value={itemsPerPage.toString()} onValueChange={(val) => setItemsPerPage(Number(val))}>
+                  <Select
+                    value={itemsPerPage.toString()}
+                    onValueChange={(val) => setItemsPerPage(Number(val))}
+                  >
                     <SelectTrigger className="w-[80px] sm:w-[100px]">
                       <SelectValue />
                     </SelectTrigger>
@@ -1388,73 +1596,101 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
                       <SelectItem value="50">50</SelectItem>
                     </SelectContent>
                   </Select>
-                  <span className="text-sm text-muted-foreground">per page</span>
+                  <span className="text-sm text-muted-foreground">
+                    per page
+                  </span>
                 </div>
               </div>
 
               {filteredOrders.length > 0 && (
                 <div className="mt-4 text-sm text-muted-foreground">
-                  Showing {startIndex + 1}-{Math.min(endIndex, filteredOrders.length)} of {filteredOrders.length} orders
+                  Showing {startIndex + 1}-
+                  {Math.min(endIndex, filteredOrders.length)} of{" "}
+                  {filteredOrders.length} orders
                 </div>
               )}
             </CardContent>
           </Card>
 
-          {/* Orders List */}
           {filteredOrders.length === 0 && orders.length > 0 ? (
             <div className="text-center py-8 text-muted-foreground">
               <Package className="h-12 w-12 mx-auto mb-4 opacity-50" />
               <p>No orders found with this filter</p>
-              <p className="text-sm mt-2">Try adjusting your search or filter criteria.</p>
+              <p className="text-sm mt-2">
+                Try adjusting your search or filter criteria.
+              </p>
             </div>
           ) : filteredOrders.length === 0 ? (
-            <p className="text-muted-foreground text-center py-8">No orders found matching your criteria.</p>
+            <p className="text-muted-foreground text-center py-8">
+              No orders found matching your criteria.
+            </p>
           ) : (
             paginatedOrders.map((order) => {
               const isOpen = openOrders.has(order.id);
               const orderStatus = getOrderStatus(order);
 
               return (
-                <Collapsible key={order.id} open={isOpen} onOpenChange={() => toggleOrder(order.id)}>
+                <Collapsible
+                  key={order.id}
+                  open={isOpen}
+                  onOpenChange={() => toggleOrder(order.id)}
+                >
                   <Card id={`order-${order.id}`} className="border">
-
                     <CollapsibleTrigger asChild>
-                      <Button 
-                        variant="ghost" 
+                      <Button
+                        variant="ghost"
                         className="w-full p-0 h-auto hover:bg-transparent"
                         onClick={(e) => {
-                          if ((window.getSelection()?.toString().length ?? 0) > 0) {
+                          if (
+                            (window.getSelection()?.toString().length ?? 0) > 0
+                          ) {
                             e.stopPropagation();
                           }
                         }}
                       >
                         <div className="w-full p-4">
                           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
-                            {/* LEFT SIDE — Order info */}
                             <div className="flex flex-col text-left flex-1 min-w-0 space-y-1">
-
-                              {/* Customer Name */}
                               <div className="flex items-center gap-1 min-w-0">
                                 <p className="font-medium text-base flex items-baseline gap-1 min-w-0">
-                                  <span className="flex-shrink-0 select-text" onMouseDown={(e) => e.stopPropagation()} onClick={(e) => e.stopPropagation()}>Order from</span>
-                                  <span 
-                                    className="text-blue-500 font-semibold truncate select-text"
-                                    title={order.profiles?.full_name || order.profiles?.email || "Unknown"}
+                                  <span
+                                    className="flex-shrink-0 select-text"
                                     onMouseDown={(e) => e.stopPropagation()}
                                     onClick={(e) => e.stopPropagation()}
                                   >
-                                    {order.profiles?.full_name || order.profiles?.email || "Unknown"}
+                                    Order from
+                                  </span>
+                                  <span
+                                    className="text-blue-500 font-semibold truncate select-text"
+                                    title={
+                                      order.profiles?.full_name ||
+                                      order.profiles?.email ||
+                                      "Unknown"
+                                    }
+                                    onMouseDown={(e) => e.stopPropagation()}
+                                    onClick={(e) => e.stopPropagation()}
+                                  >
+                                    {order.profiles?.full_name ||
+                                      order.profiles?.email ||
+                                      "Unknown"}
                                   </span>
                                 </p>
-                                {order.profiles?.full_name || order.profiles?.email ? (
+                                {order.profiles?.full_name ||
+                                order.profiles?.email ? (
                                   <Button
                                     variant="ghost"
                                     size="icon"
                                     className="h-4 w-4 p-0"
                                     onClick={(e) => {
                                       e.stopPropagation();
-                                      navigator.clipboard.writeText(order.profiles?.full_name || order.profiles?.email || "");
-                                      sonnerToast.success("Customer name copied to clipboard");
+                                      navigator.clipboard.writeText(
+                                        order.profiles?.full_name ||
+                                          order.profiles?.email ||
+                                          "",
+                                      );
+                                      sonnerToast.success(
+                                        "Customer name copied to clipboard",
+                                      );
                                     }}
                                     title="Copy Customer Name"
                                   >
@@ -1463,17 +1699,28 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
                                 ) : null}
                               </div>
 
-                              {/* Customer ID */}
                               <div className="flex items-center gap-1 text-sm text-muted-foreground min-w-0">
                                 <span className="flex items-baseline gap-1 min-w-0">
-                                  <span className="flex-shrink-0 select-text" onMouseDown={(e) => e.stopPropagation()} onClick={(e) => e.stopPropagation()}>Customer ID:</span>
-                                  <span 
-                                    className="font-medium text-green-500 truncate select-text"
-                                    title={order.profiles?.user_personal_id ? `#${order.profiles.user_personal_id}` : "N/A"}
+                                  <span
+                                    className="flex-shrink-0 select-text"
                                     onMouseDown={(e) => e.stopPropagation()}
                                     onClick={(e) => e.stopPropagation()}
                                   >
-                                    {order.profiles?.user_personal_id ? `#${order.profiles.user_personal_id}` : "N/A"}
+                                    Customer ID:
+                                  </span>
+                                  <span
+                                    className="font-medium text-green-500 truncate select-text"
+                                    title={
+                                      order.profiles?.user_personal_id
+                                        ? `#${order.profiles.user_personal_id}`
+                                        : "N/A"
+                                    }
+                                    onMouseDown={(e) => e.stopPropagation()}
+                                    onClick={(e) => e.stopPropagation()}
+                                  >
+                                    {order.profiles?.user_personal_id
+                                      ? `#${order.profiles.user_personal_id}`
+                                      : "N/A"}
                                   </span>
                                 </span>
                                 {order.profiles?.user_personal_id && (
@@ -1483,8 +1730,12 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
                                     className="h-4 w-4 p-0"
                                     onClick={(e) => {
                                       e.stopPropagation();
-                                      navigator.clipboard.writeText(order.profiles?.user_personal_id || "");
-                                      sonnerToast.success("Customer ID copied to clipboard");
+                                      navigator.clipboard.writeText(
+                                        order.profiles?.user_personal_id || "",
+                                      );
+                                      sonnerToast.success(
+                                        "Customer ID copied to clipboard",
+                                      );
                                     }}
                                     title="Copy Customer ID"
                                   >
@@ -1493,17 +1744,28 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
                                 )}
                               </div>
 
-                              {/* Customer Order ID */}
                               <div className="flex items-center gap-1 text-sm text-muted-foreground min-w-0">
                                 <span className="flex items-baseline gap-1 min-w-0">
-                                  <span className="flex-shrink-0 select-text" onMouseDown={(e) => e.stopPropagation()} onClick={(e) => e.stopPropagation()}>Customer Order ID:</span>
-                                  <span 
-                                    className="font-medium text-green-500 truncate select-text"
-                                    title={order.order_personal_id ? `#${order.order_personal_id}` : "N/A"}
+                                  <span
+                                    className="flex-shrink-0 select-text"
                                     onMouseDown={(e) => e.stopPropagation()}
                                     onClick={(e) => e.stopPropagation()}
                                   >
-                                    {order.order_personal_id ? `#${order.order_personal_id}` : "N/A"}
+                                    Customer Order ID:
+                                  </span>
+                                  <span
+                                    className="font-medium text-green-500 truncate select-text"
+                                    title={
+                                      order.order_personal_id
+                                        ? `#${order.order_personal_id}`
+                                        : "N/A"
+                                    }
+                                    onMouseDown={(e) => e.stopPropagation()}
+                                    onClick={(e) => e.stopPropagation()}
+                                  >
+                                    {order.order_personal_id
+                                      ? `#${order.order_personal_id}`
+                                      : "N/A"}
                                   </span>
                                 </span>
                                 {order.order_personal_id && (
@@ -1513,8 +1775,12 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
                                     className="h-4 w-4 p-0"
                                     onClick={(e) => {
                                       e.stopPropagation();
-                                      navigator.clipboard.writeText(order.order_personal_id || "");
-                                      sonnerToast.success("Customer Order ID copied to clipboard");
+                                      navigator.clipboard.writeText(
+                                        order.order_personal_id || "",
+                                      );
+                                      sonnerToast.success(
+                                        "Customer Order ID copied to clipboard",
+                                      );
                                     }}
                                     title="Copy Customer Order ID"
                                   >
@@ -1524,7 +1790,7 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
                               </div>
 
                               <div className="flex items-center gap-1 text-sm text-muted-foreground min-w-0">
-                                <span 
+                                <span
                                   className="font-medium truncate select-text"
                                   title={`Order #${order.id.slice(0, 8).toUpperCase()}`}
                                   onMouseDown={(e) => e.stopPropagation()}
@@ -1539,7 +1805,9 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     navigator.clipboard.writeText(order.id);
-                                    sonnerToast.success("Order ID copied to clipboard");
+                                    sonnerToast.success(
+                                      "Order ID copied to clipboard",
+                                    );
                                   }}
                                   title="Copy Order ID"
                                 >
@@ -1548,56 +1816,60 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
                               </div>
                             </div>
 
-                            {/* Credits Request Indicator */}
-                            {(order as any).use_credits_request && (
-                              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-50 border border-amber-200 self-start">
-                                <JapaneseYen className="h-3.5 w-3.5 text-amber-600" />
-                                <span className="text-xs font-medium text-amber-700">
-                                  Wants to use credits
-                                </span>
-                                <span className="text-xs font-semibold text-amber-900">
-                                  (Balance: ¥{(order.profiles as any)?.credit_balance?.toLocaleString('en-US') ?? '0'})
-                                </span>
-                              </div>
-                            )}
-
-
-                            {/* RIGHT SIDE — Status + Chevron */}
                             <div className="flex flex-col sm:flex-col items-end sm:items-end justify-start gap-2 sm:gap-1 text-right flex-shrink-0 min-w-fit">
                               <div className="flex items-center gap-2">
-                                <Badge className={`${getOrderStatusColor(orderStatus)} text-xs`}>
+                                <Badge
+                                  className={`${getOrderStatusColor(orderStatus)} text-xs`}
+                                >
                                   {orderStatus}
                                 </Badge>
                                 <ChevronDown
-                                  className={`h-5 w-5 text-muted-foreground transform transition-transform duration-300 ${isOpen ? "rotate-180" : "rotate-0"
-                                    }`}
+                                  className={`h-5 w-5 text-muted-foreground transform transition-transform duration-300 ${
+                                    isOpen ? "rotate-180" : "rotate-0"
+                                  }`}
                                 />
                               </div>
 
                               <div className="flex flex-col items-end text-xs text-muted-foreground">
                                 <p className="flex items-center gap-1 whitespace-nowrap">
                                   <Clock className="h-3 w-3" />
-                                  {new Date(order.created_at).toLocaleString(undefined, {
-                                    year: "numeric",
-                                    month: "short",
-                                    day: "numeric",
-                                    hour: "2-digit",
-                                    minute: "2-digit",
-                                  })}
+                                  {new Date(order.created_at).toLocaleString(
+                                    undefined,
+                                    {
+                                      year: "numeric",
+                                      month: "short",
+                                      day: "numeric",
+                                      hour: "2-digit",
+                                      minute: "2-digit",
+                                    },
+                                  )}
                                 </p>
                                 <p className="whitespace-nowrap">
-                                  {order.items.length} product{order.items.length !== 1 ? "s" : ""}
+                                  {order.items.length} product
+                                  {order.items.length !== 1 ? "s" : ""}
                                 </p>
+
+                                {order.use_credits_request && (
+                                  <div className="flex items-center gap-1 mt-1">
+                                    <Badge className="bg-amber-100 text-amber-900 border-amber-200 hover:bg-amber-100 flex items-center gap-1 py-0.5 px-2 text-[10px]">
+                                      <JapaneseYen className="h-2.5 w-2.5 text-amber-600" />
+                                      Wants to use credits
+                                      <span className="ml-1 opacity-70">
+                                        (Bal: ¥
+                                        {Number(
+                                          order.profiles?.credit_balance ?? 0,
+                                        ).toLocaleString("en-US")}
+                                        )
+                                      </span>
+                                    </Badge>
+                                  </div>
+                                )}
                               </div>
                             </div>
                           </div>
                         </div>
-
                       </Button>
                     </CollapsibleTrigger>
-
-
-
 
                     <CollapsibleContent>
                       <div className="px-4 pb-4 border-t pt-3">
@@ -1612,10 +1884,17 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
                             <div className="flex items-start gap-2">
                               <AlertCircle className="h-5 w-5 text-red-600 mt-0.5 flex-shrink-0" />
                               <div className="flex-1">
-                                <p className="font-medium text-red-900 mb-1">Order Rejected</p>
-                                <p className="text-sm text-red-800">{order.rejection_details.rejection_reason}</p>
+                                <p className="font-medium text-red-900 mb-1">
+                                  Order Rejected
+                                </p>
+                                <p className="text-sm text-red-800">
+                                  {order.rejection_details.rejection_reason}
+                                </p>
                                 <p className="text-xs text-red-600 mt-2">
-                                  Rejected on {new Date(order.rejection_details.rejected_at).toLocaleString()}
+                                  Rejected on{" "}
+                                  {new Date(
+                                    order.rejection_details.rejected_at,
+                                  ).toLocaleString()}
                                 </p>
                               </div>
                             </div>
@@ -1624,13 +1903,21 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
 
                         {/* Products */}
                         <div className="space-y-3">
-                          <h4 className="font-medium text-sm">Products in this order:</h4>
+                          <h4 className="font-medium text-sm">
+                            Products in this order:
+                          </h4>
                           {order.items.map((item, index: number) => (
-                            <div key={item.id} className="p-3 bg-secondary/30 rounded-lg">
+                            <div
+                              key={item.id}
+                              className="p-3 bg-secondary/30 rounded-lg"
+                            >
                               <div className="flex items-start justify-between">
                                 <div className="flex-1 space-y-2">
                                   <div className="flex items-center gap-2">
-                                    <p className="font-medium">{index + 1}) {item.item_name || "Unnamed Product"}</p>
+                                    <p className="font-medium">
+                                      {index + 1}){" "}
+                                      {item.item_name || "Unnamed Product"}
+                                    </p>
                                     {item.has_purchase_issue && (
                                       <Badge className="bg-yellow-500/10 text-yellow-600 border-yellow-500/20 text-xs">
                                         <Flag className="h-3 w-3 mr-1" />
@@ -1653,26 +1940,31 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
                                         <Link className="h-3 w-3 flex-shrink-0" />
                                         {formatShortUrl(item.product_url)}
                                       </a>
-
-
                                     </div>
-
                                   </div>
 
-                                  {item.notes && <p className="text-sm text-muted-foreground">Notes: {item.notes}</p>}
+                                  {item.notes && (
+                                    <p className="text-sm text-muted-foreground">
+                                      Notes: {item.notes}
+                                    </p>
+                                  )}
 
                                   {/* Show rejection issue from snapshot */}
                                   {(() => {
                                     if (order.rejection_details) {
-                                      const rejectionIssue = order.rejection_details.product_issues?.find(
-                                        (pi: any) => pi.product_id === item.id,
-                                      );
+                                      const rejectionIssue =
+                                        order.rejection_details.product_issues?.find(
+                                          (pi: any) =>
+                                            pi.product_id === item.id,
+                                        );
 
-                                      return rejectionIssue?.has_issue && rejectionIssue?.issue_description ? (
+                                      return rejectionIssue?.has_issue &&
+                                        rejectionIssue?.issue_description ? (
                                         <div className="flex items-center gap-1 mt-2 bg-yellow-50 border border-yellow-200 rounded p-2">
                                           <AlertCircle className="h-3 w-3 text-yellow-600 flex-shrink-0" />
                                           <span className="text-xs text-yellow-700">
-                                            Issue: {rejectionIssue.issue_description}
+                                            Issue:{" "}
+                                            {rejectionIssue.issue_description}
                                           </span>
                                         </div>
                                       ) : null;
@@ -1681,7 +1973,8 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
                                         <div className="flex items-center gap-1 mt-2 bg-yellow-50 border border-yellow-200 rounded p-2">
                                           <AlertCircle className="h-3 w-3 text-yellow-600 flex-shrink-0" />
                                           <span className="text-xs text-yellow-700">
-                                            Issue: {item.purchase_issue_description}
+                                            Issue:{" "}
+                                            {item.purchase_issue_description}
                                           </span>
                                         </div>
                                       ) : null;
@@ -1690,25 +1983,28 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
 
                                   {/* Individual purchase button for paid items */}
                                   {item.status === "paid" && (
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => {
-                                  setItemForPurchased({ id: item.id });
-                                  setShowMarkIndividualPurchasedDialog(true);
-                                }}
-                                className="mt-2"
-                              >
-                                <Package className="h-3 w-3 mr-1" />
-                                Mark as Purchased
-                              </Button>
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      onClick={() => {
+                                        setItemForPurchased({ id: item.id });
+                                        setShowMarkIndividualPurchasedDialog(
+                                          true,
+                                        );
+                                      }}
+                                      className="mt-2"
+                                    >
+                                      <Package className="h-3 w-3 mr-1" />
+                                      Mark as Purchased
+                                    </Button>
                                   )}
 
                                   {/* Individual received button with dimension inputs for purchased items */}
                                   {item.status === "purchased" && (
                                     <div className="flex flex-col gap-2 mt-2">
                                       <p className="text-xs text-muted-foreground">
-                                        <span className="text-red-500">*</span> Weight is required to mark as received
+                                        <span className="text-red-500">*</span>{" "}
+                                        Weight is required to mark as received
                                       </p>
                                       <div className="flex flex-col justify-between sm:flex-row items-stretch sm:items-center gap-2">
                                         <div className="flex items-center gap-2 flex-wrap">
@@ -1747,30 +2043,55 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
                                         </div>
                                         <Button
                                           onClick={() => {
-                                            const weightInput = document.getElementById(`weight-${item.id}`) as HTMLInputElement;
-                                            const widthInput = document.getElementById(`width-${item.id}`) as HTMLInputElement;
-                                            const lengthInput = document.getElementById(`length-${item.id}`) as HTMLInputElement;
-                                            const heightInput = document.getElementById(`height-${item.id}`) as HTMLInputElement;
-                                            
-                                            const weight = weightInput?.value ? parseFloat(weightInput.value) : undefined;
-                                            
-                                            if (weight === undefined || weight === null || isNaN(weight)) {
+                                            const weightInput =
+                                              document.getElementById(
+                                                `weight-${item.id}`,
+                                              ) as HTMLInputElement;
+                                            const widthInput =
+                                              document.getElementById(
+                                                `width-${item.id}`,
+                                              ) as HTMLInputElement;
+                                            const lengthInput =
+                                              document.getElementById(
+                                                `length-${item.id}`,
+                                              ) as HTMLInputElement;
+                                            const heightInput =
+                                              document.getElementById(
+                                                `height-${item.id}`,
+                                              ) as HTMLInputElement;
+
+                                            const weight = weightInput?.value
+                                              ? parseFloat(weightInput.value)
+                                              : undefined;
+
+                                            if (
+                                              weight === undefined ||
+                                              weight === null ||
+                                              isNaN(weight)
+                                            ) {
                                               toast({
                                                 title: "Weight Required",
-                                                description: "Please enter the weight in grams before marking as received. Use 0 if unknown.",
+                                                description:
+                                                  "Please enter the weight in grams before marking as received. Use 0 if unknown.",
                                                 variant: "destructive",
                                               });
                                               weightInput?.focus();
                                               return;
                                             }
-                                            
-                                            setItemForReceived({ 
+
+                                            setItemForReceived({
                                               id: item.id,
                                               itemName: item.item_name,
                                               weight,
-                                              width: widthInput?.value ? parseFloat(widthInput.value) : undefined,
-                                              length: lengthInput?.value ? parseFloat(lengthInput.value) : undefined,
-                                              height: heightInput?.value ? parseFloat(heightInput.value) : undefined,
+                                              width: widthInput?.value
+                                                ? parseFloat(widthInput.value)
+                                                : undefined,
+                                              length: lengthInput?.value
+                                                ? parseFloat(lengthInput.value)
+                                                : undefined,
+                                              height: heightInput?.value
+                                                ? parseFloat(heightInput.value)
+                                                : undefined,
                                             });
                                             setShowMarkReceivedDialog(true);
                                           }}
@@ -1788,10 +2109,20 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
                                   {/* Display dimensions for received items */}
                                   {item.status === "received" && (
                                     <div className="text-sm text-muted-foreground mt-2">
-                                      {(item as any).weight && <span>Weight: {(item as any).weight}g</span>}
-                                      {((item as any).width || (item as any).length || (item as any).height) && (
-                                        <span className={`${(item as any).weight ? 'ml-2' : ''}`}>
-                                          Dimensions: {(item as any).width || 0} × {(item as any).length || 0} × {(item as any).height || 0} cm
+                                      {(item as any).weight && (
+                                        <span>
+                                          Weight: {(item as any).weight}g
+                                        </span>
+                                      )}
+                                      {((item as any).width ||
+                                        (item as any).length ||
+                                        (item as any).height) && (
+                                        <span
+                                          className={`${(item as any).weight ? "ml-2" : ""}`}
+                                        >
+                                          Dimensions: {(item as any).width || 0}{" "}
+                                          × {(item as any).length || 0} ×{" "}
+                                          {(item as any).height || 0} cm
                                         </span>
                                       )}
                                     </div>
@@ -1808,68 +2139,119 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
                             {/* Show create quote if no quotes exist */}
                             {!order.quotes?.length && (
                               <>
-                                <Dialog open={showQuoteDialog} onOpenChange={setShowQuoteDialog}>
+                                <Dialog
+                                  open={showQuoteDialog}
+                                  onOpenChange={setShowQuoteDialog}
+                                >
                                   <DialogTrigger asChild>
-                                    <Button size="sm" variant="outline" onClick={() => setSelectedOrder(order)}>
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      onClick={() => setSelectedOrder(order)}
+                                    >
                                       <DollarSign className="h-4 w-4 mr-1" />
                                       Create Quote
                                     </Button>
                                   </DialogTrigger>
                                   <DialogContent className="max-w-2xl">
                                     <DialogHeader>
-                                      <DialogTitle>Create Order Quote</DialogTitle>
-                                      <DialogDescription>Enter the invoice URL for this order quote.</DialogDescription>
+                                      <DialogTitle>
+                                        Create Order Quote
+                                      </DialogTitle>
+                                      <DialogDescription>
+                                        Enter the invoice URL for this order
+                                        quote.
+                                      </DialogDescription>
                                     </DialogHeader>
                                     <div className="space-y-4">
                                       <div>
-                                        <Label htmlFor="quote-url">Invoice URL</Label>
+                                        <Label htmlFor="quote-url">
+                                          Invoice URL
+                                        </Label>
                                         <Input
                                           id="quote-url"
                                           type="url"
                                           value={quoteInvoiceUrl}
-                                          onChange={(e) => setQuoteInvoiceUrl(e.target.value)}
+                                          onChange={(e) =>
+                                            setQuoteInvoiceUrl(e.target.value)
+                                          }
                                           placeholder="Enter PayPal invoice URL"
                                           className="mt-2"
                                         />
                                       </div>
                                       {/* Credit Amount Input - shown only when user requested credits */}
-                                      {(selectedOrder as any)?.use_credits_request && (
+                                      {(selectedOrder as any)
+                                        ?.use_credits_request && (
                                         <div className="p-3 rounded-lg bg-amber-50 border border-amber-200 space-y-2">
                                           <div className="flex items-center gap-1.5 text-sm font-medium text-amber-700">
                                             <JapaneseYen className="h-4 w-4" />
-                                            <span>Customer wants to use credits</span>
+                                            <span>
+                                              Customer wants to use credits
+                                            </span>
                                             <span className="text-amber-900 font-semibold">
-                                              (Balance: ¥{(selectedOrder?.profiles as any)?.credit_balance?.toLocaleString('en-US') ?? '0'})
+                                              (Balance: ¥
+                                              {(
+                                                selectedOrder?.profiles as any
+                                              )?.credit_balance?.toLocaleString(
+                                                "en-US",
+                                              ) ?? "0"}
+                                              )
                                             </span>
                                           </div>
-                                          <Label htmlFor="quote-credit-amount" className="text-sm">Credit to apply (¥)</Label>
+                                          <Label
+                                            htmlFor="quote-credit-amount"
+                                            className="text-sm"
+                                          >
+                                            Credit to apply (¥)
+                                          </Label>
                                           <Input
                                             id="quote-credit-amount"
                                             type="number"
                                             min="0"
                                             step="1"
-                                            max={(selectedOrder?.profiles as any)?.credit_balance ?? 0}
+                                            max={
+                                              (selectedOrder?.profiles as any)
+                                                ?.credit_balance ?? 0
+                                            }
                                             value={quoteCreditAmount}
-                                            onChange={(e) => setQuoteCreditAmount(e.target.value)}
+                                            onChange={(e) =>
+                                              setQuoteCreditAmount(
+                                                e.target.value,
+                                              )
+                                            }
                                             placeholder="Enter credit amount to apply..."
                                             className="mt-1"
                                           />
-                                          {quoteCreditAmount && parseFloat(quoteCreditAmount) > ((selectedOrder?.profiles as any)?.credit_balance ?? 0) && (
-                                            <p className="text-xs text-red-500 mt-1">
-                                              ⚠️ Amount exceeds user's available balance (¥{((selectedOrder?.profiles as any)?.credit_balance ?? 0).toLocaleString('en-US')})
-                                            </p>
-                                          )}
+                                          {quoteCreditAmount &&
+                                            parseFloat(quoteCreditAmount) >
+                                              ((selectedOrder?.profiles as any)
+                                                ?.credit_balance ?? 0) && (
+                                              <p className="text-xs text-red-500 mt-1">
+                                                ⚠️ Amount exceeds user's
+                                                available balance (¥
+                                                {(
+                                                  (
+                                                    selectedOrder?.profiles as any
+                                                  )?.credit_balance ?? 0
+                                                ).toLocaleString("en-US")}
+                                                )
+                                              </p>
+                                            )}
                                         </div>
                                       )}
                                     </div>
                                     <DialogFooter>
-                                      <Button onClick={createOrderQuote}>Create Quote</Button>
+                                      <Button onClick={createOrderQuote}>
+                                        Create Quote
+                                      </Button>
                                     </DialogFooter>
                                   </DialogContent>
                                 </Dialog>
 
-
-                                <Dialog open={showRejectDialog} onOpenChange={setShowRejectDialog}>
+                                <Dialog
+                                  open={showRejectDialog}
+                                  onOpenChange={setShowRejectDialog}
+                                >
                                   <DialogTrigger asChild>
                                     <Button
                                       size="sm"
@@ -1885,16 +2267,21 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
                                     <DialogHeader>
                                       <DialogTitle>Reject Order</DialogTitle>
                                       <DialogDescription>
-                                        Reject the entire order. The customer will be able to edit and resubmit.
+                                        Reject the entire order. The customer
+                                        will be able to edit and resubmit.
                                       </DialogDescription>
                                     </DialogHeader>
                                     <div className="space-y-4">
                                       <div>
-                                        <Label htmlFor="rejection-reason">Rejection Reason *</Label>
+                                        <Label htmlFor="rejection-reason">
+                                          Rejection Reason *
+                                        </Label>
                                         <Textarea
                                           id="rejection-reason"
                                           value={rejectionReason}
-                                          onChange={(e) => setRejectionReason(e.target.value)}
+                                          onChange={(e) =>
+                                            setRejectionReason(e.target.value)
+                                          }
                                           placeholder="Explain why the order is being rejected..."
                                           className="min-h-[100px]"
                                         />
@@ -1902,33 +2289,54 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
 
                                       {/* Product Issues */}
                                       <div>
-                                        <Label>Flag Specific Products with Issues (optional)</Label>
+                                        <Label>
+                                          Flag Specific Products with Issues
+                                          (optional)
+                                        </Label>
                                         <div className="space-y-2 mt-2 max-h-60 overflow-y-auto">
                                           {order.items.map((item) => {
-                                            const issue = productIssues.get(item.id) || {
+                                            const issue = productIssues.get(
+                                              item.id,
+                                            ) || {
                                               hasIssue: false,
                                               description: "",
                                             };
                                             return (
-                                              <div key={item.id} className="p-3 border rounded-lg">
+                                              <div
+                                                key={item.id}
+                                                className="p-3 border rounded-lg"
+                                              >
                                                 <div className="flex items-start gap-2">
                                                   <Checkbox
                                                     checked={issue.hasIssue}
-                                                    onCheckedChange={(checked) =>
-                                                      updateProductIssue(item.id, checked as boolean, issue.description)
+                                                    onCheckedChange={(
+                                                      checked,
+                                                    ) =>
+                                                      updateProductIssue(
+                                                        item.id,
+                                                        checked as boolean,
+                                                        issue.description,
+                                                      )
                                                     }
                                                   />
                                                   <div className="flex-1">
                                                     <p className="text-sm font-medium">
-                                                      {item.item_name || "Unnamed Product"}
+                                                      {item.item_name ||
+                                                        "Unnamed Product"}
                                                     </p>
                                                     {issue.hasIssue && (
                                                       <Input
                                                         className="mt-2"
                                                         placeholder="Describe the issue with this product..."
-                                                        value={issue.description}
+                                                        value={
+                                                          issue.description
+                                                        }
                                                         onChange={(e) =>
-                                                          updateProductIssue(item.id, true, e.target.value)
+                                                          updateProductIssue(
+                                                            item.id,
+                                                            true,
+                                                            e.target.value,
+                                                          )
                                                         }
                                                       />
                                                     )}
@@ -1941,7 +2349,10 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
                                       </div>
                                     </div>
                                     <DialogFooter>
-                                      <Button variant="destructive" onClick={rejectOrder}>
+                                      <Button
+                                        variant="destructive"
+                                        onClick={rejectOrder}
+                                      >
                                         Reject Order
                                       </Button>
                                     </DialogFooter>
@@ -1951,8 +2362,11 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
                             )}
 
                             {/* Cancel Order button - appears for New or Quoted orders */}
-                            {(!order.quotes?.length || 
-                              order.quotes?.some(q => q.type === 'product' && q.status === 'sent')) && (
+                            {(!order.quotes?.length ||
+                              order.quotes?.some(
+                                (q) =>
+                                  q.type === "product" && q.status === "sent",
+                              )) && (
                               <Button
                                 size="sm"
                                 variant="outline"
@@ -1968,7 +2382,10 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
                             )}
 
                             {/* Show confirm payment button for sent product quotes */}
-                            {order.quotes?.some((q) => q.status === "sent" && q.type === "product") && (
+                            {order.quotes?.some(
+                              (q) =>
+                                q.status === "sent" && q.type === "product",
+                            ) && (
                               <Button
                                 size="sm"
                                 variant="outline"
@@ -1984,7 +2401,9 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
                             )}
 
                             {/* After product payment confirmed - Mark as Purchased */}
-                            {order.items.some((item) => item.status === "paid") && (
+                            {order.items.some(
+                              (item) => item.status === "paid",
+                            ) && (
                               <Button
                                 size="sm"
                                 variant="outline"
@@ -1999,50 +2418,90 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
                             )}
 
                             {/* After purchased - Mark as Received */}
-                            {order.items.some((item) => item.status === "purchased") && (
+                            {order.items.some(
+                              (item) => item.status === "purchased",
+                            ) && (
                               <Button
                                 size="sm"
                                 variant="outline"
                                 className="border border-green-200 text-green-600 hover:border-green-300 hover:bg-green-50/30 w-auto text-xs sm:text-sm"
                                 onClick={() => {
-                                  const dimensions = new Map<string, {weight?: number, width?: number, length?: number, height?: number}>();
+                                  const dimensions = new Map<
+                                    string,
+                                    {
+                                      weight?: number;
+                                      width?: number;
+                                      length?: number;
+                                      height?: number;
+                                    }
+                                  >();
                                   const missingWeight: string[] = [];
-                                  
+
                                   order.items.forEach((item) => {
                                     if (item.status === "purchased") {
-                                      const weightInput = document.getElementById(`weight-${item.id}`) as HTMLInputElement;
-                                      const widthInput = document.getElementById(`width-${item.id}`) as HTMLInputElement;
-                                      const lengthInput = document.getElementById(`length-${item.id}`) as HTMLInputElement;
-                                      const heightInput = document.getElementById(`height-${item.id}`) as HTMLInputElement;
-                                      
+                                      const weightInput =
+                                        document.getElementById(
+                                          `weight-${item.id}`,
+                                        ) as HTMLInputElement;
+                                      const widthInput =
+                                        document.getElementById(
+                                          `width-${item.id}`,
+                                        ) as HTMLInputElement;
+                                      const lengthInput =
+                                        document.getElementById(
+                                          `length-${item.id}`,
+                                        ) as HTMLInputElement;
+                                      const heightInput =
+                                        document.getElementById(
+                                          `height-${item.id}`,
+                                        ) as HTMLInputElement;
+
                                       const itemDimensions: any = {};
-                                      const weight = weightInput?.value ? parseFloat(weightInput.value) : undefined;
-                                      
-                                      if (weight !== undefined && !isNaN(weight)) {
+                                      const weight = weightInput?.value
+                                        ? parseFloat(weightInput.value)
+                                        : undefined;
+
+                                      if (
+                                        weight !== undefined &&
+                                        !isNaN(weight)
+                                      ) {
                                         itemDimensions.weight = weight;
                                       } else {
-                                        missingWeight.push(item.item_name || 'Unnamed Product');
+                                        missingWeight.push(
+                                          item.item_name || "Unnamed Product",
+                                        );
                                       }
-                                      
-                                      if (widthInput?.value) itemDimensions.width = parseFloat(widthInput.value);
-                                      if (lengthInput?.value) itemDimensions.length = parseFloat(lengthInput.value);
-                                      if (heightInput?.value) itemDimensions.height = parseFloat(heightInput.value);
-                                      
-                                      if (Object.keys(itemDimensions).length > 0) {
+
+                                      if (widthInput?.value)
+                                        itemDimensions.width = parseFloat(
+                                          widthInput.value,
+                                        );
+                                      if (lengthInput?.value)
+                                        itemDimensions.length = parseFloat(
+                                          lengthInput.value,
+                                        );
+                                      if (heightInput?.value)
+                                        itemDimensions.height = parseFloat(
+                                          heightInput.value,
+                                        );
+
+                                      if (
+                                        Object.keys(itemDimensions).length > 0
+                                      ) {
                                         dimensions.set(item.id, itemDimensions);
                                       }
                                     }
                                   });
-                                  
+
                                   if (missingWeight.length > 0) {
                                     toast({
                                       title: "Weight Required",
-                                      description: `Please enter weight for: ${missingWeight.join(', ')}. Use 0 if unknown.`,
+                                      description: `Please enter weight for: ${missingWeight.join(", ")}. Use 0 if unknown.`,
                                       variant: "destructive",
                                     });
                                     return;
                                   }
-                                  
+
                                   setDimensionsForAllReceived(dimensions);
                                   setItemsWithoutWeight(missingWeight);
                                   setOrderForAllReceived(order);
@@ -2055,7 +2514,9 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
                             )}
 
                             {/* Emergency Cancel for Purchased orders */}
-                            {order.items.some((item) => item.status === "purchased") && (
+                            {order.items.some(
+                              (item) => item.status === "purchased",
+                            ) && (
                               <Button
                                 size="sm"
                                 variant="outline"
@@ -2071,7 +2532,10 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
                             )}
 
                             {/* Show confirm shipping payment button */}
-                            {order.quotes?.some((q) => q.status === "sent" && q.type === "shipping") && (
+                            {order.quotes?.some(
+                              (q) =>
+                                q.status === "sent" && q.type === "shipping",
+                            ) && (
                               <Button
                                 size="sm"
                                 variant="outline"
@@ -2084,10 +2548,19 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
                             )}
 
                             {/* After shipping payment confirmed - Ship Order */}
-                            {order.items.every((item) => item.status === "shipping_paid") && (
-                              <Dialog open={showTrackingDialog} onOpenChange={setShowTrackingDialog}>
+                            {order.items.every(
+                              (item) => item.status === "shipping_paid",
+                            ) && (
+                              <Dialog
+                                open={showTrackingDialog}
+                                onOpenChange={setShowTrackingDialog}
+                              >
                                 <DialogTrigger asChild>
-                                  <Button size="sm" variant="outline" className="text-blue-600 hover:text-blue-700">
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className="text-blue-600 hover:text-blue-700"
+                                  >
                                     <Truck className="h-4 w-4 mr-1" />
                                     Mark as Shipped
                                   </Button>
@@ -2095,21 +2568,30 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
                                 <DialogContent>
                                   <DialogHeader>
                                     <DialogTitle>Ship Order</DialogTitle>
-                                    <DialogDescription>Enter the tracking number for this shipment.</DialogDescription>
+                                    <DialogDescription>
+                                      Enter the tracking number for this
+                                      shipment.
+                                    </DialogDescription>
                                   </DialogHeader>
                                   <div className="space-y-4">
                                     <div>
-                                      <Label htmlFor="tracking">Tracking Number</Label>
+                                      <Label htmlFor="tracking">
+                                        Tracking Number
+                                      </Label>
                                       <Input
                                         id="tracking"
                                         value={trackingNumber}
-                                        onChange={(e) => setTrackingNumber(e.target.value)}
+                                        onChange={(e) =>
+                                          setTrackingNumber(e.target.value)
+                                        }
                                         placeholder="Enter tracking number"
                                       />
                                     </div>
                                   </div>
                                   <DialogFooter>
-                                    <Button onClick={() => shipOrder(order)}>Confirm Shipment</Button>
+                                    <Button onClick={() => shipOrder(order)}>
+                                      Confirm Shipment
+                                    </Button>
                                   </DialogFooter>
                                 </DialogContent>
                               </Dialog>
@@ -2120,23 +2602,33 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
                         {/* Quote Information */}
                         {order.quotes && order.quotes.length > 0 && (
                           <div className="mt-4 p-4 border border-blue-200 bg-blue-50/50 rounded-xl">
-                            <p className="text-sm font-semibold text-blue-900 mb-2">Quote Information</p>
+                            <p className="text-sm font-semibold text-blue-900 mb-2">
+                              Quote Information
+                            </p>
 
                             <div className="space-y-2">
                               {order.quotes.map((quote) => {
                                 const formattedStatus =
-                                  quote.status.charAt(0).toUpperCase() + quote.status.slice(1);
+                                  quote.status.charAt(0).toUpperCase() +
+                                  quote.status.slice(1);
 
                                 let shortUrl = quote.quote_url;
                                 try {
                                   const parsed = new URL(quote.quote_url);
-                                  const domain = parsed.hostname.replace(/^www\./, "");
-                                  const path = parsed.pathname + parsed.search + parsed.hash;
+                                  const domain = parsed.hostname.replace(
+                                    /^www\./,
+                                    "",
+                                  );
+                                  const path =
+                                    parsed.pathname +
+                                    parsed.search +
+                                    parsed.hash;
                                   shortUrl = `${domain}${path.length > 20 ? path.slice(0, 20) + "..." : path}`;
                                 } catch {
-                                  shortUrl = quote.quote_url.length > 25
-                                    ? quote.quote_url.slice(0, 25) + "..."
-                                    : quote.quote_url;
+                                  shortUrl =
+                                    quote.quote_url.length > 25
+                                      ? quote.quote_url.slice(0, 25) + "..."
+                                      : quote.quote_url;
                                 }
 
                                 return (
@@ -2145,7 +2637,9 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
                                     className="bg-white/60 rounded-lg p-3 border border-blue-100"
                                   >
                                     <div className="flex flex-col sm:flex-row sm:items-center sm:gap-3 gap-2 text-sm">
-                                      <p className="text-blue-900 font-medium flex-shrink-0">Status: {formattedStatus}</p>
+                                      <p className="text-blue-900 font-medium flex-shrink-0">
+                                        Status: {formattedStatus}
+                                      </p>
 
                                       <a
                                         href={quote.quote_url}
@@ -2155,7 +2649,9 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
                                         title={quote.quote_url}
                                       >
                                         <Link className="h-3.5 w-3.5 flex-shrink-0" />
-                                        <span className="truncate sm:inline">{shortUrl}</span>
+                                        <span className="truncate sm:inline">
+                                          {shortUrl}
+                                        </span>
                                       </a>
                                     </div>
                                   </div>
@@ -2164,7 +2660,6 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
                             </div>
                           </div>
                         )}
-
                       </div>
                     </CollapsibleContent>
                   </Card>
@@ -2190,7 +2685,11 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => setCurrentPage((prev) => Math.min(totalFilteredPages, prev + 1))}
+                onClick={() =>
+                  setCurrentPage((prev) =>
+                    Math.min(totalFilteredPages, prev + 1),
+                  )
+                }
                 disabled={currentPage === totalFilteredPages}
               >
                 Next
@@ -2201,49 +2700,60 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
       </Card>
 
       {/* Cancel Order Confirmation Dialog */}
-      <AlertDialog open={showCancelDialog} onOpenChange={(open) => {
-        setShowCancelDialog(open);
-        if (!open) {
-          setCancelCreditAmount("");
-          setCancelCreditReason("");
-        }
-      }}>
+      <AlertDialog
+        open={showCancelDialog}
+        onOpenChange={(open) => {
+          setShowCancelDialog(open);
+          if (!open) {
+            setCancelCreditAmount("");
+            setCancelCreditReason("");
+          }
+        }}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2">
-              {orderToCancel?.items.some(item => item.status === "purchased") && (
-                <AlertCircle className="h-5 w-5 text-red-500" />
-              )}
+              {orderToCancel?.items.some(
+                (item) => item.status === "purchased",
+              ) && <AlertCircle className="h-5 w-5 text-red-500" />}
               Cancel Order?
             </AlertDialogTitle>
             <AlertDialogDescription className="space-y-2">
-              {orderToCancel?.items.some(item => item.status === "purchased") ? (
+              {orderToCancel?.items.some(
+                (item) => item.status === "purchased",
+              ) ? (
                 <>
                   <p className="font-semibold text-red-600">
-                    ⚠️ WARNING: This order contains items that have already been purchased!
+                    ⚠️ WARNING: This order contains items that have already been
+                    purchased!
                   </p>
                   <p>
-                    Are you sure you want to cancel Order #{orderToCancel?.order_personal_id}? 
+                    Are you sure you want to cancel Order #
+                    {orderToCancel?.order_personal_id}?
                   </p>
                   <p className="text-sm">
-                    This should only be done in emergency situations when items are out of stock or unavailable.
-                    This action cannot be undone.
+                    This should only be done in emergency situations when items
+                    are out of stock or unavailable. This action cannot be
+                    undone.
                   </p>
                 </>
               ) : (
                 <p>
-                  Are you sure you want to cancel Order #{orderToCancel?.order_personal_id}? 
-                  This action cannot be undone.
+                  Are you sure you want to cancel Order #
+                  {orderToCancel?.order_personal_id}? This action cannot be
+                  undone.
                 </p>
               )}
             </AlertDialogDescription>
           </AlertDialogHeader>
 
-          {/* Credit fields — only shown when order has purchased items */}
-          {orderToCancel?.items.some(item => item.status === "purchased") && (
-            <div className="space-y-3 py-2">
+          <div className="space-y-3 py-2">
+            {orderToCancel?.items.some((item) => item.status === "purchased") && (
               <div>
-                <Label htmlFor="cancel-credit-amount" className="text-sm font-medium">
+                <Label
+                  htmlFor="cancel-credit-amount"
+                  className="text-sm font-medium"
+                >
                   Credit Amount <span className="text-red-500">*</span>
                 </Label>
                 <Input
@@ -2257,20 +2767,23 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
                   className="mt-1"
                 />
               </div>
-              <div>
-                <Label htmlFor="cancel-credit-reason" className="text-sm font-medium">
-                  Reason <span className="text-red-500">*</span>
-                </Label>
-                <Textarea
-                  id="cancel-credit-reason"
-                  value={cancelCreditReason}
-                  onChange={(e) => setCancelCreditReason(e.target.value)}
-                  placeholder="Reason for the credit (e.g. item out of stock)..."
-                  className="mt-1 min-h-[80px]"
-                />
-              </div>
+            )}
+            <div>
+              <Label
+                htmlFor="cancel-credit-reason"
+                className="text-sm font-medium"
+              >
+                Cancellation Reason <span className="text-red-500">*</span>
+              </Label>
+              <Textarea
+                id="cancel-credit-reason"
+                value={cancelCreditReason}
+                onChange={(e) => setCancelCreditReason(e.target.value)}
+                placeholder="Reason for cancellation (visible to user)..."
+                className="mt-1 min-h-[80px]"
+              />
             </div>
-          )}
+          </div>
 
           <AlertDialogFooter>
             <AlertDialogCancel disabled={isCancelling}>
@@ -2278,13 +2791,18 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={adminCancelOrder}
-              disabled={isCancelling || (
-                orderToCancel?.items.some(item => item.status === "purchased") && 
-                (!cancelCreditAmount || !cancelCreditReason.trim())
-              )}
-              className={orderToCancel?.items.some(item => item.status === "purchased") 
-                ? "bg-red-600 hover:bg-red-700" 
-                : "bg-gray-600 hover:bg-gray-700"}
+              disabled={
+                isCancelling || !cancelCreditReason.trim() ||
+                (orderToCancel?.items.some(
+                  (item) => item.status === "purchased",
+                ) &&
+                  !cancelCreditAmount)
+              }
+              className={
+                orderToCancel?.items.some((item) => item.status === "purchased")
+                  ? "bg-red-600 hover:bg-red-700"
+                  : "bg-gray-600 hover:bg-gray-700"
+              }
             >
               {isCancelling ? "Cancelling..." : "Yes, Cancel Order"}
             </AlertDialogAction>
@@ -2293,17 +2811,23 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
       </AlertDialog>
 
       {/* Confirm Payment Dialog */}
-      <AlertDialog open={showConfirmPaymentDialog} onOpenChange={setShowConfirmPaymentDialog}>
+      <AlertDialog
+        open={showConfirmPaymentDialog}
+        onOpenChange={setShowConfirmPaymentDialog}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Confirm Payment?</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to confirm payment for Order #{orderForPayment?.order_personal_id}? 
-              This will mark the product quote as paid.
+              Are you sure you want to confirm payment for Order #
+              {orderForPayment?.order_personal_id}? This will mark the product
+              quote as paid.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isConfirmingPayment}>Cancel</AlertDialogCancel>
+            <AlertDialogCancel disabled={isConfirmingPayment}>
+              Cancel
+            </AlertDialogCancel>
             <AlertDialogAction
               onClick={handleConfirmPayment}
               disabled={isConfirmingPayment}
@@ -2316,16 +2840,22 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
       </AlertDialog>
 
       {/* Mark All Paid as Purchased Dialog */}
-      <AlertDialog open={showMarkPurchasedDialog} onOpenChange={setShowMarkPurchasedDialog}>
+      <AlertDialog
+        open={showMarkPurchasedDialog}
+        onOpenChange={setShowMarkPurchasedDialog}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Mark All as Purchased?</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to mark all paid items in Order #{orderForPurchased?.order_personal_id} as purchased?
+              Are you sure you want to mark all paid items in Order #
+              {orderForPurchased?.order_personal_id} as purchased?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isMarkingPurchased}>Cancel</AlertDialogCancel>
+            <AlertDialogCancel disabled={isMarkingPurchased}>
+              Cancel
+            </AlertDialogCancel>
             <AlertDialogAction
               onClick={handleMarkPurchased}
               disabled={isMarkingPurchased}
@@ -2337,7 +2867,10 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
       </AlertDialog>
 
       {/* Mark All Purchased as Received Dialog */}
-      <AlertDialog open={showMarkAllReceivedDialog} onOpenChange={setShowMarkAllReceivedDialog}>
+      <AlertDialog
+        open={showMarkAllReceivedDialog}
+        onOpenChange={setShowMarkAllReceivedDialog}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2">
@@ -2346,18 +2879,32 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
             </AlertDialogTitle>
             <AlertDialogDescription className="space-y-3">
               <p className="font-semibold text-foreground">
-                ⚠️ These products will be sent to STORAGE and will be VISIBLE to the customer.
+                ⚠️ These products will be sent to STORAGE and will be VISIBLE to
+                the customer.
               </p>
               <p>
-                You are about to mark <span className="font-bold text-foreground">{orderForAllReceived?.items.filter(i => i.status === "purchased").length} product(s)</span> in Order #{orderForAllReceived?.order_personal_id} as physically received in the warehouse.
+                You are about to mark{" "}
+                <span className="font-bold text-foreground">
+                  {
+                    orderForAllReceived?.items.filter(
+                      (i) => i.status === "purchased",
+                    ).length
+                  }{" "}
+                  product(s)
+                </span>{" "}
+                in Order #{orderForAllReceived?.order_personal_id} as physically
+                received in the warehouse.
               </p>
               <p className="text-sm text-muted-foreground">
-                Please confirm that all products are physically present before proceeding.
+                Please confirm that all products are physically present before
+                proceeding.
               </p>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isMarkingAllReceived}>Cancel</AlertDialogCancel>
+            <AlertDialogCancel disabled={isMarkingAllReceived}>
+              Cancel
+            </AlertDialogCancel>
             <AlertDialogAction
               onClick={handleMarkAllReceived}
               disabled={isMarkingAllReceived}
@@ -2370,7 +2917,10 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
       </AlertDialog>
 
       {/* Mark Individual as Received Dialog */}
-      <AlertDialog open={showMarkReceivedDialog} onOpenChange={setShowMarkReceivedDialog}>
+      <AlertDialog
+        open={showMarkReceivedDialog}
+        onOpenChange={setShowMarkReceivedDialog}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2">
@@ -2379,18 +2929,27 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
             </AlertDialogTitle>
             <AlertDialogDescription className="space-y-3">
               <p className="font-semibold text-foreground">
-                ⚠️ This product will be sent to STORAGE and will be VISIBLE to the customer.
+                ⚠️ This product will be sent to STORAGE and will be VISIBLE to
+                the customer.
               </p>
               <p>
-                You are about to mark <span className="font-bold text-foreground">"{itemForReceived?.itemName || 'this item'}"</span> (Weight: {itemForReceived?.weight}g) as physically received in the warehouse.
+                You are about to mark{" "}
+                <span className="font-bold text-foreground">
+                  "{itemForReceived?.itemName || "this item"}"
+                </span>{" "}
+                (Weight: {itemForReceived?.weight}g) as physically received in
+                the warehouse.
               </p>
               <p className="text-sm text-muted-foreground">
-                Please confirm that the product is physically present before proceeding.
+                Please confirm that the product is physically present before
+                proceeding.
               </p>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isMarkingReceived}>Cancel</AlertDialogCancel>
+            <AlertDialogCancel disabled={isMarkingReceived}>
+              Cancel
+            </AlertDialogCancel>
             <AlertDialogAction
               onClick={handleMarkReceived}
               disabled={isMarkingReceived}
@@ -2403,7 +2962,10 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
       </AlertDialog>
 
       {/* Mark Individual as Purchased Dialog */}
-      <AlertDialog open={showMarkIndividualPurchasedDialog} onOpenChange={setShowMarkIndividualPurchasedDialog}>
+      <AlertDialog
+        open={showMarkIndividualPurchasedDialog}
+        onOpenChange={setShowMarkIndividualPurchasedDialog}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Mark as Purchased?</AlertDialogTitle>
@@ -2412,12 +2974,16 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isMarkingIndividualPurchased}>Cancel</AlertDialogCancel>
+            <AlertDialogCancel disabled={isMarkingIndividualPurchased}>
+              Cancel
+            </AlertDialogCancel>
             <AlertDialogAction
               onClick={handleMarkIndividualPurchased}
               disabled={isMarkingIndividualPurchased}
             >
-              {isMarkingIndividualPurchased ? "Marking..." : "Mark as Purchased"}
+              {isMarkingIndividualPurchased
+                ? "Marking..."
+                : "Mark as Purchased"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

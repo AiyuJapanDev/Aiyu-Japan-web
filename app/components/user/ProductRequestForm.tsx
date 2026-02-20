@@ -172,14 +172,13 @@ export function ProductRequestForm() {
               </CardTitle>
               <CardDescription>{t("productRequestSubtitle")}</CardDescription>
             </div>
-            <Button variant="ghost" size="icon" onClick={clearForm} title="Clear all">
+            <Button variant="ghost" size="icon" onClick={clearForm} title={t("clearAll")}>
               <Trash2 className="h-5 w-5 text-muted-foreground hover:text-red-400" />
             </Button>
           </div>
         </CardHeader>
         <CardContent className="space-y-6">
           <form onSubmit={handleFormSubmit} className="space-y-8">
-            {/* Use Credits Checkbox */}
             {hasCredits && (
               <div className="flex items-start gap-3 p-4 rounded-xl border border-orange-200 bg-orange-50/40">
                 <Checkbox
@@ -190,14 +189,14 @@ export function ProductRequestForm() {
                 />
                 <div className="space-y-1">
                   <Label htmlFor="use-credits" className="text-sm font-medium text-gray-700 cursor-pointer">
-                    Use my credits for this order
+                    {t("useCreditsForOrder")}
                   </Label>
                   <p className="text-xs text-gray-500">
-                    By checking this option, we will apply your available credits to discount the final price.
+                    {t("applyCreditsDiscountNote")}
                   </p>
                   <div className="flex items-center gap-1 text-xs font-medium text-orange-600">
                     <JapaneseYen className="h-3.5 w-3.5" />
-                    <span>Available balance: ¥{userCreditBalance.toLocaleString('en-US')}</span>
+                    <span>{t("availableBalance")}{userCreditBalance.toLocaleString('en-US')}</span>
                   </div>
                 </div>
               </div>
@@ -218,7 +217,7 @@ export function ProductRequestForm() {
                 <div className="space-y-4 pt-1">
                   <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
                     <div className="md:col-span-9 space-y-2">
-                      <Label className="text-xs font-semibold uppercase tracking-wide text-gray-500">URL</Label>
+                      <Label className="text-xs font-semibold uppercase tracking-wide text-gray-500">{t("urlLabel")}</Label>
                       <div className="relative">
                         <LinkIcon className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                         <Input
@@ -298,25 +297,23 @@ export function ProductRequestForm() {
         </CardContent>
       </Card>
 
-      {/* Confirm Submission Dialog */}
       <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
         <AlertDialogContent className="rounded-xl">
           <AlertDialogHeader>
-            <AlertDialogTitle>Confirm Submission</AlertDialogTitle>
+            <AlertDialogTitle>{t("confirmSubmissionTitle")}</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to submit this product request? You will receive a quote once we process your order.
+              {t("confirmSubmissionDescription")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="border-0">Cancel</AlertDialogCancel>
+            <AlertDialogCancel className="border-0">{t("cancel")}</AlertDialogCancel>
             <AlertDialogAction onClick={handleConfirmSubmit} className="bg-orange-400 hover:bg-orange-500">
-              Submit Request
+              {t("submitRequestButton")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Success Dialog */}
       <Dialog open={showSuccessDialog} onOpenChange={setShowSuccessDialog}>
         <DialogContent className="sm:max-w-md rounded-2xl p-0 overflow-hidden border-0">
           <div className="bg-gradient-to-br from-green-400 to-emerald-500 p-8 flex justify-center">

@@ -46,10 +46,12 @@ import {
   AlertTriangle,
   Edit,
   Copy,
+  JapaneseYen,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { createNotification } from "@/lib/notificationUtils";
+import { useAuth } from "@/contexts/useAuth";
 import { Textarea } from "@/components/ui/textarea";
 import { StatusFlow } from "@/components/ui/status-flow";
 import {
@@ -113,7 +115,10 @@ interface ShippingRequest {
     email: string;
     phone_number: string;
     user_personal_id?: string;
+    credit_balance?: number;
   };
+  use_credit_request?: boolean;
+  credit_amount_applied?: number;
 }
 
 interface ProductIssue {
@@ -129,6 +134,7 @@ interface ShippingRequestsManagementProps {
 export const ShippingRequestsManagement = React.memo(
   ({ shipmentId }: ShippingRequestsManagementProps) => {
     const { toast } = useToast();
+    const { user, refreshProfile } = useAuth();
     const queryClient = useQueryClient();
     const [openSections, setOpenSections] = useState<Record<string, boolean>>(
       {},
@@ -156,6 +162,7 @@ export const ShippingRequestsManagement = React.memo(
     );
     const [quotePrice, setQuotePrice] = useState("");
     const [quoteUrl, setQuoteUrl] = useState("");
+    const [quoteCreditAmount, setQuoteCreditAmount] = useState("");
     const [editTrackingDialogOpen, setEditTrackingDialogOpen] = useState(false);
     const [editTrackingUrl, setEditTrackingUrl] = useState("");
     const [editTrackingRequestId, setEditTrackingRequestId] = useState<
@@ -179,7 +186,8 @@ export const ShippingRequestsManagement = React.memo(
     const [cancellingRequestId, setCancellingRequestId] = useState<
       string | null
     >(null);
-    const [cancellingRequest, setCancellingRequest] = useState<ShippingRequest | null>(null);
+    const [cancellingRequest, setCancellingRequest] =
+      useState<ShippingRequest | null>(null);
     const [cancelCreditAmount, setCancelCreditAmount] = useState("");
     const [cancelCreditReason, setCancelCreditReason] = useState("");
 
@@ -211,29 +219,27 @@ export const ShippingRequestsManagement = React.memo(
         if (quotesError) throw quotesError;
         if (!quotes || quotes.length === 0) return [];
 
-        // Get unique user IDs
         const userIds = [...new Set(quotes.map((q) => q.user_id))];
 
-        // Fetch profiles for those users
         const { data: profiles, error: profilesError } = await supabase
           .from("profiles")
-          .select("id, full_name, email, phone_number, user_personal_id")
+          .select(
+            "id, full_name, email, phone_number, user_personal_id, credit_balance" as any,
+          )
           .in("id", userIds);
 
         if (profilesError) throw profilesError;
 
-        // Create a map of profiles for quick lookup
-        const profileMap = new Map(profiles?.map((p) => [p.id, p]) || []);
+        const profileMap = new Map(
+          (profiles as any[])?.map((p) => [p.id, p]) || [],
+        );
 
-        // Process each quote to get product request details
         const processedQuotes = await Promise.all(
           quotes.map(async (quote) => {
-            // Parse the items array and fetch product request details
             const items = Array.isArray(quote.items) ? quote.items : [];
             const itemsWithDetails = await Promise.all(
               items.map(async (item: any) => {
                 if (item.order_item_id) {
-                  // Query product_requests directly since order_item_id actually contains product_request_id
                   const { data: productRequest } = await supabase
                     .from("product_requests")
                     .select(
@@ -299,16 +305,19 @@ export const ShippingRequestsManagement = React.memo(
         requestId,
         price,
         url,
+        creditAmount,
       }: {
         requestId: string;
         price: number;
         url: string;
+        creditAmount?: number;
       }) => {
         const { error } = await supabase
           .from("shipping_quotes")
           .update({
             actual_cost: price,
             quote_url: url,
+            credit_amount_applied: creditAmount || 0,
             status: "quoted",
           })
           .eq("id", requestId);
@@ -341,6 +350,7 @@ export const ShippingRequestsManagement = React.memo(
         setSendQuoteDialogOpen(false);
         setQuotePrice("");
         setQuoteUrl("");
+        setQuoteCreditAmount("");
         setSendQuoteRequestId(null);
       },
       onError: (error) => {
@@ -630,10 +640,19 @@ export const ShippingRequestsManagement = React.memo(
     });
 
     const cancelShipmentMutation = useMutation({
-      mutationFn: async ({ requestId }: { requestId: string }) => {
+      mutationFn: async ({
+        requestId,
+        reason,
+      }: {
+        requestId: string;
+        reason: string;
+      }) => {
         const { error } = await supabase
           .from("shipping_quotes")
-          .update({ status: "cancelled" })
+          .update({
+            status: "cancelled",
+            rejection_reason: reason,
+          })
           .eq("id", requestId);
 
         if (error) throw error;
@@ -649,7 +668,7 @@ export const ShippingRequestsManagement = React.memo(
           await createNotification(
             request.user_id,
             "shipment_cancelled",
-            `Your Shipment #${request.shipment_personal_id} to ${request.destination} has been cancelled by the administrator.`,
+            `Your Shipment #${request.shipment_personal_id} to ${request.destination} has been cancelled by the administrator. Reason: ${reason.substring(0, 100)}${reason.length > 100 ? "..." : ""}`,
             null,
             request.shipment_personal_id,
             requestId,
@@ -744,8 +763,9 @@ export const ShippingRequestsManagement = React.memo(
       );
     };
 
-    const handleSendQuote = (requestId: string) => {
-      setSendQuoteRequestId(requestId);
+    const handleSendQuote = (request: ShippingRequest) => {
+      setSendQuoteRequestId(request.id);
+      setQuoteCreditAmount(request.use_credit_request ? "0" : "");
       setSendQuoteDialogOpen(true);
     };
 
@@ -755,6 +775,7 @@ export const ShippingRequestsManagement = React.memo(
         requestId: sendQuoteRequestId,
         price: parseFloat(quotePrice),
         url: quoteUrl,
+        creditAmount: quoteCreditAmount ? parseFloat(quoteCreditAmount) : 0,
       });
     };
 
@@ -823,7 +844,10 @@ export const ShippingRequestsManagement = React.memo(
       }));
     };
 
-    const handleCancelShipment = (requestId: string, request?: ShippingRequest) => {
+    const handleCancelShipment = (
+      requestId: string,
+      request?: ShippingRequest,
+    ) => {
       setCancellingRequestId(requestId);
       setCancellingRequest(request || null);
       setCancelDialogOpen(true);
@@ -831,16 +855,17 @@ export const ShippingRequestsManagement = React.memo(
 
     const handleConfirmCancel = async () => {
       if (!cancellingRequestId) return;
-      
+
       const isPaid = cancellingRequest?.status === "paid";
-      
+
       // Validate credit fields if shipment is paid
       if (isPaid) {
         const creditNum = parseFloat(cancelCreditAmount);
         if (!cancelCreditAmount || isNaN(creditNum) || creditNum < 0) {
           toast({
             title: "Credit amount required",
-            description: "Please enter a valid credit amount for this cancelled shipment.",
+            description:
+              "Please enter a valid credit amount for this cancelled shipment.",
             variant: "destructive",
           });
           return;
@@ -854,20 +879,31 @@ export const ShippingRequestsManagement = React.memo(
           return;
         }
       }
-      
-      cancelShipmentMutation.mutate({ requestId: cancellingRequestId });
-      
+
+      cancelShipmentMutation.mutate({
+        requestId: cancellingRequestId,
+        reason: cancelCreditReason.trim(),
+      });
+
       // If paid, also assign credit
-      if (isPaid && cancellingRequest && cancelCreditAmount && parseFloat(cancelCreditAmount) > 0) {
-        const { error: creditError } = await (supabase.rpc as any)('cancel_shipping_with_credit', {
-          target_user_id: cancellingRequest.user_id,
-          credit_amount: parseFloat(cancelCreditAmount),
-          cancel_reason: cancelCreditReason.trim(),
-          target_shipping_id: cancellingRequest.id,
-        });
-        
+      if (
+        isPaid &&
+        cancellingRequest &&
+        cancelCreditAmount &&
+        parseFloat(cancelCreditAmount) > 0
+      ) {
+        const { error: creditError } = await (supabase.rpc as any)(
+          "cancel_shipping_with_credit",
+          {
+            target_user_id: cancellingRequest.user_id,
+            credit_amount: parseFloat(cancelCreditAmount),
+            cancel_reason: cancelCreditReason.trim(),
+            target_shipping_id: cancellingRequest.id,
+          },
+        );
+
         if (creditError) {
-          console.error('Credit assignment error:', creditError);
+          console.error("Credit assignment error:", creditError);
           toast({
             title: "Shipment cancelled but credit failed",
             description: `Shipment was cancelled but credit assignment failed: ${creditError.message}`,
@@ -875,10 +911,11 @@ export const ShippingRequestsManagement = React.memo(
           });
         }
       }
-      
+
       setCancelCreditAmount("");
       setCancelCreditReason("");
       setCancellingRequest(null);
+      refreshProfile();
     };
 
     const handleOpenConfirmPaymentDialog = (request: ShippingRequest) => {
@@ -890,12 +927,43 @@ export const ShippingRequestsManagement = React.memo(
       if (!paymentRequestForConfirmation) return;
       setIsConfirmingPayment(true);
       try {
-        await updateStatusMutation.mutateAsync({
-          requestId: paymentRequestForConfirmation.id,
-          status: "paid",
+        const { error } = await (supabase.rpc as any)(
+          "confirm_shipping_payment",
+          {
+            p_shipping_id: paymentRequestForConfirmation.id,
+            p_admin_id: user?.id,
+          },
+        );
+
+        if (error) throw error;
+
+        await createNotification(
+          paymentRequestForConfirmation.user_id,
+          "shipping_payment_confirmed",
+          `Your payment for Shipment #${paymentRequestForConfirmation.shipment_personal_id} has been confirmed! We will prepare your shipment to ${paymentRequestForConfirmation.destination}.`,
+          null,
+          paymentRequestForConfirmation.shipment_personal_id,
+          paymentRequestForConfirmation.id,
+        );
+
+        toast({
+          title: "Payment Confirmed",
+          description:
+            "Shipping payment has been confirmed and credits (if any) have been deducted.",
         });
+
+        queryClient.invalidateQueries({
+          queryKey: ["admin-shipping-requests"],
+        });
+        refreshProfile();
         setConfirmPaymentDialogOpen(false);
         setPaymentRequestForConfirmation(null);
+      } catch (error: any) {
+        toast({
+          title: "Error",
+          description: error.message || "Failed to confirm payment.",
+          variant: "destructive",
+        });
       } finally {
         setIsConfirmingPayment(false);
       }
@@ -1333,12 +1401,28 @@ export const ShippingRequestsManagement = React.memo(
                                 {format(new Date(request.created_at), "PPpp")}
                               </span>
 
-                              <p className="text-xs text-muted-foreground">
-                                ¥
-                                {request.actual_cost ||
-                                  request.estimated_cost ||
-                                  "-"}
+                              <p className="text-xs text-muted-foreground font-medium">
+                                ¥{(
+                                  request.actual_cost ||
+                                  Math.round(request.estimated_cost || 0)
+                                ).toLocaleString()}
                               </p>
+
+                              {request.use_credit_request && (
+                                <div className="flex items-center gap-1 mt-1 sm:justify-end">
+                                  <Badge className="bg-amber-100 text-amber-900 border-amber-200 hover:bg-amber-100 flex items-center gap-1 py-0.5 px-2 text-[10px]">
+                                    <JapaneseYen className="h-2.5 w-2.5" />
+                                    Wants to use credits
+                                    <span className="ml-1 opacity-70">
+                                      (Bal: ¥
+                                      {(
+                                        request.user?.credit_balance ?? 0
+                                      ).toLocaleString("en-US")}
+                                      )
+                                    </span>
+                                  </Badge>
+                                </div>
+                              )}
                             </div>
                           </div>
                         </CardHeader>
@@ -1668,7 +1752,7 @@ export const ShippingRequestsManagement = React.memo(
                                   Estimated Cost
                                 </p>
                                 <p className="font-medium">
-                                  ¥{request.estimated_cost || "-"}
+                                  ¥{request.estimated_cost ? Math.round(request.estimated_cost).toLocaleString() : "-"}
                                 </p>
                               </div>
                               <div>
@@ -1686,7 +1770,7 @@ export const ShippingRequestsManagement = React.memo(
                                   <Button
                                     size="sm"
                                     variant="outline"
-                                    onClick={() => handleSendQuote(request.id)}
+                                    onClick={() => handleSendQuote(request)}
                                   >
                                     <Send className="h-3 w-3 mr-1" />
                                     Send Quote
@@ -2033,6 +2117,45 @@ export const ShippingRequestsManagement = React.memo(
                   required
                 />
               </div>
+              {(() => {
+                const request = shippingRequests?.find(
+                  (r) => r.id === sendQuoteRequestId,
+                );
+                if (!request?.use_credit_request) return null;
+                const userBalance = request.user?.credit_balance ?? 0;
+
+                return (
+                  <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl space-y-2">
+                    <div className="flex items-center justify-between">
+                      <Label
+                        htmlFor="quote-credit"
+                        className="text-amber-900 font-semibold flex items-center gap-1.5"
+                      >
+                        <JapaneseYen className="h-4 w-4 text-amber-600" />
+                        Apply User Credits
+                      </Label>
+                      <span className="text-[10px] bg-amber-200/50 px-2 py-0.5 rounded-full text-amber-800 font-bold">
+                        Balance: ¥{userBalance.toLocaleString()}
+                      </span>
+                    </div>
+                    <Input
+                      id="quote-credit"
+                      type="number"
+                      value={quoteCreditAmount}
+                      onChange={(e) => setQuoteCreditAmount(e.target.value)}
+                      placeholder="Amount to deduct..."
+                      className="bg-white border-amber-300 focus-visible:ring-amber-500"
+                      max={userBalance}
+                      min={0}
+                    />
+                    {parseFloat(quoteCreditAmount || "0") > userBalance && (
+                      <p className="text-[10px] text-red-600 font-medium">
+                        ⚠️ Exceeds user balance!
+                      </p>
+                    )}
+                  </div>
+                );
+              })()}
             </div>
             <DialogFooter>
               <Button
@@ -2225,14 +2348,17 @@ export const ShippingRequestsManagement = React.memo(
         </Dialog>
 
         {/* Cancel Shipment Dialog */}
-        <AlertDialog open={cancelDialogOpen} onOpenChange={(open) => {
-          setCancelDialogOpen(open);
-          if (!open) {
-            setCancelCreditAmount("");
-            setCancelCreditReason("");
-            setCancellingRequest(null);
-          }
-        }}>
+        <AlertDialog
+          open={cancelDialogOpen}
+          onOpenChange={(open) => {
+            setCancelDialogOpen(open);
+            if (!open) {
+              setCancelCreditAmount("");
+              setCancelCreditReason("");
+              setCancellingRequest(null);
+            }
+          }}
+        >
           <AlertDialogContent>
             <AlertDialogHeader>
               <AlertDialogTitle className="flex items-center gap-2">
@@ -2248,28 +2374,32 @@ export const ShippingRequestsManagement = React.memo(
                       ⚠️ WARNING: This shipment has already been paid!
                     </p>
                     <p>
-                      Are you sure you want to cancel Shipment #{cancellingRequest?.shipment_personal_id}?
+                      Are you sure you want to cancel Shipment #
+                      {cancellingRequest?.shipment_personal_id}?
                     </p>
                     <p className="text-sm">
-                      The customer has already paid for shipping. This action cannot be undone.
-                      The items will be freed back to their storage.
+                      The customer has already paid for shipping. This action
+                      cannot be undone. The items will be freed back to their
+                      storage.
                     </p>
                   </>
                 ) : (
                   <p>
                     Are you sure you want to cancel this shipping request? The
-                    customer will be notified and the items will be freed back to
-                    their storage.
+                    customer will be notified and the items will be freed back
+                    to their storage.
                   </p>
                 )}
               </AlertDialogDescription>
             </AlertDialogHeader>
 
-            {/* Credit fields — only shown when shipment is paid */}
-            {cancellingRequest?.status === "paid" && (
-              <div className="space-y-3 py-2">
+            <div className="space-y-3 py-2">
+              {cancellingRequest?.status === "paid" && (
                 <div>
-                  <Label htmlFor="cancel-shipping-credit-amount" className="text-sm font-medium">
+                  <Label
+                    htmlFor="cancel-shipping-credit-amount"
+                    className="text-sm font-medium"
+                  >
                     Credit Amount <span className="text-red-500">*</span>
                   </Label>
                   <Input
@@ -2283,20 +2413,23 @@ export const ShippingRequestsManagement = React.memo(
                     className="mt-1"
                   />
                 </div>
-                <div>
-                  <Label htmlFor="cancel-shipping-credit-reason" className="text-sm font-medium">
-                    Reason <span className="text-red-500">*</span>
-                  </Label>
-                  <Textarea
-                    id="cancel-shipping-credit-reason"
-                    value={cancelCreditReason}
-                    onChange={(e) => setCancelCreditReason(e.target.value)}
-                    placeholder="Reason for the credit (e.g. shipping issue, address problem)..."
-                    className="mt-1 min-h-[80px]"
-                  />
-                </div>
+              )}
+              <div>
+                <Label
+                  htmlFor="cancel-shipping-credit-reason"
+                  className="text-sm font-medium"
+                >
+                  Cancellation Reason <span className="text-red-500">*</span>
+                </Label>
+                <Textarea
+                  id="cancel-shipping-credit-reason"
+                  value={cancelCreditReason}
+                  onChange={(e) => setCancelCreditReason(e.target.value)}
+                  placeholder="Reason for cancellation (visible to user)..."
+                  className="mt-1 min-h-[80px]"
+                />
               </div>
-            )}
+            </div>
 
             <AlertDialogFooter>
               <AlertDialogCancel
@@ -2312,15 +2445,20 @@ export const ShippingRequestsManagement = React.memo(
               </AlertDialogCancel>
               <AlertDialogAction
                 onClick={handleConfirmCancel}
-                disabled={cancelShipmentMutation.isPending || (
-                  cancellingRequest?.status === "paid" && 
-                  (!cancelCreditAmount || !cancelCreditReason.trim())
-                )}
-                className={cancellingRequest?.status === "paid"
-                  ? "bg-red-600 hover:bg-red-700 text-white"
-                  : "bg-gray-600 hover:bg-gray-700 text-white"}
+                disabled={
+                  cancelShipmentMutation.isPending || !cancelCreditReason.trim() ||
+                  (cancellingRequest?.status === "paid" &&
+                    !cancelCreditAmount)
+                }
+                className={
+                  cancellingRequest?.status === "paid"
+                    ? "bg-red-600 hover:bg-red-700 text-white"
+                    : "bg-gray-600 hover:bg-gray-700 text-white"
+                }
               >
-                {cancelShipmentMutation.isPending ? "Cancelling..." : "Yes, Cancel Shipment"}
+                {cancelShipmentMutation.isPending
+                  ? "Cancelling..."
+                  : "Yes, Cancel Shipment"}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>

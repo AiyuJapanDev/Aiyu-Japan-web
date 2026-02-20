@@ -62,6 +62,8 @@ export interface Order {
       issue_description?: string;
     }>;
   };
+  use_credits_request?: boolean;
+  credit_amount_applied?: number;
 }
 
 export interface OrderItem {
