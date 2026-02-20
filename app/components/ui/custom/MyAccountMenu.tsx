@@ -19,6 +19,8 @@ import {
   Bell,
   Truck,
   Home,
+  Coins,
+  JapaneseYen
 } from "lucide-react";
 import { Link } from "react-router";
 import LogOutBtn from "./LogOutBtn";
@@ -43,10 +45,17 @@ export default function MyAccountMenu() {
           </AvatarFallback>
         </Avatar>
         <div className="text-start flex flex-col">
-          <p className="text-sm font-medium">{"My Account"}</p>
+          <p className="text-xs font-medium">{t("myAccountLabel")}</p>
           <p className="text-xs text-muted-foreground truncate max-w-[150px]">
             {user.email}
           </p>
+          <section className="flex items-center gap-1 text-xs text-muted-foreground">
+            <JapaneseYen className="h-3.5 w-3.5 shrink-0" color="orange" />
+            <span className="text-xs">{t("creditLabel")}</span>
+            <span className="text-sm font-medium">
+              {profile?.credit_balance?.toLocaleString('en-US') ?? '0'}
+            </span>
+          </section>
         </div>
         <ChevronsUpDown className="ml-2 h-4 w-4 text-muted-foreground" />
       </DropdownMenuTrigger>

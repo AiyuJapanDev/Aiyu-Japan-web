@@ -16,6 +16,7 @@ export interface Profile {
   city?: string | null;
   state?: string | null;
   tax_vat_Id: string | null;
+  credit_balance?: number | null;
 }
 
 export interface AuthContextType {

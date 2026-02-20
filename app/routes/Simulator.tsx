@@ -9,10 +9,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Calculator, ExternalLink } from 'lucide-react';
 
 const Simulator = () => {
-  const { t } = useApp();
-  const [productCost, setProductCost] = useState('');
-  const [destination, setDestination] = useState('');
-  const [results, setResults] = useState(null);
+    const { t } = useApp();
+    const [productCost, setProductCost] = useState('');
+    const [destination, setDestination] = useState('');
+    const [results, setResults] = useState(null);
+    const [isSubmitting, setIsSubmitting] = useState(false); // To prevent double calculation animation
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -56,24 +57,24 @@ const Simulator = () => {
   };
 
   const animeStores = [
-    { name: "AmiAmi", url: "https://www.amiami.com/", category: "Figures & Collectibles" },
-    { name: "HobbyLink Japan", url: "https://www.hlj.com/", category: "Model Kits & Figures" },
-    { name: "Mandarake", url: "https://order.mandarake.co.jp/", category: "Rare & Vintage" },
-    { name: "Good Smile Company", url: "https://goodsmileshop.com/", category: "Official Figures" }
+    { name: "AmiAmi", url: "https://www.amiami.com/", category: t("figuresCollectiblesCategory") },
+    { name: "HobbyLink Japan", url: "https://www.hlj.com/", category: t("modelKitsFiguresCategory") },
+    { name: "Mandarake", url: "https://order.mandarake.co.jp/", category: t("rareVintageCategory") },
+    { name: "Good Smile Company", url: "https://goodsmileshop.com/", category: t("officialFiguresCategory") }
   ];
 
   const fashionStores = [
-    { name: "Uniqlo Japan", url: "https://www.uniqlo.com/jp/", category: "Casual Wear" },
-    { name: "Rakuten Fashion", url: "https://fashion.rakuten.co.jp/", category: "Fashion Mall" },
-    { name: "Zozotown", url: "https://zozo.jp/", category: "Trendy Fashion" },
-    { name: "Wego", url: "https://www.wego.jp/", category: "Street Fashion" }
+    { name: "Uniqlo Japan", url: "https://www.uniqlo.com/jp/", category: t("casualWearCategory") },
+    { name: "Rakuten Fashion", url: "https://fashion.rakuten.co.jp/", category: t("fashionMallCategory") },
+    { name: "Zozotown", url: "https://zozo.jp/", category: t("trendyFashionCategory") },
+    { name: "Wego", url: "https://www.wego.jp/", category: t("streetFashionCategory") }
   ];
 
   const electronicsStores = [
-    { name: "Yodobashi Camera", url: "https://www.yodobashi.com/", category: "Electronics & Cameras" },
-    { name: "Bic Camera", url: "https://www.biccamera.com/", category: "Consumer Electronics" },
-    { name: "Amazon Japan", url: "https://amazon.co.jp/", category: "Everything Electronics" },
-    { name: "Rakuten", url: "https://www.rakuten.co.jp/", category: "Online Mall" }
+    { name: "Yodobashi Camera", url: "https://www.yodobashi.com/", category: t("consumerElectronicsCategory") },
+    { name: "Bic Camera", url: "https://www.biccamera.com/", category: t("consumerElectronicsCategory") },
+    { name: "Amazon Japan", url: "https://amazon.co.jp/", category: t("everythingElectronicsCategory") },
+    { name: "Rakuten", url: "https://www.rakuten.co.jp/", category: t("onlineMallCategory") }
   ];
 
   return (
@@ -82,7 +83,7 @@ const Simulator = () => {
         <div className="text-center mb-8 animate-scale-in">
           <span className="text-6xl mb-4 block">🦫</span>
           <h1 className="text-3xl font-bold text-gray-900 mb-4">{t('quotationSimulator')}</h1>
-          <p className="text-gray-600">Estimate your shopping costs and discover great Japanese stores</p>
+          <p className="text-gray-600">{t('simulatorSubtitle')}</p>
         </div>
 
         <Tabs defaultValue="simulator" className="space-y-6">
@@ -97,7 +98,7 @@ const Simulator = () => {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Calculator className="w-5 h-5 text-blue-400" />
-                    Cost Calculator
+                    {t('costCalculator')}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-6">
@@ -106,7 +107,7 @@ const Simulator = () => {
                     <Input
                       id="cost"
                       type="number"
-                      placeholder="Enter cost in Japanese Yen (¥)"
+                      placeholder={t('enterCostPlaceholder')}
                       value={productCost}
                       onChange={(e) => setProductCost(e.target.value)}
                       className="transition-all duration-300 focus:ring-2 focus:ring-blue-300"
@@ -117,22 +118,22 @@ const Simulator = () => {
                     <Label htmlFor="destination">{t('destination')}</Label>
                     <Select value={destination} onValueChange={setDestination}>
                       <SelectTrigger className="transition-all duration-300 focus:ring-2 focus:ring-blue-300">
-                        <SelectValue placeholder="Select your country" />
+                        <SelectValue placeholder={t('selectCountryPlaceholder')} />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="US">United States</SelectItem>
-                        <SelectItem value="CA">Canada</SelectItem>
-                        <SelectItem value="GB">United Kingdom</SelectItem>
-                        <SelectItem value="AU">Australia</SelectItem>
-                        <SelectItem value="DE">Germany</SelectItem>
-                        <SelectItem value="FR">France</SelectItem>
-                        <SelectItem value="ES">Spain</SelectItem>
-                        <SelectItem value="IT">Italy</SelectItem>
-                        <SelectItem value="BR">Brazil</SelectItem>
-                        <SelectItem value="MX">Mexico</SelectItem>
-                        <SelectItem value="KR">South Korea</SelectItem>
-                        <SelectItem value="TW">Taiwan</SelectItem>
-                        <SelectItem value="SG">Singapore</SelectItem>
+                        <SelectItem value="US">{t('countryUS')}</SelectItem>
+                        <SelectItem value="CA">{t('countryCA')}</SelectItem>
+                        <SelectItem value="GB">{t('countryGB')}</SelectItem>
+                        <SelectItem value="AU">{t('countryAU')}</SelectItem>
+                        <SelectItem value="DE">{t('countryDE')}</SelectItem>
+                        <SelectItem value="FR">{t('countryFR')}</SelectItem>
+                        <SelectItem value="ES">{t('countryES')}</SelectItem>
+                        <SelectItem value="IT">{t('countryIT')}</SelectItem>
+                        <SelectItem value="BR">{t('countryBR')}</SelectItem>
+                        <SelectItem value="MX">{t('countryMX')}</SelectItem>
+                        <SelectItem value="KR">{t('countryKR')}</SelectItem>
+                        <SelectItem value="TW">{t('countryTW')}</SelectItem>
+                        <SelectItem value="SG">{t('countrySG')}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -150,11 +151,11 @@ const Simulator = () => {
               {results && (
                 <Card className="bg-white/90 backdrop-blur-sm border-blue-200 shadow-lg animate-scale-in">
                   <CardHeader>
-                    <CardTitle>Cost Breakdown</CardTitle>
+                    <CardTitle>{t('costBreakdown')}</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="flex justify-between">
-                      <span>Product Cost:</span>
+                      <span>{t('productCostLabel')}</span>
                       <span>¥{results.productCost.toLocaleString()}</span>
                     </div>
                     <div className="flex justify-between">

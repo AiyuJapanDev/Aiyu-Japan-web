@@ -20,6 +20,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useNavigate, useSearchParams } from "react-router";
 import { toast } from "sonner";
 import { useApp } from "@/contexts/AppContext";
+import { useAuth } from "@/contexts/useAuth";
 import {
   Tooltip,
   TooltipTrigger,
@@ -119,6 +120,7 @@ export const OrdersPage = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { t } = useApp();
+  const { refreshProfile } = useAuth();
   useEffect(() => {
     fetchOrders();
   }, []);
@@ -544,6 +546,7 @@ export const OrdersPage = () => {
       if (error) throw error;
 
       toast.success(t("orderCancelledSuccess"));
+      await refreshProfile();
       await fetchOrders();
     } catch (error) {
       console.error("Error cancelling order:", error);
@@ -946,6 +949,22 @@ export const OrdersPage = () => {
                       </div>
                     )}
 
+                    {order.is_cancelled && order.rejection_reason && (
+                      <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                        <div className="flex items-start gap-2">
+                          <XCircle className="h-5 w-5 text-gray-600 mt-0.5" />
+                          <div className="flex-1">
+                            <p className="font-medium text-gray-900">
+                              {t("orderCancelled")}
+                            </p>
+                            <p className="text-sm text-gray-700 mt-1">
+                              {order.rejection_reason}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
                     {status === "requested" && (
                       <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
                         <p className="text-sm text-yellow-800">
@@ -983,7 +1002,7 @@ export const OrdersPage = () => {
                                   </a>
                                   <div className="flex items-center gap-4 mt-1">
                                     <span className="text-xs text-muted-foreground">
-                                      Qty: {issue.quantity || 1}
+                                      {t("qty")} {issue.quantity || 1}
                                     </span>
                                   </div>
                                   {issue.has_issue &&
@@ -1021,7 +1040,7 @@ export const OrdersPage = () => {
                                       className="text-xs bg-indigo-100 text-indigo-800 border-indigo-200"
                                     >
                                       <Home className="h-3 w-3 mr-1" />
-                                      In Storage
+                                      {t("inStorage")}
                                     </Badge>
                                   )}
                                 </div>
@@ -1043,11 +1062,11 @@ export const OrdersPage = () => {
 
                                 <div className="flex items-center gap-4 mt-1 flex-wrap text-xs text-muted-foreground">
                                   <span>
-                                    Qty: {item.product_request.quantity || 1}
+                                    {t("qty")} {item.product_request.quantity || 1}
                                   </span>
                                   {item.product_request.notes && (
                                     <span>
-                                      Note: {item.product_request.notes}
+                                      {t("productNote")} {item.product_request.notes}
                                     </span>
                                   )}
                                 </div>
@@ -1058,7 +1077,7 @@ export const OrdersPage = () => {
                                     <div className="flex items-center gap-1 mt-2 bg-yellow-50 border border-yellow-200 rounded p-2">
                                       <AlertCircle className="h-3 w-3 text-yellow-600 flex-shrink-0" />
                                       <span className="text-xs text-yellow-700">
-                                        Issue:{" "}
+                                        {t("issuePrefix")}{" "}
                                         {
                                           item.product_request
                                             .purchase_issue_description
@@ -1095,19 +1114,19 @@ export const OrdersPage = () => {
                               <div>
                                 <p className="font-medium text-indigo-900">
                                   {status === "all_received"
-                                    ? "All items at warehouse"
-                                    : "Items on the way to warehouse"}
+                                    ? t("statusAllAtWarehouse")
+                                    : t("statusInTransit")}
                                 </p>
                                 <p className="text-sm text-indigo-700">
                                   {status === "all_received"
-                                    ? "View and manage your items in storage"
+                                    ? t("viewManageStorage")
                                     : order.order_items?.some(
                                           (item) =>
                                             item.product_request.status ===
                                             "received",
                                         )
-                                      ? "Some items may already be available in storage"
-                                      : "Items will be available in storage once received"}
+                                      ? t("someItemsInStorage")
+                                      : t("itemsAvailableInStorageOnceReceived")}
                                 </p>
                               </div>
                             </div>
@@ -1187,7 +1206,7 @@ export const OrdersPage = () => {
                       return (
                       <div className={`mt-4 p-4 border-2 rounded-xl ${allPaid ? 'border-green-500 bg-green-50 dark:bg-green-950/30 dark:border-green-700' : 'border-orange-400 bg-amber-50 dark:bg-orange-950/30 dark:border-orange-700'}`}>
                         <p className={`text-sm font-bold mb-3 ${allPaid ? 'text-green-800 dark:text-green-100' : 'text-orange-700 dark:text-orange-100'}`}>
-                          {t("quoteInformation") || "Quote Information"}
+                          {t("quoteInformation")}
                         </p>
 
                         <div className="space-y-2">

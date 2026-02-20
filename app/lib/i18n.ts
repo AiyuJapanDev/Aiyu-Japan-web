@@ -99,6 +99,9 @@ export const translations = {
 
     // Simulator
     quotationSimulator: "Quotation Simulator",
+    simulatorSubtitle: "Estimate your shopping costs and discover great Japanese stores",
+    costCalculator: "Cost Calculator",
+    enterCostPlaceholder: "Enter cost in Japanese Yen (¥)",
     productCost: "Product Cost (¥)",
     destination: "Destination Country",
     calculate: "Calculate",
@@ -112,7 +115,22 @@ export const translations = {
     handlingFeeBenefitSupport: "Private support for your orders",
     noHiddenFees: "No hidden or extra fees after purchase",
     estimatedShipping: "Estimated Shipping",
+    costBreakdown: "Cost Breakdown",
+    productCostLabel: "Product Cost:",
     total: "Total Estimate",
+    countryUS: "United States",
+    countryCA: "Canada",
+    countryGB: "United Kingdom",
+    countryAU: "Australia",
+    countryDE: "Germany",
+    countryFR: "France",
+    countryES: "Spain",
+    countryIT: "Italy",
+    countryBR: "Brazil",
+    countryMX: "Mexico",
+    countryKR: "South Korea",
+    countryTW: "Taiwan",
+    countrySG: "Singapore",
 
     // Comparison Table
     comparisonTitle: "Price and Service Comparison",
@@ -146,6 +164,17 @@ export const translations = {
     animeStores: "Anime & Manga",
     fashionStores: "Fashion",
     electronicsStores: "Electronics",
+    figuresCollectiblesCategory: "Figures & Collectibles",
+    modelKitsFiguresCategory: "Model Kits & Figures",
+    rareVintageCategory: "Rare & Vintage",
+    officialFiguresCategory: "Official Figures",
+    casualWearCategory: "Casual Wear",
+    fashionMallCategory: "Fashion Mall",
+    trendyFashionCategory: "Trendy Fashion",
+    streetFashionCategory: "Street Fashion",
+    consumerElectronicsCategory: "Consumer Electronics",
+    everythingElectronicsCategory: "Everything Electronics",
+    onlineMallCategory: "Online Mall",
 
     // CTA Section
     ctaTitle: "Ready to start shopping?",
@@ -493,6 +522,8 @@ export const translations = {
       "Custom duties may apply depending on your country’s regulations and value threshold.\nCustoms processing is outside Aiyu Japan’s control and the customer is responsible for local import fees.\nFor guidance, you may contact us via email or social media.",
 
     // User Dashboard Navigation
+    myAccountLabel: "My Account",
+    creditLabel: "Credit:",
     submitRequest: "Submit Request",
     submitRequestDesc: "Send links to the product you want to buy",
     orders: "Orders",
@@ -526,6 +557,14 @@ export const translations = {
     successModalMessage: "Your request was received successfully. You can track its progress in the Orders section. An administrator will review it shortly.",
     successModalGoToOrders: "Go to Orders",
     successModalNewRequest: "New Request",
+    clearAll: "Clear all",
+    useCreditsForOrder: "Use my credits for this order",
+    applyCreditsDiscountNote: "By checking this option, we will apply your available credits to discount the final price.",
+    availableBalance: "Available balance: ¥",
+    yen: "yen",
+    confirmSubmissionTitle: "Confirm Submission",
+    confirmSubmissionDescription: "Are you sure you want to submit this product request? You will receive a quote once we process your order.",
+    urlLabel: "URL",
 
     // Orders Page
     currentOrders: "Current Orders",
@@ -598,6 +637,8 @@ export const translations = {
     quoteIssued: "Quote has been issued for this order",
     normalDeliveryInfo:
       "Normal orders may take from 3–5 days to arrive to our warehouse",
+    orderCancelled: "Order Cancelled",
+    shipmentCancelled: "Shipment Cancelled",
     paymentReceivedInfo:
       "Payment received. We will proceed to purchase or reserve your products",
     paymentConfirmationNotice1:
@@ -612,6 +653,20 @@ export const translations = {
     statusStepItemsPurchased: "Items Purchased",
     statusStepItemsOnTheWay: "Item(s) on the way to warehouse",
     statusStepAllAtWarehouse: "All Items at Warehouse",
+    inStorage: "In Storage",
+    qty: "Qty:",
+    productNote: "Note:",
+    viewManageStorage: "View and manage your items in storage",
+    someItemsInStorage: "Some items may already be available in storage",
+    itemsAvailableInStorageOnceReceived: "Items will be available in storage once received",
+    priceLabel: "Price:",
+    invoiceLabel: "Invoice:",
+    trackBoxes: "Track Your Boxes",
+    trackBoxesDesc: "Each box can be tracked individually",
+    boxLabel: "Box",
+    trackingLabel: "Tracking:",
+    localTrackingNumber: "Local Tracking Number:",
+    unnamedProduct: "Unnamed Product",
 
     // Storage Page
     viewDetails: "View Details",
@@ -700,7 +755,6 @@ export const translations = {
     finalQuote: "Final Quote",
     itemsInShipment: "Items in this shipment:",
     items: "Items:",
-    unnamedProduct: "Unnamed Product",
     issuePrefix: "Issue:",
     addressName: "Name:",
     addressPhone: "Phone:",
@@ -717,6 +771,9 @@ export const translations = {
     selectStatus: "Select Status",
     requestedOn: "Requested on",
     shippingPaymentReceived: "Your shipping payment has been received.",
+    useCreditsForShipping: "Use my credits for this shipping",
+    dhlOnlyNote: "DHL Shipping Only",
+    selectCountryLabel: "Select Country",
 
     // Profile Page
     editProfileInformation: "Edit Profile Information",
@@ -1353,6 +1410,9 @@ export const translations = {
 
     // Simulator
     quotationSimulator: "Simulador de Cotización",
+    simulatorSubtitle: "Estima tus costos de compra y descubre excelentes tiendas japonesas",
+    costCalculator: "Calculadora de Costos",
+    enterCostPlaceholder: "Ingresa el costo en Yenes japoneses (¥)",
     productCost: "Costo del Producto (¥)",
     destination: "País de Destino",
     calculate: "Calcular",
@@ -1366,7 +1426,22 @@ export const translations = {
     handlingFeeBenefitSupport: "Soporte privado para tus pedidos",
     noHiddenFees: "Sin tarifas ocultas o adicionales después de la compra",
     estimatedShipping: "Envío Estimado",
+    costBreakdown: "Desglose de Costos",
+    productCostLabel: "Costo del Producto:",
     total: "Estimación Total",
+    countryUS: "Estados Unidos",
+    countryCA: "Canadá",
+    countryGB: "Reino Unido",
+    countryAU: "Australia",
+    countryDE: "Alemania",
+    countryFR: "Francia",
+    countryES: "España",
+    countryIT: "Italia",
+    countryBR: "Brasil",
+    countryMX: "México",
+    countryKR: "Corea del Sur",
+    countryTW: "Taiwán",
+    countrySG: "Singapur",
 
     // Tabla de Comparación
     comparisonTitle: "Comparación de Precios y Servicios",
@@ -1400,6 +1475,17 @@ export const translations = {
     animeStores: "Anime y Manga",
     fashionStores: "Moda",
     electronicsStores: "Electrónicos",
+    figuresCollectiblesCategory: "Figuras y Coleccionables",
+    modelKitsFiguresCategory: "Kits de Modelismo y Figuras",
+    rareVintageCategory: "Raros y Vintage",
+    officialFiguresCategory: "Figuras Oficiales",
+    casualWearCategory: "Ropa Casual",
+    fashionMallCategory: "Centro Comercial de Moda",
+    trendyFashionCategory: "Moda en Tendencia",
+    streetFashionCategory: "Moda Callejera",
+    consumerElectronicsCategory: "Electrónica de Consumo",
+    everythingElectronicsCategory: "Electrónica de Todo Tipo",
+    onlineMallCategory: "Centro Comercial en Línea",
 
     // CTA Section
     ctaTitle: "¿Listo para empezar a comprar?",
@@ -1743,6 +1829,8 @@ export const translations = {
     welcome: "Bienvenido",
 
     // User Dashboard Navigation
+    myAccountLabel: "Mi Cuenta",
+    creditLabel: "Crédito:",
     submitRequest: "Enviar Links",
     submitRequestDesc: "Envía links del producto que deseas comprar",
     orders: "Pedidos",
@@ -1778,6 +1866,14 @@ export const translations = {
     successModalMessage: "Tu solicitud fue recibida con éxito. Puedes ver su progreso en la sección de Pedidos. Un administrador la gestionará pronto.",
     successModalGoToOrders: "Ir a Pedidos",
     successModalNewRequest: "Nueva Solicitud",
+    clearAll: "Limpiar todo",
+    useCreditsForOrder: "Usar mis créditos para este pedido",
+    applyCreditsDiscountNote: "Al marcar esta opción, aplicaremos tus créditos disponibles para descontar el precio final.",
+    availableBalance: "Saldo disponible: ¥",
+    yen: "yenes",
+    confirmSubmissionTitle: "Confirmar envío",
+    confirmSubmissionDescription: "¿Estás seguro de que deseas enviar esta solicitud de producto? Recibirás una cotización una vez que procesemos tu pedido.",
+    urlLabel: "URL",
 
     // Orders Page
     currentOrders: "Pedidos Actuales",
@@ -1797,6 +1893,8 @@ export const translations = {
     filterOrders: "Filtrar Pedidos",
     statusFilter: "Estado:",
     showPerPage: "Mostrar:",
+    orderCancelled: "Pedido Cancelado",
+    shipmentCancelled: "Envío Cancelado",
     perPage: "por página",
     hideRejected: "Ocultar rechazados",
     hideRejectedCancelled: "Ocultar rechazados/cancelados",
@@ -1866,6 +1964,20 @@ export const translations = {
     statusStepItemsPurchased: "Artículos comprados",
     statusStepItemsOnTheWay: "Artículo(s) en camino al almacén",
     statusStepAllAtWarehouse: "Todos los artículos en el almacén",
+    inStorage: "En Almacenamiento",
+    qty: "Cant:",
+    productNote: "Nota:",
+    viewManageStorage: "Mira y gestiona tus artículos en almacenamiento",
+    someItemsInStorage: "Algunos artículos ya pueden estar disponibles en almacenamiento",
+    itemsAvailableInStorageOnceReceived: "Los artículos estarán disponibles en almacenamiento una vez recibidos",
+    priceLabel: "Precio:",
+    invoiceLabel: "Factura:",
+    trackBoxes: "Rastrea tus cajas",
+    trackBoxesDesc: "Cada caja puede ser rastreada individualmente",
+    boxLabel: "Caja",
+    trackingLabel: "Seguimiento:",
+    localTrackingNumber: "Número de seguimiento local:",
+    unnamedProduct: "Producto sin nombre",
 
     // Storage Page
     viewDetails: "Ver Detalles",
@@ -1955,7 +2067,6 @@ export const translations = {
     finalQuote: "Cotización final",
     itemsInShipment: "Artículos en este envío:",
     items: "Artículos:",
-    unnamedProduct: "Producto sin nombre",
     issuePrefix: "Problema:",
     addressName: "Nombre:",
     addressPhone: "Teléfono:",
@@ -1972,6 +2083,9 @@ export const translations = {
     trackPackageButton: "Rastrear paquete",
     requestedOn: "Solicitado el",
     shippingPaymentReceived: "Tu pago de envío ha sido recibido.",
+    useCreditsForShipping: "Usar mis créditos para este envío",
+    dhlOnlyNote: "Solo envío por DHL",
+    selectCountryLabel: "Seleccionar país",
 
     // Profile Page
 

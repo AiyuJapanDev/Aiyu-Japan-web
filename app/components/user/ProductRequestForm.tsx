@@ -1,15 +1,17 @@
 import { useState, useEffect } from "react";
-import { Plus, X, Trash2, Link as LinkIcon, ShoppingCart, CheckCircle2, Package, Store, Calculator } from "lucide-react";
+import { Plus, X, Trash2, Link as LinkIcon, ShoppingCart, CheckCircle2, Package, Store, Calculator, JapaneseYen } from "lucide-react";
 import { Link, useNavigate } from "react-router";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { notifyAllAdmins } from "@/lib/notificationUtils";
 import { useApp } from "@/contexts/AppContext";
+import { useAuth } from "@/contexts/useAuth";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
@@ -29,9 +31,14 @@ export function ProductRequestForm() {
   const { t } = useApp();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { profile } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
+  const [useCredits, setUseCredits] = useState(false);
+
+  const userCreditBalance = profile?.credit_balance ?? 0;
+  const hasCredits = userCreditBalance > 0;
 
   const [items, setItems] = useState<ProductItem[]>(() => {
     const saved = localStorage.getItem("product_request_draft");
@@ -54,6 +61,7 @@ export function ProductRequestForm() {
 
   const clearForm = () => {
     setItems([{ url: "", name: "", quantity: 1, notes: "" }]);
+    setUseCredits(false);
     localStorage.removeItem("product_request_draft");
   };
 
@@ -85,7 +93,7 @@ export function ProductRequestForm() {
       if (!user) throw new Error("Not authenticated");
 
       const validItems = items.filter(item => item.url.trim());
-      const { data, error } = await supabase.rpc("create_order_with_product_requests", {
+      const { data, error } = await (supabase.rpc as any)("create_order_with_product_requests", {
         p_user_id: user.id,
         p_product_requests: validItems.map(item => ({
           product_url: item.url.trim(),
@@ -93,6 +101,7 @@ export function ProductRequestForm() {
           quantity: item.quantity,
           notes: item.notes.trim() || null,
         })),
+        p_use_credits_request: useCredits,
       });
 
       if (error) throw error;
@@ -163,13 +172,36 @@ export function ProductRequestForm() {
               </CardTitle>
               <CardDescription>{t("productRequestSubtitle")}</CardDescription>
             </div>
-            <Button variant="ghost" size="icon" onClick={clearForm} title="Clear all">
+            <Button variant="ghost" size="icon" onClick={clearForm} title={t("clearAll")}>
               <Trash2 className="h-5 w-5 text-muted-foreground hover:text-red-400" />
             </Button>
           </div>
         </CardHeader>
         <CardContent className="space-y-6">
           <form onSubmit={handleFormSubmit} className="space-y-8">
+            {hasCredits && (
+              <div className="flex items-start gap-3 p-4 rounded-xl border border-orange-200 bg-orange-50/40">
+                <Checkbox
+                  id="use-credits"
+                  checked={useCredits}
+                  onCheckedChange={(checked) => setUseCredits(checked === true)}
+                  className="mt-0.5 border-orange-300 data-[state=checked]:bg-orange-400 data-[state=checked]:border-orange-400"
+                />
+                <div className="space-y-1">
+                  <Label htmlFor="use-credits" className="text-sm font-medium text-gray-700 cursor-pointer">
+                    {t("useCreditsForOrder")}
+                  </Label>
+                  <p className="text-xs text-gray-500">
+                    {t("applyCreditsDiscountNote")}
+                  </p>
+                  <div className="flex items-center gap-1 text-xs font-medium text-orange-600">
+                    <JapaneseYen className="h-3.5 w-3.5" />
+                    <span>{t("availableBalance")}{userCreditBalance.toLocaleString('en-US')}</span>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {items.map((item, index) => (
               <div key={index} className="relative p-6 rounded-xl border bg-gray-50/30 hover:bg-white hover:shadow-sm transition-all">
                 <div className="absolute -left-2 -top-2 w-7 h-7 rounded-full bg-orange-100 text-orange-700 flex items-center justify-center font-bold text-xs shadow-sm border border-orange-200">
@@ -185,7 +217,7 @@ export function ProductRequestForm() {
                 <div className="space-y-4 pt-1">
                   <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
                     <div className="md:col-span-9 space-y-2">
-                      <Label className="text-xs font-semibold uppercase tracking-wide text-gray-500">URL</Label>
+                      <Label className="text-xs font-semibold uppercase tracking-wide text-gray-500">{t("urlLabel")}</Label>
                       <div className="relative">
                         <LinkIcon className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                         <Input
@@ -265,25 +297,23 @@ export function ProductRequestForm() {
         </CardContent>
       </Card>
 
-      {/* Confirm Submission Dialog */}
       <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
         <AlertDialogContent className="rounded-xl">
           <AlertDialogHeader>
-            <AlertDialogTitle>Confirm Submission</AlertDialogTitle>
+            <AlertDialogTitle>{t("confirmSubmissionTitle")}</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to submit this product request? You will receive a quote once we process your order.
+              {t("confirmSubmissionDescription")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="border-0">Cancel</AlertDialogCancel>
+            <AlertDialogCancel className="border-0">{t("cancel")}</AlertDialogCancel>
             <AlertDialogAction onClick={handleConfirmSubmit} className="bg-orange-400 hover:bg-orange-500">
-              Submit Request
+              {t("submitRequestButton")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Success Dialog */}
       <Dialog open={showSuccessDialog} onOpenChange={setShowSuccessDialog}>
         <DialogContent className="sm:max-w-md rounded-2xl p-0 overflow-hidden border-0">
           <div className="bg-gradient-to-br from-green-400 to-emerald-500 p-8 flex justify-center">

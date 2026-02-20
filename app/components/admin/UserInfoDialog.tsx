@@ -285,7 +285,7 @@ export function UserInfoDialog({
                           <span className="text-muted-foreground">
                             Est. Cost:
                           </span>{" "}
-                          ¥{shipment.estimated_cost}
+                          ¥{Math.round(shipment.estimated_cost).toLocaleString()}
                         </p>
                       )}
                       {shipment.actual_cost && (
@@ -293,7 +293,7 @@ export function UserInfoDialog({
                           <span className="text-muted-foreground">
                             Actual Cost:
                           </span>{" "}
-                          ¥{shipment.actual_cost}
+                          ¥{Math.round(shipment.actual_cost).toLocaleString()}
                         </p>
                       )}
                     </div>

@@ -378,7 +378,7 @@ useEffect(() => {
           <div className="space-y-3 mt-4 animate-fade-in">
             <div className="bg-gradient-to-br from-gray-800 to-gray-900 text-white rounded-2xl p-4 transition-all duration-500">
               <div className="text-2xl font-bold text-center">
-                {animatedTotal.toLocaleString()} yen
+                {animatedTotal.toLocaleString()} {t("yen")}
               </div>
               <p className="text-gray-300 text-sm text-center">
                 {t("internationalShippingCost")}

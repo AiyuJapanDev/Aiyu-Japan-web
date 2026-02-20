@@ -85,7 +85,7 @@ const PurchaseCalculator = () => {
                       />
                     </span>
                     <span className="font-heading font-bold text-gray-800">
-                      {purchaseResults.serviceFee.toLocaleString()} yen
+                      {purchaseResults.serviceFee.toLocaleString()} {t("yen")}
                     </span>
                   </div>
                 </CollapsibleTrigger>
@@ -134,7 +134,7 @@ const PurchaseCalculator = () => {
                   {t("handlingFee")}
                 </span>
                 <span className="font-heading font-bold text-gray-800">
-                  {Math.round(purchaseResults.tax).toLocaleString()} yen
+                  {Math.round(purchaseResults.tax).toLocaleString()} {t("yen")}
                 </span>
               </div>
               {/* t('serviceFeeLabel') */}
