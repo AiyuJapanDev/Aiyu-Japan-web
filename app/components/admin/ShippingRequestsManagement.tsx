@@ -179,6 +179,9 @@ export const ShippingRequestsManagement = React.memo(
     const [cancellingRequestId, setCancellingRequestId] = useState<
       string | null
     >(null);
+    const [cancellingRequest, setCancellingRequest] = useState<ShippingRequest | null>(null);
+    const [cancelCreditAmount, setCancelCreditAmount] = useState("");
+    const [cancelCreditReason, setCancelCreditReason] = useState("");
 
     // Confirm Payment Dialog
     const [confirmPaymentDialogOpen, setConfirmPaymentDialogOpen] =
@@ -820,15 +823,62 @@ export const ShippingRequestsManagement = React.memo(
       }));
     };
 
-    const handleCancelShipment = (requestId: string) => {
+    const handleCancelShipment = (requestId: string, request?: ShippingRequest) => {
       setCancellingRequestId(requestId);
+      setCancellingRequest(request || null);
       setCancelDialogOpen(true);
     };
 
-    const handleConfirmCancel = () => {
-      if (cancellingRequestId) {
-        cancelShipmentMutation.mutate({ requestId: cancellingRequestId });
+    const handleConfirmCancel = async () => {
+      if (!cancellingRequestId) return;
+      
+      const isPaid = cancellingRequest?.status === "paid";
+      
+      // Validate credit fields if shipment is paid
+      if (isPaid) {
+        const creditNum = parseFloat(cancelCreditAmount);
+        if (!cancelCreditAmount || isNaN(creditNum) || creditNum < 0) {
+          toast({
+            title: "Credit amount required",
+            description: "Please enter a valid credit amount for this cancelled shipment.",
+            variant: "destructive",
+          });
+          return;
+        }
+        if (!cancelCreditReason.trim()) {
+          toast({
+            title: "Reason required",
+            description: "Please enter a reason for the credit.",
+            variant: "destructive",
+          });
+          return;
+        }
       }
+      
+      cancelShipmentMutation.mutate({ requestId: cancellingRequestId });
+      
+      // If paid, also assign credit
+      if (isPaid && cancellingRequest && cancelCreditAmount && parseFloat(cancelCreditAmount) > 0) {
+        const { error: creditError } = await (supabase.rpc as any)('cancel_shipping_with_credit', {
+          target_user_id: cancellingRequest.user_id,
+          credit_amount: parseFloat(cancelCreditAmount),
+          cancel_reason: cancelCreditReason.trim(),
+          target_shipping_id: cancellingRequest.id,
+        });
+        
+        if (creditError) {
+          console.error('Credit assignment error:', creditError);
+          toast({
+            title: "Shipment cancelled but credit failed",
+            description: `Shipment was cancelled but credit assignment failed: ${creditError.message}`,
+            variant: "destructive",
+          });
+        }
+      }
+      
+      setCancelCreditAmount("");
+      setCancelCreditReason("");
+      setCancellingRequest(null);
     };
 
     const handleOpenConfirmPaymentDialog = (request: ShippingRequest) => {
@@ -1646,7 +1696,7 @@ export const ShippingRequestsManagement = React.memo(
                                     variant="outline"
                                     className="text-gray-600 hover:text-gray-700"
                                     onClick={() =>
-                                      handleCancelShipment(request.id)
+                                      handleCancelShipment(request.id, request)
                                     }
                                   >
                                     <X className="h-3 w-3 mr-1" />
@@ -1681,7 +1731,7 @@ export const ShippingRequestsManagement = React.memo(
                                     variant="outline"
                                     className="text-gray-600 hover:text-gray-700"
                                     onClick={() =>
-                                      handleCancelShipment(request.id)
+                                      handleCancelShipment(request.id, request)
                                     }
                                   >
                                     <X className="h-3 w-3 mr-1" />
@@ -1690,17 +1740,30 @@ export const ShippingRequestsManagement = React.memo(
                                 </>
                               )}
                               {request.status === "paid" && (
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  className="text-purple-600 hover:text-purple-700"
-                                  onClick={() =>
-                                    handleOpenMarkAsSentDialog(request)
-                                  }
-                                >
-                                  <Truck className="h-3 w-3 mr-1" />
-                                  Mark as Sent
-                                </Button>
+                                <>
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className="text-purple-600 hover:text-purple-700"
+                                    onClick={() =>
+                                      handleOpenMarkAsSentDialog(request)
+                                    }
+                                  >
+                                    <Truck className="h-3 w-3 mr-1" />
+                                    Mark as Sent
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className="text-black hover:text-red-700 hover:bg-red-50 border-gray-300"
+                                    onClick={() =>
+                                      handleCancelShipment(request.id, request)
+                                    }
+                                  >
+                                    <X className="h-3 w-3 mr-1" />
+                                    Cancel Shipment
+                                  </Button>
+                                </>
                               )}
                             </div>
                           </div>
@@ -2162,30 +2225,102 @@ export const ShippingRequestsManagement = React.memo(
         </Dialog>
 
         {/* Cancel Shipment Dialog */}
-        <AlertDialog open={cancelDialogOpen} onOpenChange={setCancelDialogOpen}>
+        <AlertDialog open={cancelDialogOpen} onOpenChange={(open) => {
+          setCancelDialogOpen(open);
+          if (!open) {
+            setCancelCreditAmount("");
+            setCancelCreditReason("");
+            setCancellingRequest(null);
+          }
+        }}>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Cancel Shipment</AlertDialogTitle>
-              <AlertDialogDescription>
-                Are you sure you want to cancel this shipping request? The
-                customer will be notified and the items will be freed back to
-                their storage.
+              <AlertDialogTitle className="flex items-center gap-2">
+                {cancellingRequest?.status === "paid" && (
+                  <AlertCircle className="h-5 w-5 text-red-500" />
+                )}
+                Cancel Shipment?
+              </AlertDialogTitle>
+              <AlertDialogDescription className="space-y-2">
+                {cancellingRequest?.status === "paid" ? (
+                  <>
+                    <p className="font-semibold text-red-600">
+                      ⚠️ WARNING: This shipment has already been paid!
+                    </p>
+                    <p>
+                      Are you sure you want to cancel Shipment #{cancellingRequest?.shipment_personal_id}?
+                    </p>
+                    <p className="text-sm">
+                      The customer has already paid for shipping. This action cannot be undone.
+                      The items will be freed back to their storage.
+                    </p>
+                  </>
+                ) : (
+                  <p>
+                    Are you sure you want to cancel this shipping request? The
+                    customer will be notified and the items will be freed back to
+                    their storage.
+                  </p>
+                )}
               </AlertDialogDescription>
             </AlertDialogHeader>
+
+            {/* Credit fields — only shown when shipment is paid */}
+            {cancellingRequest?.status === "paid" && (
+              <div className="space-y-3 py-2">
+                <div>
+                  <Label htmlFor="cancel-shipping-credit-amount" className="text-sm font-medium">
+                    Credit Amount <span className="text-red-500">*</span>
+                  </Label>
+                  <Input
+                    id="cancel-shipping-credit-amount"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={cancelCreditAmount}
+                    onChange={(e) => setCancelCreditAmount(e.target.value)}
+                    placeholder="Enter credit amount to assign..."
+                    className="mt-1"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="cancel-shipping-credit-reason" className="text-sm font-medium">
+                    Reason <span className="text-red-500">*</span>
+                  </Label>
+                  <Textarea
+                    id="cancel-shipping-credit-reason"
+                    value={cancelCreditReason}
+                    onChange={(e) => setCancelCreditReason(e.target.value)}
+                    placeholder="Reason for the credit (e.g. shipping issue, address problem)..."
+                    className="mt-1 min-h-[80px]"
+                  />
+                </div>
+              </div>
+            )}
+
             <AlertDialogFooter>
               <AlertDialogCancel
                 onClick={() => {
                   setCancelDialogOpen(false);
                   setCancellingRequestId(null);
+                  setCancellingRequest(null);
+                  setCancelCreditAmount("");
+                  setCancelCreditReason("");
                 }}
               >
                 No, Keep It
               </AlertDialogCancel>
               <AlertDialogAction
                 onClick={handleConfirmCancel}
-                className="bg-gray-600 hover:bg-gray-700 text-white"
+                disabled={cancelShipmentMutation.isPending || (
+                  cancellingRequest?.status === "paid" && 
+                  (!cancelCreditAmount || !cancelCreditReason.trim())
+                )}
+                className={cancellingRequest?.status === "paid"
+                  ? "bg-red-600 hover:bg-red-700 text-white"
+                  : "bg-gray-600 hover:bg-gray-700 text-white"}
               >
-                Yes, Cancel Shipment
+                {cancelShipmentMutation.isPending ? "Cancelling..." : "Yes, Cancel Shipment"}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>

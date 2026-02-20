@@ -22,6 +22,7 @@ import {
   PackageCheck,
   Copy,
   XCircle,
+  JapaneseYen,
 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -110,6 +111,7 @@ export function ProductRequestsManagement({ orderId }: ProductRequestsManagement
   const [selectedOrder, setSelectedOrder] = useState<OrderWithDetails | null>(null);
   const [quotePrice, setQuotePrice] = useState("");
   const [quoteInvoiceUrl, setQuoteInvoiceUrl] = useState("");
+  const [quoteCreditAmount, setQuoteCreditAmount] = useState("");
   const [rejectionReason, setRejectionReason] = useState("");
   const [productIssues, setProductIssues] = useState<Map<string, { hasIssue: boolean; description: string }>>(
     new Map(),
@@ -122,6 +124,8 @@ export function ProductRequestsManagement({ orderId }: ProductRequestsManagement
   const [showCancelDialog, setShowCancelDialog] = useState(false);
   const [orderToCancel, setOrderToCancel] = useState<OrderWithDetails | null>(null);
   const [isCancelling, setIsCancelling] = useState(false);
+  const [cancelCreditAmount, setCancelCreditAmount] = useState("");
+  const [cancelCreditReason, setCancelCreditReason] = useState("");
 
   const [showConfirmPaymentDialog, setShowConfirmPaymentDialog] = useState(false);
   const [orderForPayment, setOrderForPayment] = useState<OrderWithDetails | null>(null);
@@ -211,7 +215,15 @@ export function ProductRequestsManagement({ orderId }: ProductRequestsManagement
 
       if (profilesError) throw profilesError;
 
-      const profileMap = new Map((profiles || []).map(p => [p.id, p]));
+      // Fetch credit balances separately to avoid TypeScript issues with generated types
+      const { data: creditData } = await supabase
+        .from("profiles")
+        .select("id, credit_balance" as any)
+        .in("id", userIds) as any;
+
+      const creditMap = new Map((creditData || []).map((c: any) => [c.id, c.credit_balance ?? 0]));
+
+      const profileMap = new Map((profiles || []).map(p => [p.id, { ...p, credit_balance: creditMap.get(p.id) ?? 0 }]));
 
       const ordersWithDetails = (ordersData || []).map(order => {
         let items: ProductRequestWithIssue[];
@@ -299,12 +311,34 @@ export function ProductRequestsManagement({ orderId }: ProductRequestsManagement
     if (!selectedOrder || !quoteInvoiceUrl) return;
 
     try {
-      const { error: quoteError } = await supabase.from("quotes").insert({
+      const creditAmount = quoteCreditAmount ? parseFloat(quoteCreditAmount) : null;
+      const userBalance = (selectedOrder?.profiles as any)?.credit_balance ?? 0;
+
+      if (creditAmount && creditAmount < 0) {
+        toast({
+          title: "Invalid Credit Amount",
+          description: "Credit amount cannot be negative.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (creditAmount && creditAmount > userBalance) {
+        toast({
+          title: "Invalid Credit Amount",
+          description: `Credit amount (¥${creditAmount.toLocaleString('en-US')}) exceeds user's balance (¥${userBalance.toLocaleString('en-US')}).`,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const { error: quoteError } = await (supabase.from("quotes").insert as any)({
         type: "product",
         order_id: selectedOrder.id,
-        price_jpy: null, // no price included
+        price_jpy: null,
         status: "sent",
         quote_url: quoteInvoiceUrl,
+        credit_amount_applied: creditAmount && creditAmount > 0 ? creditAmount : 0,
       });
 
       if (quoteError) throw quoteError;
@@ -317,7 +351,6 @@ export function ProductRequestsManagement({ orderId }: ProductRequestsManagement
 
       if (updateError) throw updateError;
 
-      // Invalidar caché para actualizar la lista
       queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
 
       await createNotification(
@@ -337,6 +370,7 @@ export function ProductRequestsManagement({ orderId }: ProductRequestsManagement
       setShowQuoteDialog(false);
       setSelectedOrder(null);
       setQuoteInvoiceUrl("");
+      setQuoteCreditAmount("");
       setProductIssues(new Map());
       queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
     } catch (error: any) {
@@ -445,6 +479,29 @@ export function ProductRequestsManagement({ orderId }: ProductRequestsManagement
   const adminCancelOrder = async () => {
     if (!orderToCancel) return;
     
+    const hasPurchasedItems = orderToCancel.items.some(item => item.status === "purchased");
+    
+    // Validate credit fields if order has purchased items
+    if (hasPurchasedItems) {
+      const creditNum = parseFloat(cancelCreditAmount);
+      if (!cancelCreditAmount || isNaN(creditNum) || creditNum < 0) {
+        toast({
+          title: "Credit amount required",
+          description: "Please enter a valid credit amount for this cancelled order.",
+          variant: "destructive",
+        });
+        return;
+      }
+      if (!cancelCreditReason.trim()) {
+        toast({
+          title: "Reason required",
+          description: "Please enter a reason for the credit.",
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+    
     setIsCancelling(true);
     try {
       const { error } = await supabase.rpc('admin_cancel_order', { 
@@ -453,13 +510,34 @@ export function ProductRequestsManagement({ orderId }: ProductRequestsManagement
       
       if (error) throw error;
       
+      // If order has purchased items, assign credit to user
+      if (hasPurchasedItems && cancelCreditAmount && parseFloat(cancelCreditAmount) > 0) {
+        const { error: creditError } = await (supabase.rpc as any)('cancel_order_with_credit', {
+          target_user_id: orderToCancel.user_id,
+          credit_amount: parseFloat(cancelCreditAmount),
+          cancel_reason: cancelCreditReason.trim(),
+          target_order_id: orderToCancel.id,
+        });
+        
+        if (creditError) {
+          console.error('Credit assignment error:', creditError);
+          toast({
+            title: "Order Cancelled but Credit Failed",
+            description: `Order was cancelled but credit assignment failed: ${creditError.message}`,
+            variant: "destructive",
+          });
+        }
+      }
+      
       toast({
         title: "Order Cancelled",
-        description: `Order #${orderToCancel.order_personal_id} has been cancelled. The status will update shortly.`,
+        description: `Order #${orderToCancel.order_personal_id} has been cancelled.${hasPurchasedItems && cancelCreditAmount ? ` Credit of ${cancelCreditAmount} assigned.` : ''}`,
       });
       
       setShowCancelDialog(false);
       setOrderToCancel(null);
+      setCancelCreditAmount("");
+      setCancelCreditReason("");
       queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
     } catch (error: any) {
       toast({
@@ -493,24 +571,14 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
         return;
       }
 
-      // Update quote status to paid
-      const { error: quoteError } = await supabase
-        .from("quotes")
-        .update({ status: "paid" as Database["public"]["Enums"]["quote_status"] })
-        .eq("id", sentQuote.id);
+      // Call RPC — handles quote, order, product_requests status updates + credit deduction
+      const { error } = await (supabase.rpc as any)("confirm_quote_payment", {
+        p_quote_id: sentQuote.id,
+      });
 
-      if (quoteError) throw quoteError;
+      if (error) throw error;
 
-      // Update all product requests to 'paid' status
-      const productIds = order.items.map((item) => item.id);
-      const { error: productsError } = await supabase
-        .from("product_requests")
-        .update({ status: "paid" as ProductRequestStatus })
-        .in("id", productIds);
-
-      if (productsError) throw productsError;
-
-      // Send notification to user
+      // Send notification to user (only after RPC succeeds)
       await createNotification(
         order.user_id,
         "payment_confirmed",
@@ -1480,6 +1548,19 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
                               </div>
                             </div>
 
+                            {/* Credits Request Indicator */}
+                            {(order as any).use_credits_request && (
+                              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-50 border border-amber-200 self-start">
+                                <JapaneseYen className="h-3.5 w-3.5 text-amber-600" />
+                                <span className="text-xs font-medium text-amber-700">
+                                  Wants to use credits
+                                </span>
+                                <span className="text-xs font-semibold text-amber-900">
+                                  (Balance: ¥{(order.profiles as any)?.credit_balance?.toLocaleString('en-US') ?? '0'})
+                                </span>
+                              </div>
+                            )}
+
 
                             {/* RIGHT SIDE — Status + Chevron */}
                             <div className="flex flex-col sm:flex-col items-end sm:items-end justify-start gap-2 sm:gap-1 text-right flex-shrink-0 min-w-fit">
@@ -1751,6 +1832,35 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
                                           className="mt-2"
                                         />
                                       </div>
+                                      {/* Credit Amount Input - shown only when user requested credits */}
+                                      {(selectedOrder as any)?.use_credits_request && (
+                                        <div className="p-3 rounded-lg bg-amber-50 border border-amber-200 space-y-2">
+                                          <div className="flex items-center gap-1.5 text-sm font-medium text-amber-700">
+                                            <JapaneseYen className="h-4 w-4" />
+                                            <span>Customer wants to use credits</span>
+                                            <span className="text-amber-900 font-semibold">
+                                              (Balance: ¥{(selectedOrder?.profiles as any)?.credit_balance?.toLocaleString('en-US') ?? '0'})
+                                            </span>
+                                          </div>
+                                          <Label htmlFor="quote-credit-amount" className="text-sm">Credit to apply (¥)</Label>
+                                          <Input
+                                            id="quote-credit-amount"
+                                            type="number"
+                                            min="0"
+                                            step="1"
+                                            max={(selectedOrder?.profiles as any)?.credit_balance ?? 0}
+                                            value={quoteCreditAmount}
+                                            onChange={(e) => setQuoteCreditAmount(e.target.value)}
+                                            placeholder="Enter credit amount to apply..."
+                                            className="mt-1"
+                                          />
+                                          {quoteCreditAmount && parseFloat(quoteCreditAmount) > ((selectedOrder?.profiles as any)?.credit_balance ?? 0) && (
+                                            <p className="text-xs text-red-500 mt-1">
+                                              ⚠️ Amount exceeds user's available balance (¥{((selectedOrder?.profiles as any)?.credit_balance ?? 0).toLocaleString('en-US')})
+                                            </p>
+                                          )}
+                                        </div>
+                                      )}
                                     </div>
                                     <DialogFooter>
                                       <Button onClick={createOrderQuote}>Create Quote</Button>
@@ -2091,7 +2201,13 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
       </Card>
 
       {/* Cancel Order Confirmation Dialog */}
-      <AlertDialog open={showCancelDialog} onOpenChange={setShowCancelDialog}>
+      <AlertDialog open={showCancelDialog} onOpenChange={(open) => {
+        setShowCancelDialog(open);
+        if (!open) {
+          setCancelCreditAmount("");
+          setCancelCreditReason("");
+        }
+      }}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2">
@@ -2122,13 +2238,50 @@ const updateProductIssue = (productId: string, hasIssue: boolean, description: s
               )}
             </AlertDialogDescription>
           </AlertDialogHeader>
+
+          {/* Credit fields — only shown when order has purchased items */}
+          {orderToCancel?.items.some(item => item.status === "purchased") && (
+            <div className="space-y-3 py-2">
+              <div>
+                <Label htmlFor="cancel-credit-amount" className="text-sm font-medium">
+                  Credit Amount <span className="text-red-500">*</span>
+                </Label>
+                <Input
+                  id="cancel-credit-amount"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={cancelCreditAmount}
+                  onChange={(e) => setCancelCreditAmount(e.target.value)}
+                  placeholder="Enter credit amount to assign..."
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <Label htmlFor="cancel-credit-reason" className="text-sm font-medium">
+                  Reason <span className="text-red-500">*</span>
+                </Label>
+                <Textarea
+                  id="cancel-credit-reason"
+                  value={cancelCreditReason}
+                  onChange={(e) => setCancelCreditReason(e.target.value)}
+                  placeholder="Reason for the credit (e.g. item out of stock)..."
+                  className="mt-1 min-h-[80px]"
+                />
+              </div>
+            </div>
+          )}
+
           <AlertDialogFooter>
             <AlertDialogCancel disabled={isCancelling}>
               Keep Order
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={adminCancelOrder}
-              disabled={isCancelling}
+              disabled={isCancelling || (
+                orderToCancel?.items.some(item => item.status === "purchased") && 
+                (!cancelCreditAmount || !cancelCreditReason.trim())
+              )}
               className={orderToCancel?.items.some(item => item.status === "purchased") 
                 ? "bg-red-600 hover:bg-red-700" 
                 : "bg-gray-600 hover:bg-gray-700"}

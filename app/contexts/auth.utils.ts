@@ -12,9 +12,9 @@ export const fetchUserMeta = async (
     const [{ data: profileData, error: profileError }, { data: roleData, error: roleError }] = await Promise.all([
       supabase
         .from('profiles')
-        .select('id, full_name, email, phone_number, address, address_notes, country, postal_code, user_personal_id, city, state, tax_vat_Id')
+        .select('id, full_name, email, phone_number, address, address_notes, country, postal_code, user_personal_id, city, state, tax_vat_Id, credit_balance' as any)
         .eq('id', userId)
-        .maybeSingle(),
+        .maybeSingle() as any,
       supabase
         .from('user_roles')
         .select('role')
