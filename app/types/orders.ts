@@ -63,6 +63,7 @@ export interface Order {
     }>;
   };
   use_credits_request?: boolean;
+  credit_to_use?: number;
   credit_amount_applied?: number;
 }
 

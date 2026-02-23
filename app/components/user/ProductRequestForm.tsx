@@ -12,6 +12,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { notifyAllAdmins } from "@/lib/notificationUtils";
 import { useApp } from "@/contexts/AppContext";
 import { useAuth } from "@/contexts/useAuth";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { AlertCircle } from "lucide-react";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
@@ -36,6 +38,9 @@ export function ProductRequestForm() {
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
   const [useCredits, setUseCredits] = useState(false);
+  const [creditType, setCreditType] = useState<"all" | "custom">("all");
+  const [creditToUse, setCreditToUse] = useState<number>(0);
+  const [customCreditInput, setCustomCreditInput] = useState<string>("");
 
   const userCreditBalance = profile?.credit_balance ?? 0;
   const hasCredits = userCreditBalance > 0;
@@ -62,6 +67,7 @@ export function ProductRequestForm() {
   const clearForm = () => {
     setItems([{ url: "", name: "", quantity: 1, notes: "" }]);
     setUseCredits(false);
+    setCreditToUse(0);
     localStorage.removeItem("product_request_draft");
   };
 
@@ -78,10 +84,25 @@ export function ProductRequestForm() {
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const validItems = items.filter(item => item.url.trim());
-    if (validItems.length === 0) {
-      toast({ title: "Error", description: t("atLeastOneProduct"), variant: "destructive" });
-      return;
+    if (useCredits) {
+      if (creditToUse <= 0) {
+        toast({ 
+          title: "Error", 
+          description: t("enterCreditAmountError"), 
+          variant: "destructive" 
+        });
+        return;
+      }
+      if (creditToUse > userCreditBalance) {
+        toast({ 
+          title: "Error", 
+          description: t("insufficientCreditsError"), 
+          variant: "destructive" 
+        });
+        return;
+      }
     }
+
     setShowConfirmDialog(true);
   };
 
@@ -102,6 +123,7 @@ export function ProductRequestForm() {
           notes: item.notes.trim() || null,
         })),
         p_use_credits_request: useCredits,
+        p_credit_to_use: creditToUse,
       });
 
       if (error) throw error;
@@ -180,25 +202,111 @@ export function ProductRequestForm() {
         <CardContent className="space-y-6">
           <form onSubmit={handleFormSubmit} className="space-y-8">
             {hasCredits && (
-              <div className="flex items-start gap-3 p-4 rounded-xl border border-orange-200 bg-orange-50/40">
-                <Checkbox
-                  id="use-credits"
-                  checked={useCredits}
-                  onCheckedChange={(checked) => setUseCredits(checked === true)}
-                  className="mt-0.5 border-orange-300 data-[state=checked]:bg-orange-400 data-[state=checked]:border-orange-400"
-                />
-                <div className="space-y-1">
-                  <Label htmlFor="use-credits" className="text-sm font-medium text-gray-700 cursor-pointer">
-                    {t("useCreditsForOrder")}
-                  </Label>
-                  <p className="text-xs text-gray-500">
-                    {t("applyCreditsDiscountNote")}
-                  </p>
-                  <div className="flex items-center gap-1 text-xs font-medium text-orange-600">
-                    <JapaneseYen className="h-3.5 w-3.5" />
-                    <span>{t("availableBalance")}{userCreditBalance.toLocaleString('en-US')}</span>
+              <div className="p-4 rounded-xl border border-orange-200 bg-orange-50/40 space-y-4">
+                <div className="flex items-start gap-3">
+                  <Checkbox
+                    id="use-credits"
+                    checked={useCredits}
+                    onCheckedChange={(checked) => {
+                      const isChecked = checked === true;
+                      setUseCredits(isChecked);
+                      if (!isChecked) {
+                        setCreditToUse(0);
+                        setCustomCreditInput("");
+                      } else {
+                        // Default to 'all' if checked
+                        setCreditToUse(userCreditBalance);
+                        setCreditType("all");
+                      }
+                    }}
+                    className="mt-0.5 border-orange-300 data-[state=checked]:bg-orange-400 data-[state=checked]:border-orange-400"
+                  />
+                  <div className="space-y-1">
+                    <Label htmlFor="use-credits" className="text-sm font-medium text-gray-700 cursor-pointer">
+                      {t("useCreditsForOrder")}
+                    </Label>
+                    <p className="text-xs text-gray-500">
+                      {t("applyCreditsDiscountNote")}
+                    </p>
+                    <div className="flex items-center gap-1 text-xs font-medium text-orange-600">
+                      <JapaneseYen className="h-3.5 w-3.5" />
+                      <span>{t("availableBalance")}{userCreditBalance.toLocaleString('en-US')}</span>
+                    </div>
                   </div>
                 </div>
+
+                {useCredits && (
+                  <div className="pl-8 space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                    <RadioGroup
+                      value={creditType}
+                      onValueChange={(value: "all" | "custom") => {
+                        setCreditType(value);
+                        if (value === "all") {
+                          setCreditToUse(userCreditBalance);
+                        } else {
+                          const val = Number(customCreditInput) || 0;
+                          setCreditToUse(val);
+                        }
+                      }}
+                      className="flex flex-col space-y-3"
+                    >
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="all" id="credit-all" />
+                        <Label htmlFor="credit-all" className="text-sm font-medium text-gray-700 cursor-pointer">
+                          {t("useAllCreditsLabel")} (¥{userCreditBalance.toLocaleString()})
+                        </Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="custom" id="credit-custom" />
+                        <Label htmlFor="credit-custom" className="text-sm font-medium text-gray-700 cursor-pointer">
+                          {t("useCustomAmountLabel")}
+                        </Label>
+                      </div>
+                    </RadioGroup>
+
+                    {creditType === "custom" && (
+                      <div className="animate-in zoom-in-95 duration-200">
+                        <div className="flex items-center gap-2">
+                          <Input
+                            id="credit-amount"
+                            type="number"
+                            placeholder={t("enterCreditAmountPlaceholder")}
+                            value={customCreditInput}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              setCustomCreditInput(val);
+                              setCreditToUse(Number(val) || 0);
+                            }}
+                            className={`max-w-[200px] border-2 focus-visible:ring-orange-100 h-10 rounded-full ${
+                              (creditToUse > userCreditBalance || (customCreditInput !== "" && creditToUse <= 0))
+                                ? "border-red-300 bg-red-50/30"
+                                : "border-orange-200"
+                            }`}
+                            min="1"
+                            max={userCreditBalance}
+                          />
+                          <span className="text-sm font-medium text-orange-700 whitespace-nowrap bg-orange-100/50 px-3 py-2 rounded-full border border-orange-200">
+                            / ¥{userCreditBalance.toLocaleString()}
+                          </span>
+                        </div>
+                        {(creditToUse > userCreditBalance || (customCreditInput !== "" && creditToUse <= 0)) && (
+                          <p className="text-xs text-red-500 mt-2 ml-2 font-medium flex items-center gap-1 animate-in fade-in slide-in-from-left-1">
+                            <AlertCircle className="w-3.5 h-3.5" />
+                            {creditToUse > userCreditBalance 
+                              ? t("insufficientCreditsError") 
+                              : t("enterCreditAmountError")}
+                          </p>
+                        )}
+                      </div>
+                    )}
+
+                    <div className="p-3 bg-orange-100/30 border border-orange-200/50 rounded-xl">
+                      <p className="text-[10px] text-orange-800 leading-relaxed italic">
+                        {t("creditWarningMessage")}
+                      </p>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 
@@ -288,7 +396,13 @@ export function ProductRequestForm() {
               <Button 
                 type="submit" 
                 className="flex-1 h-11 bg-orange-400 hover:bg-orange-500 text-white font-bold text-sm shadow-md transition-all active:scale-[0.98]" 
-                disabled={isSubmitting}
+                disabled={
+                  isSubmitting || 
+                  (useCredits && (
+                    (creditType === "custom" && (creditToUse > userCreditBalance || creditToUse <= 0)) ||
+                    (creditType === "all" && userCreditBalance <= 0)
+                  ))
+                }
               >
                 {isSubmitting ? t("submitting") : t("submitRequestButton")}
               </Button>

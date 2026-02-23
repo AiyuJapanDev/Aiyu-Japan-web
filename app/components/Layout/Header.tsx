@@ -1,5 +1,4 @@
 import { useApp } from "@/contexts/AppContext";
-import { useAuth } from "@/contexts/useAuth";
 import { Button } from "@/components/ui/button";
 import {
   Link,
@@ -17,6 +16,8 @@ import {
   Crown,
   ArrowRight,
   ShoppingCart,
+  CoinsIcon,
+  JapaneseYen,
 } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { useNotifications } from "@/hooks/useNotifications";
@@ -41,12 +42,13 @@ import MobileAccountMenu from "../ui/custom/MobileAccountMenu";
 import LogOutBtn from "../ui/custom/LogOutBtn";
 import Logo from "/aiyu-japan-logo-typography.png";
 import LogoMobile from "/aiyu_logo_small.png";
+import { useAuth } from "@/contexts/useAuth";
 
 const Header = () => {
   const { language, t } = useApp();
   const params = useParams();
   const navigate = useNavigate();
-  const { user, isAdmin } = useAuth();
+  const { user, isAdmin, profile } = useAuth();
   const root = params.lang;
   const location = useLocation();
 
@@ -398,12 +400,21 @@ const Header = () => {
                   </Button>
                 </Link>
               )}
+              {isAdmin ? "" : user ? 
+                    <span className="w-auto h-8 gap-2 flex items-center text-gray-600 px-4 border-b border-capybara-orange rounded-xl">
+                      <JapaneseYen className="text-capybara-orange font-bold" size={18} />
+                      {profile?.credit_balance.toLocaleString('es-US') ?? '0'}
+                    </span>
+              : ""}
 
-              <Link to="/user-dashboard">
+              {isAdmin ? "" : user ? <Link to="/user-dashboard">
                     <Button className="w-10 h-10 bg-capybara-orange border-2 hover:bg-yellow-400 rounded-full">
                       <ShoppingCart className="w-4 h-4 text-white font-bold" />
                     </Button>
-              </Link>
+              </Link>: ""}
+
+
+              
 
               {/* Mobile menu toggle */}
               <Button

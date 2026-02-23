@@ -20,7 +20,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card } from "@/components/ui/card";
-import { Package, MapPin, Phone, User, Truck, Globe, JapaneseYen } from "lucide-react";
+import { Package, MapPin, Phone, User, Truck, Globe, JapaneseYen, AlertCircle } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useAuth } from "@/contexts/useAuth";
 import { supabase } from "@/integrations/supabase/client";
@@ -92,6 +92,8 @@ const ShippingQuoteDialog: React.FC<ShippingQuoteDialogProps> = ({
   const [height, setHeight] = useState("");
   const [taxVatId, setTaxVatId] = useState("");
   const [useCredit, setUseCredit] = useState(false);
+  const [creditType, setCreditType] = useState<"all" | "custom">("all");
+  const [customCreditAmount, setCustomCreditAmount] = useState("");
   const { t } = useApp();
 
   const zoneInfo = selectedCountry ? getZoneForCountry(selectedCountry) : null;
@@ -300,6 +302,9 @@ const ShippingQuoteDialog: React.FC<ShippingQuoteDialogProps> = ({
         estimated_cost: Math.round(shippingCost),
         shipping_address: shippingAddress,
         use_credit_request: useCredit,
+        credit_to_use: useCredit 
+          ? (creditType === "all" ? userCreditBalance : Math.max(0, Number(customCreditAmount)))
+          : 0,
         items: selectedItems.map((item) => ({
           order_item_id: item.id,
           order_id: item.order_id || "", // Handle optional order_id
@@ -571,25 +576,92 @@ const ShippingQuoteDialog: React.FC<ShippingQuoteDialogProps> = ({
 
           {/* Use Credits Section */}
           {hasCredits && (
-            <div className="flex items-center space-x-3 p-4 rounded-2xl bg-amber-50 border border-amber-200 shadow-sm transition-all hover:shadow-md">
-              <Checkbox
-                id="useCreditsShipping"
-                checked={useCredit}
-                onCheckedChange={(checked) => setUseCredit(checked === true)}
-                className="w-5 h-5 border-2 border-amber-400 data-[state=checked]:bg-amber-500 data-[state=checked]:border-amber-500"
-              />
-              <div className="grid gap-1.5 leading-none cursor-pointer" onClick={() => setUseCredit(!useCredit)}>
-                <label
-                  htmlFor="useCreditsShipping"
-                  className="text-sm font-semibold text-amber-900 leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex items-center gap-2"
-                >
-                  <JapaneseYen className="w-4 h-4 text-amber-600" />
-                  {t("useCreditsForShipping")}
-                </label>
-                <p className="text-xs text-amber-700/80">
-                  {t("availableBalance")} <span className="font-bold">{userCreditBalance.toLocaleString('en-US')}</span>
-                </p>
+            <div className="space-y-4">
+              <div className="flex items-center space-x-3 p-4 rounded-2xl bg-amber-50 border border-amber-200 shadow-sm transition-all hover:shadow-md">
+                <Checkbox
+                  id="useCreditsShipping"
+                  checked={useCredit}
+                  onCheckedChange={(checked) => setUseCredit(checked === true)}
+                  className="w-5 h-5 border-2 border-amber-400 data-[state=checked]:bg-amber-500 data-[state=checked]:border-amber-500"
+                />
+                <div className="grid gap-1.5 leading-none cursor-pointer" onClick={() => setUseCredit(!useCredit)}>
+                  <label
+                    htmlFor="useCreditsShipping"
+                    className="text-sm font-semibold text-amber-900 leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex items-center gap-2"
+                  >
+                    <JapaneseYen className="w-4 h-4 text-amber-600" />
+                    {t("useCreditsForShipping")}
+                  </label>
+                  <p className="text-xs text-amber-700/80">
+                    {t("availableBalance")} <span className="font-bold">¥{userCreditBalance.toLocaleString('en-US')}</span>
+                  </p>
+                </div>
               </div>
+
+              {useCredit && (
+                <div className="ml-8 space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                  <RadioGroup
+                    value={creditType}
+                    onValueChange={(value: "all" | "custom") => setCreditType(value)}
+                    className="flex flex-col space-y-3"
+                  >
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="all" id="credit-all" />
+                      <Label htmlFor="credit-all" className="text-sm font-medium text-gray-700 cursor-pointer">
+                        {t("useAllCreditsLabel")} (¥{userCreditBalance.toLocaleString()})
+                      </Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="custom" id="credit-custom" />
+                      <Label htmlFor="credit-custom" className="text-sm font-medium text-gray-700 cursor-pointer">
+                        {t("useCustomAmountLabel")}
+                      </Label>
+                    </div>
+                  </RadioGroup>
+
+                  {creditType === "custom" && (
+                    <div className="animate-in zoom-in-95 duration-200">
+                      <div className="flex items-center gap-2">
+                        <Input
+                          type="number"
+                          placeholder={t("enterCreditAmountPlaceholder")}
+                          value={customCreditAmount}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            // Prevenir múltiples ceros al inicio o valores absurdos si se desea, 
+                            // pero lo principal es permitir que vean el error.
+                            setCustomCreditAmount(val);
+                          }}
+                          className={`rounded-full border-2 focus:border-amber-400 flex-1 ${
+                            (Number(customCreditAmount) > userCreditBalance || (customCreditAmount !== "" && Number(customCreditAmount) <= 0))
+                              ? "border-red-300 bg-red-50/30"
+                              : "border-amber-200"
+                          }`}
+                          max={userCreditBalance}
+                          min={1}
+                        />
+                        <span className="text-sm font-medium text-amber-700 whitespace-nowrap bg-amber-100/50 px-3 py-2 rounded-full border border-amber-200">
+                          / ¥{userCreditBalance.toLocaleString()}
+                        </span>
+                      </div>
+                      {(Number(customCreditAmount) > userCreditBalance || (customCreditAmount !== "" && Number(customCreditAmount) <= 0)) && (
+                        <p className="text-xs text-red-500 mt-1 ml-2 font-medium flex items-center gap-1 animate-in fade-in slide-in-from-left-1">
+                          <AlertCircle className="w-3 h-3" />
+                          {Number(customCreditAmount) > userCreditBalance 
+                            ? t("insufficientCreditsError") 
+                            : t("enterCreditAmountError")}
+                        </p>
+                      )}
+                    </div>
+                  )}
+
+                  <div className="p-3 bg-amber-100/30 border border-amber-200/50 rounded-xl">
+                    <p className="text-[10px] text-amber-800 leading-relaxed italic">
+                      {t("creditWarningMessage")}
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
@@ -678,7 +750,14 @@ const ShippingQuoteDialog: React.FC<ShippingQuoteDialogProps> = ({
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             {t("cancel")}
           </Button>
-          <Button onClick={handleSubmit} disabled={loading || !shippingCost}>
+          <Button 
+            onClick={handleSubmit} 
+            disabled={
+              loading || 
+              !shippingCost || 
+              (useCredit && creditType === "custom" && (Number(customCreditAmount) > userCreditBalance || Number(customCreditAmount) <= 0))
+            }
+          >
             {loading ? t("requestingQuote") : t("requestQuote")}
           </Button>
         </DialogFooter>
