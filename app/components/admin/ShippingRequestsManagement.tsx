@@ -110,6 +110,7 @@ interface ShippingRequest {
   tracking_url?: string | null;
   tracking_urls?: TrackingUrlEntry[];
   quote_url?: string | null;
+  credit_to_use?: number;
   user: {
     full_name: string;
     email: string;
@@ -765,7 +766,9 @@ export const ShippingRequestsManagement = React.memo(
 
     const handleSendQuote = (request: ShippingRequest) => {
       setSendQuoteRequestId(request.id);
-      setQuoteCreditAmount(request.use_credit_request ? "0" : "");
+      setQuoteCreditAmount(
+        request.use_credit_request ? (request.credit_to_use || 0).toString() : ""
+      );
       setSendQuoteDialogOpen(true);
     };
 
@@ -1408,21 +1411,27 @@ export const ShippingRequestsManagement = React.memo(
                                 ).toLocaleString()}
                               </p>
 
-                              {request.use_credit_request && (
-                                <div className="flex items-center gap-1 mt-1 sm:justify-end">
-                                  <Badge className="bg-amber-100 text-amber-900 border-amber-200 hover:bg-amber-100 flex items-center gap-1 py-0.5 px-2 text-[10px]">
-                                    <JapaneseYen className="h-2.5 w-2.5" />
-                                    Wants to use credits
-                                    <span className="ml-1 opacity-70">
-                                      (Bal: ¥
+                                {request.use_credit_request && (
+                                  <div className="flex flex-col items-end gap-1 mt-1">
+                                    <Badge className="bg-amber-100 text-amber-900 border-amber-200 hover:bg-amber-100 flex items-center gap-1 py-0.5 px-2 text-[10px]">
+                                      <JapaneseYen className="h-2.5 w-2.5" />
+                                      Wants to use credits
+                                      <span className="ml-1 opacity-70">
+                                        (Amount: ¥
+                                        {(
+                                          request.credit_to_use ?? 0
+                                        ).toLocaleString("en-US")}
+                                        )
+                                      </span>
+                                    </Badge>
+                                    <span className="text-[10px] text-amber-700 opacity-80 px-1">
+                                      Balance: ¥
                                       {(
                                         request.user?.credit_balance ?? 0
                                       ).toLocaleString("en-US")}
-                                      )
                                     </span>
-                                  </Badge>
-                                </div>
-                              )}
+                                  </div>
+                                )}
                             </div>
                           </div>
                         </CardHeader>

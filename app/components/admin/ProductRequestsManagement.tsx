@@ -555,12 +555,12 @@ export function ProductRequestsManagement({
   const adminCancelOrder = async () => {
     if (!orderToCancel) return;
 
-    const hasPurchasedItems = orderToCancel.items.some(
-      (item) => item.status === "purchased",
+    const needsRefund = orderToCancel.items.some(
+      (item) => item.status === "purchased" || item.status === "paid",
     );
 
-    // Validate credit fields if order has purchased items
-    if (hasPurchasedItems) {
+    // Validate credit fields if order needs refund
+    if (needsRefund) {
       const creditNum = parseFloat(cancelCreditAmount);
       if (!cancelCreditAmount || isNaN(creditNum) || creditNum < 0) {
         toast({
@@ -597,9 +597,9 @@ export function ProductRequestsManagement({
           .eq("id", orderToCancel.id);
       }
 
-      // If order has purchased items, assign credit to user
+      // If order needs refund, assign credit to user
       if (
-        hasPurchasedItems &&
+        needsRefund &&
         cancelCreditAmount &&
         parseFloat(cancelCreditAmount) > 0
       ) {
@@ -625,7 +625,7 @@ export function ProductRequestsManagement({
 
       toast({
         title: "Order Cancelled",
-        description: `Order #${orderToCancel.order_personal_id} has been cancelled.${hasPurchasedItems && cancelCreditAmount ? ` Credit of ${cancelCreditAmount} assigned.` : ""}`,
+        description: `Order #${orderToCancel.order_personal_id} has been cancelled.${needsRefund && cancelCreditAmount ? ` Credit of ¥${parseFloat(cancelCreditAmount).toLocaleString()} assigned.` : ""}`,
       });
 
       setShowCancelDialog(false);
@@ -1850,18 +1850,24 @@ export function ProductRequestsManagement({
                                 </p>
 
                                 {order.use_credits_request && (
-                                  <div className="flex items-center gap-1 mt-1">
+                                  <div className="flex flex-col items-end gap-1 mt-1">
                                     <Badge className="bg-amber-100 text-amber-900 border-amber-200 hover:bg-amber-100 flex items-center gap-1 py-0.5 px-2 text-[10px]">
                                       <JapaneseYen className="h-2.5 w-2.5 text-amber-600" />
                                       Wants to use credits
                                       <span className="ml-1 opacity-70">
-                                        (Bal: ¥
+                                        (Amount: ¥
                                         {Number(
-                                          order.profiles?.credit_balance ?? 0,
+                                          order.credit_to_use ?? 0,
                                         ).toLocaleString("en-US")}
                                         )
                                       </span>
                                     </Badge>
+                                    <span className="text-[10px] text-amber-700 opacity-80 px-1">
+                                      Balance: ¥
+                                      {Number(
+                                        order.profiles?.credit_balance ?? 0,
+                                      ).toLocaleString("en-US")}
+                                    </span>
                                   </div>
                                 )}
                               </div>
@@ -2147,7 +2153,12 @@ export function ProductRequestsManagement({
                                     <Button
                                       size="sm"
                                       variant="outline"
-                                      onClick={() => setSelectedOrder(order)}
+                                      onClick={() => {
+                                        setSelectedOrder(order);
+                                        if (order.use_credits_request && order.credit_to_use) {
+                                          setQuoteCreditAmount(order.credit_to_use.toString());
+                                        }
+                                      }}
                                     >
                                       <DollarSign className="h-4 w-4 mr-1" />
                                       Create Quote
@@ -2513,9 +2524,9 @@ export function ProductRequestsManagement({
                               </Button>
                             )}
 
-                            {/* Emergency Cancel for Purchased orders */}
+                            {/* Emergency Cancel for Paid or Purchased orders */}
                             {order.items.some(
-                              (item) => item.status === "purchased",
+                              (item) => item.status === "paid" || item.status === "purchased",
                             ) && (
                               <Button
                                 size="sm"
@@ -2714,18 +2725,18 @@ export function ProductRequestsManagement({
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2">
               {orderToCancel?.items.some(
-                (item) => item.status === "purchased",
+                (item) => item.status === "paid" || item.status === "purchased",
               ) && <AlertCircle className="h-5 w-5 text-red-500" />}
               Cancel Order?
             </AlertDialogTitle>
             <AlertDialogDescription className="space-y-2">
               {orderToCancel?.items.some(
-                (item) => item.status === "purchased",
+                (item) => item.status === "paid" || item.status === "purchased",
               ) ? (
                 <>
                   <p className="font-semibold text-red-600">
                     ⚠️ WARNING: This order contains items that have already been
-                    purchased!
+                    paid or purchased!
                   </p>
                   <p>
                     Are you sure you want to cancel Order #
@@ -2733,7 +2744,7 @@ export function ProductRequestsManagement({
                   </p>
                   <p className="text-sm">
                     This should only be done in emergency situations when items
-                    are out of stock or unavailable. This action cannot be
+                    are out of stock or unavailable. A refund will be processed and this action cannot be
                     undone.
                   </p>
                 </>
@@ -2748,13 +2759,13 @@ export function ProductRequestsManagement({
           </AlertDialogHeader>
 
           <div className="space-y-3 py-2">
-            {orderToCancel?.items.some((item) => item.status === "purchased") && (
+            {orderToCancel?.items.some((item) => item.status === "paid" || item.status === "purchased") && (
               <div>
                 <Label
                   htmlFor="cancel-credit-amount"
                   className="text-sm font-medium"
                 >
-                  Credit Amount <span className="text-red-500">*</span>
+                  Credit Amount to Refund (¥) <span className="text-red-500">*</span>
                 </Label>
                 <Input
                   id="cancel-credit-amount"
@@ -2794,12 +2805,12 @@ export function ProductRequestsManagement({
               disabled={
                 isCancelling || !cancelCreditReason.trim() ||
                 (orderToCancel?.items.some(
-                  (item) => item.status === "purchased",
+                  (item) => item.status === "paid" || item.status === "purchased",
                 ) &&
                   !cancelCreditAmount)
               }
               className={
-                orderToCancel?.items.some((item) => item.status === "purchased")
+                orderToCancel?.items.some((item) => item.status === "paid" || item.status === "purchased")
                   ? "bg-red-600 hover:bg-red-700"
                   : "bg-gray-600 hover:bg-gray-700"
               }

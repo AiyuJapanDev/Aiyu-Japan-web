@@ -564,6 +564,11 @@ export const translations = {
     yen: "yen",
     confirmSubmissionTitle: "Confirm Submission",
     confirmSubmissionDescription: "Are you sure you want to submit this product request? You will receive a quote once we process your order.",
+    enterCreditAmountError: "Please enter a credit amount to use",
+    enterCreditAmountPlaceholder: "Enter amount",
+    insufficientCreditsError: "You do not have enough credits available",
+    creditWarningMessage: "If you previously submitted a credit request and it was quoted and paid, those credits will be deducted. This request will be quoted with your current balance if it's lower than the amount entered here.",
+    creditsToUseLabel: "Credits to use",
     urlLabel: "URL",
 
     // Orders Page
@@ -772,6 +777,8 @@ export const translations = {
     requestedOn: "Requested on",
     shippingPaymentReceived: "Your shipping payment has been received.",
     useCreditsForShipping: "Use my credits for this shipping",
+    useAllCreditsLabel: "Use all my credits",
+    useCustomAmountLabel: "Use custom amount",
     dhlOnlyNote: "DHL Shipping Only",
     selectCountryLabel: "Select Country",
 
@@ -1871,8 +1878,13 @@ export const translations = {
     applyCreditsDiscountNote: "Al marcar esta opción, aplicaremos tus créditos disponibles para descontar el precio final.",
     availableBalance: "Saldo disponible: ¥",
     yen: "yenes",
-    confirmSubmissionTitle: "Confirmar envío",
+    confirmSubmissionTitle: "Confirmar solicitud",
     confirmSubmissionDescription: "¿Estás seguro de que deseas enviar esta solicitud de producto? Recibirás una cotización una vez que procesemos tu pedido.",
+    enterCreditAmountError: "Por favor, ingresa el monto de crédito a usar",
+    enterCreditAmountPlaceholder: "Ingresar monto",
+    insufficientCreditsError: "No tienes suficientes créditos disponibles",
+    creditWarningMessage: "Si anteriormente enviaste una solicitud de uso de créditos, te lo cotizaron y pagaste se te descontarán esos créditos y este pedido será cotizado con la cantidad de créditos que tengas actualmente si es menor a la que ingreses aquí.",
+    creditsToUseLabel: "Créditos a usar",
     urlLabel: "URL",
 
     // Orders Page
@@ -2084,6 +2096,8 @@ export const translations = {
     requestedOn: "Solicitado el",
     shippingPaymentReceived: "Tu pago de envío ha sido recibido.",
     useCreditsForShipping: "Usar mis créditos para este envío",
+    useAllCreditsLabel: "Usar todos mis créditos",
+    useCustomAmountLabel: "Usar cantidad personalizada",
     dhlOnlyNote: "Solo envío por DHL",
     selectCountryLabel: "Seleccionar país",
 
