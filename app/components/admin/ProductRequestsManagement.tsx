@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef, useMemo } from "react";
+import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Package,
@@ -23,8 +23,6 @@ import {
   Copy,
   XCircle,
   JapaneseYen,
-  ChevronsLeft,
-  ChevronsRight,
 } from "lucide-react";
 import {
   Card,
@@ -116,102 +114,6 @@ interface OrderWithDetails extends Order {
   credit_amount_applied?: number;
 }
 
-const getOrderStatus = (order: OrderWithDetails) => {
-  if (order.is_cancelled) return "Cancelled";
-  if (order.is_rejected) return "Rejected";
-  if (order.status === "shipped") return "Shipped";
-
-  // Check product statuses for more accurate status
-  const productStatuses = (order.items || []).map((item) => item.status);
-  const allSameStatus =
-    productStatuses.length > 0 &&
-    productStatuses.every((status) => status === productStatuses[0]);
-
-  if (allSameStatus && productStatuses[0]) {
-    switch (productStatuses[0]) {
-      case "shipping_paid":
-        return "Ready to Ship";
-      case "shipping_quoted":
-        return "Awaiting Shipping Payment";
-      case "received":
-        return "Stored";
-      case "purchased":
-        return "Purchased";
-      case "paid":
-        return "Paid";
-      case "quoted":
-        return "Quoted";
-      case "requested":
-        return "New";
-    }
-  }
-
-  // Handle mixed statuses
-  const hasPurchased = productStatuses.includes("purchased");
-  const hasPaid = productStatuses.includes("paid");
-  const hasReceived = productStatuses.includes("received");
-
-  if (hasPurchased && hasPaid) {
-    return "Partially Purchased";
-  }
-  if (hasReceived && (hasPurchased || hasPaid)) {
-    return "Partial Processing";
-  }
-
-  // Fallback to order status
-  if (order.status === "awaiting_shipping_payment")
-    return "Awaiting Shipping Payment";
-  if (order.status === "weighing") return "Weighing";
-  if (order.status === "preparing") return "Preparing";
-  return "New";
-};
-
-const getOrderStatusColor = (status: string) => {
-  switch (status) {
-    case "New":
-      // Slightly bluish-gray to show "just created"
-      return "bg-capybara-yellow text-red-500 border-slate-400/20";
-
-    case "Quoted":
-      return "bg-yellow-500/10 text-yellow-600 border-yellow-500/20";
-
-    case "Paid":
-      // Keep strong green tone for payment success
-      return "bg-emerald-500/10 text-emerald-600 border-emerald-500/20";
-
-    case "Partially Purchased":
-      return "bg-orange-500/10 text-orange-600 border-orange-500/20";
-
-    case "Purchased":
-      return "bg-orange-500/10 text-orange-600 border-orange-500/20";
-
-    case "Partial Processing":
-      return "bg-indigo-500/10 text-indigo-600 border-indigo-500/20";
-
-    case "Preparing":
-      return "bg-purple-500/10 text-purple-600 border-purple-500/20";
-
-    case "Stored":
-      // Shifted to blue-cyan — visually distinct from green Paid
-      return "bg-sky-500/10 text-sky-600 border-sky-500/20";
-
-    case "Awaiting Shipping":
-      return "bg-amber-500/10 text-amber-600 border-amber-500/20";
-
-    case "Shipped":
-      return "bg-cyan-500/10 text-cyan-600 border-cyan-500/20";
-
-    case "Rejected":
-      return "bg-red-500/10 text-red-600 border-red-500/20";
-
-    case "Cancelled":
-      return "bg-gray-500/10 text-gray-600 border-gray-500/20";
-
-    default:
-      return "bg-gray-500/10 text-gray-600 border-gray-500/20";
-  }
-};
-
 interface ProductRequestsManagementProps {
   orderId?: string | null;
 }
@@ -224,15 +126,11 @@ export function ProductRequestsManagement({
   const [refreshing, setRefreshing] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [openOrders, setOpenOrders] = useState<Set<string>>(new Set());
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
   const [hideRejected, setHideRejected] = useState(false);
   const [hideCancelled, setHideCancelled] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>("all");
   const [itemsPerPage, setItemsPerPage] = useState(10);
-  const [isItemsPerPageLoaded, setIsItemsPerPageLoaded] = useState(false);
-  const isInitialLoadRef = useRef(true);
-  const redirectedOrderIdRef = useRef<string | null>(null);
 
   const [selectedOrder, setSelectedOrder] = useState<OrderWithDetails | null>(
     null,
@@ -262,48 +160,6 @@ export function ProductRequestsManagement({
   const [orderForPayment, setOrderForPayment] =
     useState<OrderWithDetails | null>(null);
   const [isConfirmingPayment, setIsConfirmingPayment] = useState(false);
-
-  useEffect(() => {
-    const savedPageSize = localStorage.getItem("product_requests_page_size");
-    const savedCurrentPage = localStorage.getItem(
-      "product_requests_current_page",
-    );
-
-    if (savedPageSize) {
-      setItemsPerPage(parseInt(savedPageSize, 10));
-    }
-    if (savedCurrentPage) {
-      setCurrentPage(parseInt(savedCurrentPage, 10));
-    }
-    setIsItemsPerPageLoaded(true);
-  }, []);
-
-  useEffect(() => {
-    if (isItemsPerPageLoaded) {
-      localStorage.setItem(
-        "product_requests_page_size",
-        itemsPerPage.toString(),
-      );
-    }
-  }, [itemsPerPage, isItemsPerPageLoaded]);
-
-  useEffect(() => {
-    if (isItemsPerPageLoaded) {
-      localStorage.setItem(
-        "product_requests_current_page",
-        currentPage.toString(),
-      );
-    }
-  }, [currentPage, isItemsPerPageLoaded]);
-
-  // Debounce search term
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedSearchTerm(searchTerm);
-    }, 500); // 500ms delay
-
-    return () => clearTimeout(timer);
-  }, [searchTerm]);
 
   const [showMarkPurchasedDialog, setShowMarkPurchasedDialog] = useState(false);
   const [showQuoteDialog, setShowQuoteDialog] = useState(false);
@@ -349,24 +205,13 @@ export function ProductRequestsManagement({
   const { toast } = useToast();
 
   const {
-    data: queryResult,
+    data: orders = [],
     isLoading: loading,
     refetch,
     error,
   } = useQuery({
-    queryKey: [
-      "admin-orders",
-      hideRejected,
-      hideCancelled,
-      itemsPerPage,
-      currentPage,
-      debouncedSearchTerm,
-      statusFilter,
-    ],
+    queryKey: ["admin-orders", hideRejected, hideCancelled],
     queryFn: async () => {
-      const from = (currentPage - 1) * itemsPerPage;
-      const to = from + itemsPerPage - 1;
-
       let ordersQuery = supabase.from("orders").select(
         `
           *,
@@ -375,109 +220,22 @@ export function ProductRequestsManagement({
           ),
           quotes (*)
         `,
-        { count: "exact" },
       );
 
-      if (hideRejected) ordersQuery = ordersQuery.eq("is_rejected", false);
-      if (hideCancelled) ordersQuery = ordersQuery.eq("is_cancelled", false);
-
-      if (debouncedSearchTerm) {
-        const isUuid =
-          /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
-            debouncedSearchTerm,
-          );
-
-        // Find matching profiles first to get userIds
-        const { data: matchingProfiles } = await supabase
-          .from("profiles")
-          .select("id")
-          .or(
-            `full_name.ilike.%${debouncedSearchTerm}%,email.ilike.%${debouncedSearchTerm}%,user_personal_id.ilike.%${debouncedSearchTerm}%`,
-          );
-
-        const matchingUserIds = matchingProfiles?.map((p) => p.id) || [];
-
-        let orConditions: string[] = [];
-
-        if (isUuid) {
-          orConditions.push(`id.eq.${debouncedSearchTerm}`);
-        } else {
-          orConditions.push(`order_personal_id.ilike.%${debouncedSearchTerm}%`);
-        }
-
-        if (matchingUserIds.length > 0) {
-          // Join matching user IDs for the or filter
-          orConditions.push(`user_id.in.(${matchingUserIds.join(",")})`);
-        }
-
-        if (orConditions.length > 0) {
-          ordersQuery = ordersQuery.or(orConditions.join(","));
-        }
+      if (hideRejected) {
+        ordersQuery = ordersQuery.eq("is_rejected", false);
       }
 
-      if (statusFilter !== "all" && statusFilter !== "") {
-        const lowerFilter = statusFilter.toLowerCase();
-
-        const itemStatusMap: Record<string, string> = {
-          paid: "paid",
-          quoted: "quoted",
-          new: "requested",
-          purchased: "purchased",
-          received: "received",
-        };
-
-        if (itemStatusMap[lowerFilter]) {
-          const targetItemStatus = itemStatusMap[lowerFilter];
-          const { data: itemOrders } = await supabase
-            .from("order_items")
-            .select("order_id, product_requests!inner(status)")
-            .eq("product_requests.status", targetItemStatus as any);
-
-          const orderIdsWithStatus = [
-            ...new Set(itemOrders?.map((i) => i.order_id) || []),
-          ];
-          ordersQuery = ordersQuery.in("id", orderIdsWithStatus);
-        } else {
-          switch (lowerFilter) {
-            case "shipped":
-              ordersQuery = ordersQuery.eq("status", "shipped" as any);
-              break;
-            case "cancelled":
-              ordersQuery = ordersQuery.eq("is_cancelled", true);
-              break;
-            case "rejected":
-              ordersQuery = ordersQuery.eq("is_rejected", true);
-              break;
-            case "weighing":
-              ordersQuery = ordersQuery.eq("status", "weighing" as any);
-              break;
-            case "preparing":
-              ordersQuery = ordersQuery.eq("status", "preparing" as any);
-              break;
-            case "awaiting shipping payment":
-              ordersQuery = ordersQuery.eq(
-                "status",
-                "awaiting_shipping_payment" as any,
-              );
-              break;
-          }
-        }
+      if (hideCancelled) {
+        ordersQuery = ordersQuery.eq("is_cancelled", false);
       }
 
-      const {
-        data: ordersData,
-        error: ordersError,
-        count,
-      } = await ordersQuery
-        .order("created_at", { ascending: false })
-        .range(from, to);
+      const { data: ordersData, error: ordersError } = await ordersQuery.order(
+        "created_at",
+        { ascending: false },
+      );
 
-      if (ordersError) {
-        console.error("Supabase Error:", ordersError);
-        throw ordersError;
-      }
-
-      const totalCount = count || 0;
+      if (ordersError) throw ordersError;
 
       const allProductRequestIds = new Set<string>();
       (ordersData || []).forEach((order) => {
@@ -488,6 +246,7 @@ export function ProductRequestsManagement({
 
       const productRequestIdsArray = Array.from(allProductRequestIds);
       const BATCH_SIZE = 100;
+
       const requestsMap = new Map<string, ProductRequestWithIssue>();
 
       for (let i = 0; i < productRequestIdsArray.length; i += BATCH_SIZE) {
@@ -504,21 +263,30 @@ export function ProductRequestsManagement({
         });
       }
 
-      const uniqueOrderUserIds = [
-        ...new Set((ordersData || []).map((o) => o.user_id)),
-      ];
-      // Note: credit_balance casting ensures we get the data even if types are outdated
-      const { data: profilesData } = await supabase
-        .from("profiles")
-        .select("id, full_name, email, user_personal_id, credit_balance" as any)
-        .in("id", uniqueOrderUserIds);
+      const userIds = [...new Set((ordersData || []).map((o) => o.user_id))];
 
-      const profilesMap = new Map();
-      (profilesData || []).forEach((p: any) => {
-        if (p && typeof p === "object" && "id" in p) {
-          profilesMap.set(p.id, p);
-        }
-      });
+      const { data: profiles, error: profilesError } = await supabase
+        .from("profiles")
+        .select("id, full_name, email, user_personal_id")
+        .in("id", userIds);
+
+      if (profilesError) throw profilesError;
+
+      const { data: creditData } = (await supabase
+        .from("profiles")
+        .select("id, credit_balance" as any)
+        .in("id", userIds)) as any;
+
+      const creditMap = new Map(
+        (creditData || []).map((c: any) => [c.id, c.credit_balance ?? 0]),
+      );
+
+      const profileMap = new Map(
+        (profiles || []).map((p) => [
+          p.id,
+          { ...p, credit_balance: creditMap.get(p.id) ?? 0 },
+        ]),
+      );
 
       const ordersWithDetails = (ordersData || []).map((order) => {
         let items: ProductRequestWithIssue[];
@@ -554,81 +322,36 @@ export function ProductRequestsManagement({
             .filter(Boolean) as ProductRequestWithIssue[];
         }
 
-        const profile = profilesMap.get(order.user_id);
         return {
           ...order,
-          profiles: profile || null,
+          profiles: profileMap.get(order.user_id) || null,
           items,
-          rejection_details: order.rejection_details as any,
-        } as OrderWithDetails;
+        };
       });
 
-      return { orders: ordersWithDetails, count: totalCount };
+      return (ordersWithDetails as any[]).map((order) => ({
+        ...order,
+        rejection_details: order.rejection_details as any,
+      })) as OrderWithDetails[];
     },
     staleTime: 1000 * 60,
     gcTime: 1000 * 60 * 5,
     refetchOnWindowFocus: true,
   });
 
-  const orders = queryResult?.orders || [];
-  const totalOrders = queryResult?.count || 0;
-
-  const totalFilteredPages = Math.ceil(totalOrders / itemsPerPage);
+  useEffect(() => {
+    if (orderId && orders.length > 0) {
+      setOpenOrders((prev) => new Set(prev).add(orderId));
+      setTimeout(() => {
+        const element = document.getElementById(`order-${orderId}`);
+        element?.scrollIntoView({ behavior: "smooth", block: "center" });
+      }, 100);
+    }
+  }, [orderId, orders.length]);
 
   useEffect(() => {
-    if (orderId && redirectedOrderIdRef.current !== orderId) {
-      const foundMatch = orders.find((o) => o.id === orderId);
-
-      if (foundMatch) {
-        redirectedOrderIdRef.current = orderId;
-        setOpenOrders((prev) => new Set(prev).add(orderId));
-
-        setTimeout(() => {
-          const element = document.getElementById(`order-${orderId}`);
-          if (element) {
-            element.scrollIntoView({ behavior: "smooth", block: "center" });
-            element.classList.add("ring-2", "ring-primary", "ring-offset-2");
-            setTimeout(
-              () =>
-                element.classList.remove(
-                  "ring-2",
-                  "ring-primary",
-                  "ring-offset-2",
-                ),
-              4000,
-            );
-          }
-        }, 500);
-      } else if (isItemsPerPageLoaded && !loading) {
-        // If not found in current list, and we haven't searching for it yet,
-        // force the search to find this specific order.
-        if (searchTerm !== orderId) {
-          setSearchTerm(orderId);
-          setStatusFilter("all");
-          setHideRejected(false);
-          setHideCancelled(false);
-          setCurrentPage(1);
-        }
-      }
-    }
-  }, [orderId, orders, searchTerm, isItemsPerPageLoaded, loading]);
-
-  useEffect(() => {
-    if (isItemsPerPageLoaded) {
-      if (isInitialLoadRef.current) {
-        isInitialLoadRef.current = false;
-        return;
-      }
-      setCurrentPage(1);
-    }
-  }, [
-    statusFilter,
-    itemsPerPage,
-    hideRejected,
-    hideCancelled,
-    searchTerm,
-    isItemsPerPageLoaded,
-  ]);
+    setCurrentPage(1);
+  }, [statusFilter, itemsPerPage, hideRejected, hideCancelled, searchTerm]);
 
   const handleRefresh = async () => {
     setRefreshing(true);
@@ -910,7 +633,7 @@ export function ProductRequestsManagement({
       setCancelCreditAmount("");
       setCancelCreditReason("");
       queryClient.invalidateQueries({ queryKey: ["admin-orders"] });
-
+      
       // Refresh user profile to update balance display
       refreshProfile();
     } catch (error: any) {
@@ -1410,6 +1133,102 @@ export function ProductRequestsManagement({
     }
   };
 
+  const getOrderStatus = (order: OrderWithDetails) => {
+    if (order.is_cancelled) return "Cancelled";
+    if (order.is_rejected) return "Rejected";
+    if (order.status === "shipped") return "Shipped";
+
+    // Check product statuses for more accurate status
+    const productStatuses = order.items.map((item) => item.status);
+    const allSameStatus = productStatuses.every(
+      (status) => status === productStatuses[0],
+    );
+
+    if (allSameStatus && productStatuses[0]) {
+      switch (productStatuses[0]) {
+        case "shipping_paid":
+          return "Ready to Ship";
+        case "shipping_quoted":
+          return "Awaiting Shipping Payment";
+        case "received":
+          return "Stored";
+        case "purchased":
+          return "Purchased";
+        case "paid":
+          return "Paid";
+        case "quoted":
+          return "Quoted";
+        case "requested":
+          return "New";
+      }
+    }
+
+    // Handle mixed statuses
+    const hasPurchased = productStatuses.includes("purchased");
+    const hasPaid = productStatuses.includes("paid");
+    const hasReceived = productStatuses.includes("received");
+
+    if (hasPurchased && hasPaid) {
+      return "Partially Purchased";
+    }
+    if (hasReceived && (hasPurchased || hasPaid)) {
+      return "Partial Processing";
+    }
+
+    // Fallback to order status
+    if (order.status === "awaiting_shipping_payment")
+      return "Awaiting Shipping Payment";
+    if (order.status === "weighing") return "Weighing";
+    if (order.status === "preparing") return "Preparing";
+    return "New";
+  };
+
+  const getOrderStatusColor = (status: string) => {
+    switch (status) {
+      case "New":
+        // Slightly bluish-gray to show "just created"
+        return "bg-capybara-yellow text-red-500 border-slate-400/20";
+
+      case "Quoted":
+        return "bg-yellow-500/10 text-yellow-600 border-yellow-500/20";
+
+      case "Paid":
+        // Keep strong green tone for payment success
+        return "bg-emerald-500/10 text-emerald-600 border-emerald-500/20";
+
+      case "Partially Purchased":
+        return "bg-orange-500/10 text-orange-600 border-orange-500/20";
+
+      case "Purchased":
+        return "bg-orange-500/10 text-orange-600 border-orange-500/20";
+
+      case "Partial Processing":
+        return "bg-indigo-500/10 text-indigo-600 border-indigo-500/20";
+
+      case "Preparing":
+        return "bg-purple-500/10 text-purple-600 border-purple-500/20";
+
+      case "Stored":
+        // Shifted to blue-cyan — visually distinct from green Paid
+        return "bg-sky-500/10 text-sky-600 border-sky-500/20";
+
+      case "Awaiting Shipping":
+        return "bg-amber-500/10 text-amber-600 border-amber-500/20";
+
+      case "Shipped":
+        return "bg-cyan-500/10 text-cyan-600 border-cyan-500/20";
+
+      case "Rejected":
+        return "bg-red-500/10 text-red-600 border-red-500/20";
+
+      case "Cancelled":
+        return "bg-gray-500/10 text-gray-600 border-gray-500/20";
+
+      default:
+        return "bg-gray-500/10 text-gray-600 border-gray-500/20";
+    }
+  };
+
   const getStatusSteps = (order: OrderWithDetails) => {
     type StepStatus = "completed" | "current" | "rejected" | "upcoming";
 
@@ -1563,21 +1382,41 @@ export function ProductRequestsManagement({
     });
   };
 
-  if (loading && !orders.length) {
+  if (loading) {
     return (
       <Card>
-        <CardContent className="p-8">
-          <div className="flex flex-col items-center justify-center space-y-4">
-            <RefreshCw className="h-8 w-8 animate-spin text-muted-foreground" />
-            <p className="text-muted-foreground">Loading orders...</p>
+        <CardContent className="p-6">
+          <div className="text-center text-muted-foreground">
+            Loading orders...
           </div>
         </CardContent>
       </Card>
     );
   }
 
-  // No need to calculate totalFilteredPages or slice here, it's done near the top using totalOrders
-  const paginatedOrders = orders;
+  // Apply search filter
+  let filteredOrders = orders.filter((order) => {
+    const searchLower = searchTerm.toLowerCase();
+    return (
+      order.profiles?.full_name?.toLowerCase().includes(searchLower) ||
+      order.profiles?.email?.toLowerCase().includes(searchLower) ||
+      order.profiles?.user_personal_id?.toLowerCase().includes(searchLower) ||
+      order.order_personal_id?.toLowerCase().includes(searchLower) ||
+      order.id.toLowerCase().includes(searchLower)
+    );
+  });
+
+  if (statusFilter !== "all") {
+    filteredOrders = filteredOrders.filter((order) => {
+      const status = getOrderStatus(order);
+      return status.toLowerCase() === statusFilter.toLowerCase();
+    });
+  }
+
+  const totalFilteredPages = Math.ceil(filteredOrders.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedOrders = filteredOrders.slice(startIndex, endIndex);
   const formatShortUrl = (url: string): string => {
     try {
       const parsed = new URL(url);
@@ -1593,6 +1432,19 @@ export function ProductRequestsManagement({
       return url.length > 50 ? url.slice(0, 50) + "..." : url;
     }
   };
+
+  if (loading) {
+    return (
+      <Card>
+        <CardContent className="p-8">
+          <div className="flex flex-col items-center justify-center space-y-4">
+            <RefreshCw className="h-8 w-8 animate-spin text-muted-foreground" />
+            <p className="text-muted-foreground">Loading orders...</p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   if (error) {
     return (
@@ -1750,1115 +1602,1086 @@ export function ProductRequestsManagement({
                 </div>
               </div>
 
-              {totalOrders > 0 && (
+              {filteredOrders.length > 0 && (
                 <div className="mt-4 text-sm text-muted-foreground">
-                  Showing {(currentPage - 1) * itemsPerPage + 1}-
-                  {Math.min(currentPage * itemsPerPage, totalOrders)} of{" "}
-                  {totalOrders} orders
+                  Showing {startIndex + 1}-
+                  {Math.min(endIndex, filteredOrders.length)} of{" "}
+                  {filteredOrders.length} orders
                 </div>
               )}
             </CardContent>
           </Card>
 
-          {orders.length === 0 ? (
-            <div className="text-center py-10 border rounded-lg bg-muted/20">
-              <Package className="mx-auto h-12 w-12 text-muted-foreground mb-3 opacity-20" />
-              <h3 className="text-lg font-medium text-muted-foreground/60">
-                No orders found
-              </h3>
-              <p className="text-sm text-muted-foreground/40 mt-1">
-                Adjust your search or filters to see more results.
+          {filteredOrders.length === 0 && orders.length > 0 ? (
+            <div className="text-center py-8 text-muted-foreground">
+              <Package className="h-12 w-12 mx-auto mb-4 opacity-50" />
+              <p>No orders found with this filter</p>
+              <p className="text-sm mt-2">
+                Try adjusting your search or filter criteria.
               </p>
             </div>
+          ) : filteredOrders.length === 0 ? (
+            <p className="text-muted-foreground text-center py-8">
+              No orders found matching your criteria.
+            </p>
           ) : (
-            <div className="space-y-4">
-              {orders.map((order) => {
-                const isExpanded = openOrders.has(order.id);
-                const orderStatus = getOrderStatus(order);
+            paginatedOrders.map((order) => {
+              const isOpen = openOrders.has(order.id);
+              const orderStatus = getOrderStatus(order);
 
-                return (
-                  <Collapsible
-                    key={order.id}
-                    open={isExpanded}
-                    onOpenChange={() => toggleOrder(order.id)}
-                  >
-                    <Card id={`order-${order.id}`} className="border">
-                      <CollapsibleTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          className="w-full p-0 h-auto hover:bg-transparent"
-                          onClick={(e) => {
-                            if (
-                              (window.getSelection()?.toString().length ?? 0) >
-                              0
-                            ) {
-                              e.stopPropagation();
-                            }
-                          }}
-                        >
-                          <div className="w-full p-4">
-                            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
-                              <div className="flex flex-col text-left flex-1 min-w-0 space-y-1">
-                                <div className="flex items-center gap-1 min-w-0">
-                                  <p className="font-medium text-base flex items-baseline gap-1 min-w-0">
-                                    <span
-                                      className="flex-shrink-0 select-text"
-                                      onMouseDown={(e) => e.stopPropagation()}
-                                      onClick={(e) => e.stopPropagation()}
-                                    >
-                                      Order from
-                                    </span>
-                                    <span
-                                      className="text-blue-500 font-semibold truncate select-text"
-                                      title={
-                                        order.profiles?.full_name ||
-                                        order.profiles?.email ||
-                                        "Unknown"
-                                      }
-                                      onMouseDown={(e) => e.stopPropagation()}
-                                      onClick={(e) => e.stopPropagation()}
-                                    >
-                                      {order.profiles?.full_name ||
-                                        order.profiles?.email ||
-                                        "Unknown"}
-                                    </span>
-                                  </p>
-                                  {order.profiles?.full_name ||
-                                  order.profiles?.email ? (
-                                    <Button
-                                      variant="ghost"
-                                      size="icon"
-                                      className="h-4 w-4 p-0"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        navigator.clipboard.writeText(
-                                          order.profiles?.full_name ||
-                                            order.profiles?.email ||
-                                            "",
-                                        );
-                                        sonnerToast.success(
-                                          "Customer name copied to clipboard",
-                                        );
-                                      }}
-                                      title="Copy Customer Name"
-                                    >
-                                      <Copy className="h-3 w-3" />
-                                    </Button>
-                                  ) : null}
-                                </div>
-
-                                <div className="flex items-center gap-1 text-sm text-muted-foreground min-w-0">
-                                  <span className="flex items-baseline gap-1 min-w-0">
-                                    <span
-                                      className="flex-shrink-0 select-text"
-                                      onMouseDown={(e) => e.stopPropagation()}
-                                      onClick={(e) => e.stopPropagation()}
-                                    >
-                                      Customer ID:
-                                    </span>
-                                    <span
-                                      className="font-medium text-green-500 truncate select-text"
-                                      title={
-                                        order.profiles?.user_personal_id
-                                          ? `#${order.profiles.user_personal_id}`
-                                          : "N/A"
-                                      }
-                                      onMouseDown={(e) => e.stopPropagation()}
-                                      onClick={(e) => e.stopPropagation()}
-                                    >
-                                      {order.profiles?.user_personal_id
-                                        ? `#${order.profiles.user_personal_id}`
-                                        : "N/A"}
-                                    </span>
-                                  </span>
-                                  {order.profiles?.user_personal_id && (
-                                    <Button
-                                      variant="ghost"
-                                      size="icon"
-                                      className="h-4 w-4 p-0"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        navigator.clipboard.writeText(
-                                          order.profiles?.user_personal_id ||
-                                            "",
-                                        );
-                                        sonnerToast.success(
-                                          "Customer ID copied to clipboard",
-                                        );
-                                      }}
-                                      title="Copy Customer ID"
-                                    >
-                                      <Copy className="h-3 w-3" />
-                                    </Button>
-                                  )}
-                                </div>
-
-                                <div className="flex items-center gap-1 text-sm text-muted-foreground min-w-0">
-                                  <span className="flex items-baseline gap-1 min-w-0">
-                                    <span
-                                      className="flex-shrink-0 select-text"
-                                      onMouseDown={(e) => e.stopPropagation()}
-                                      onClick={(e) => e.stopPropagation()}
-                                    >
-                                      Customer Order ID:
-                                    </span>
-                                    <span
-                                      className="font-medium text-green-500 truncate select-text"
-                                      title={
-                                        order.order_personal_id
-                                          ? `#${order.order_personal_id}`
-                                          : "N/A"
-                                      }
-                                      onMouseDown={(e) => e.stopPropagation()}
-                                      onClick={(e) => e.stopPropagation()}
-                                    >
-                                      {order.order_personal_id
-                                        ? `#${order.order_personal_id}`
-                                        : "N/A"}
-                                    </span>
-                                  </span>
-                                  {order.order_personal_id && (
-                                    <Button
-                                      variant="ghost"
-                                      size="icon"
-                                      className="h-4 w-4 p-0"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        navigator.clipboard.writeText(
-                                          order.order_personal_id || "",
-                                        );
-                                        sonnerToast.success(
-                                          "Customer Order ID copied to clipboard",
-                                        );
-                                      }}
-                                      title="Copy Customer Order ID"
-                                    >
-                                      <Copy className="h-3 w-3" />
-                                    </Button>
-                                  )}
-                                </div>
-
-                                <div className="flex items-center gap-1 text-sm text-muted-foreground min-w-0">
+              return (
+                <Collapsible
+                  key={order.id}
+                  open={isOpen}
+                  onOpenChange={() => toggleOrder(order.id)}
+                >
+                  <Card id={`order-${order.id}`} className="border">
+                    <CollapsibleTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        className="w-full p-0 h-auto hover:bg-transparent"
+                        onClick={(e) => {
+                          if (
+                            (window.getSelection()?.toString().length ?? 0) > 0
+                          ) {
+                            e.stopPropagation();
+                          }
+                        }}
+                      >
+                        <div className="w-full p-4">
+                          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+                            <div className="flex flex-col text-left flex-1 min-w-0 space-y-1">
+                              <div className="flex items-center gap-1 min-w-0">
+                                <p className="font-medium text-base flex items-baseline gap-1 min-w-0">
                                   <span
-                                    className="font-medium truncate select-text"
-                                    title={`Order #${order.id.slice(0, 8).toUpperCase()}`}
+                                    className="flex-shrink-0 select-text"
                                     onMouseDown={(e) => e.stopPropagation()}
                                     onClick={(e) => e.stopPropagation()}
                                   >
-                                    Order #{order.id.slice(0, 8).toUpperCase()}
+                                    Order from
                                   </span>
+                                  <span
+                                    className="text-blue-500 font-semibold truncate select-text"
+                                    title={
+                                      order.profiles?.full_name ||
+                                      order.profiles?.email ||
+                                      "Unknown"
+                                    }
+                                    onMouseDown={(e) => e.stopPropagation()}
+                                    onClick={(e) => e.stopPropagation()}
+                                  >
+                                    {order.profiles?.full_name ||
+                                      order.profiles?.email ||
+                                      "Unknown"}
+                                  </span>
+                                </p>
+                                {order.profiles?.full_name ||
+                                order.profiles?.email ? (
                                   <Button
                                     variant="ghost"
                                     size="icon"
                                     className="h-4 w-4 p-0"
                                     onClick={(e) => {
                                       e.stopPropagation();
-                                      navigator.clipboard.writeText(order.id);
+                                      navigator.clipboard.writeText(
+                                        order.profiles?.full_name ||
+                                          order.profiles?.email ||
+                                          "",
+                                      );
                                       sonnerToast.success(
-                                        "Order ID copied to clipboard",
+                                        "Customer name copied to clipboard",
                                       );
                                     }}
-                                    title="Copy Order ID"
+                                    title="Copy Customer Name"
                                   >
                                     <Copy className="h-3 w-3" />
                                   </Button>
-                                </div>
+                                ) : null}
                               </div>
 
-                              <div className="flex flex-col sm:flex-col items-end sm:items-end justify-start gap-2 sm:gap-1 text-right flex-shrink-0 min-w-fit">
-                                <div className="flex items-center gap-2">
-                                  <Badge
-                                    className={`${getOrderStatusColor(orderStatus)} text-xs`}
+                              <div className="flex items-center gap-1 text-sm text-muted-foreground min-w-0">
+                                <span className="flex items-baseline gap-1 min-w-0">
+                                  <span
+                                    className="flex-shrink-0 select-text"
+                                    onMouseDown={(e) => e.stopPropagation()}
+                                    onClick={(e) => e.stopPropagation()}
                                   >
-                                    {orderStatus}
-                                  </Badge>
-                                  <ChevronDown
-                                    className={`h-5 w-5 text-muted-foreground transform transition-transform duration-300 ${
-                                      isExpanded ? "rotate-180" : "rotate-0"
-                                    }`}
-                                  />
-                                </div>
+                                    Customer ID:
+                                  </span>
+                                  <span
+                                    className="font-medium text-green-500 truncate select-text"
+                                    title={
+                                      order.profiles?.user_personal_id
+                                        ? `#${order.profiles.user_personal_id}`
+                                        : "N/A"
+                                    }
+                                    onMouseDown={(e) => e.stopPropagation()}
+                                    onClick={(e) => e.stopPropagation()}
+                                  >
+                                    {order.profiles?.user_personal_id
+                                      ? `#${order.profiles.user_personal_id}`
+                                      : "N/A"}
+                                  </span>
+                                </span>
+                                {order.profiles?.user_personal_id && (
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-4 w-4 p-0"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      navigator.clipboard.writeText(
+                                        order.profiles?.user_personal_id || "",
+                                      );
+                                      sonnerToast.success(
+                                        "Customer ID copied to clipboard",
+                                      );
+                                    }}
+                                    title="Copy Customer ID"
+                                  >
+                                    <Copy className="h-3 w-3" />
+                                  </Button>
+                                )}
+                              </div>
 
-                                <div className="flex flex-col items-end text-xs text-muted-foreground">
-                                  <p className="flex items-center gap-1 whitespace-nowrap">
-                                    <Clock className="h-3 w-3" />
-                                    {new Date(order.created_at).toLocaleString(
-                                      undefined,
-                                      {
-                                        year: "numeric",
-                                        month: "short",
-                                        day: "numeric",
-                                        hour: "2-digit",
-                                        minute: "2-digit",
-                                      },
-                                    )}
-                                  </p>
-                                  <p className="whitespace-nowrap">
-                                    {order.items.length} product
-                                    {order.items.length !== 1 ? "s" : ""}
-                                  </p>
+                              <div className="flex items-center gap-1 text-sm text-muted-foreground min-w-0">
+                                <span className="flex items-baseline gap-1 min-w-0">
+                                  <span
+                                    className="flex-shrink-0 select-text"
+                                    onMouseDown={(e) => e.stopPropagation()}
+                                    onClick={(e) => e.stopPropagation()}
+                                  >
+                                    Customer Order ID:
+                                  </span>
+                                  <span
+                                    className="font-medium text-green-500 truncate select-text"
+                                    title={
+                                      order.order_personal_id
+                                        ? `#${order.order_personal_id}`
+                                        : "N/A"
+                                    }
+                                    onMouseDown={(e) => e.stopPropagation()}
+                                    onClick={(e) => e.stopPropagation()}
+                                  >
+                                    {order.order_personal_id
+                                      ? `#${order.order_personal_id}`
+                                      : "N/A"}
+                                  </span>
+                                </span>
+                                {order.order_personal_id && (
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-4 w-4 p-0"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      navigator.clipboard.writeText(
+                                        order.order_personal_id || "",
+                                      );
+                                      sonnerToast.success(
+                                        "Customer Order ID copied to clipboard",
+                                      );
+                                    }}
+                                    title="Copy Customer Order ID"
+                                  >
+                                    <Copy className="h-3 w-3" />
+                                  </Button>
+                                )}
+                              </div>
 
-                                  {order.use_credits_request && (
-                                    <div className="flex flex-col items-end gap-1 mt-1">
-                                      <Badge className="bg-amber-100 text-amber-900 border-amber-200 hover:bg-amber-100 flex items-center gap-1 py-0.5 px-2 text-[10px]">
-                                        <JapaneseYen className="h-2.5 w-2.5 text-amber-600" />
-                                        Wants to use credits
-                                        <span className="ml-1 opacity-70">
-                                          (Amount: ¥
-                                          {Number(
-                                            order.credit_to_use ?? 0,
-                                          ).toLocaleString("en-US")}
-                                          )
-                                        </span>
-                                      </Badge>
-                                      <span className="text-[10px] text-amber-700 opacity-80 px-1">
-                                        Balance: ¥
+                              <div className="flex items-center gap-1 text-sm text-muted-foreground min-w-0">
+                                <span
+                                  className="font-medium truncate select-text"
+                                  title={`Order #${order.id.slice(0, 8).toUpperCase()}`}
+                                  onMouseDown={(e) => e.stopPropagation()}
+                                  onClick={(e) => e.stopPropagation()}
+                                >
+                                  Order #{order.id.slice(0, 8).toUpperCase()}
+                                </span>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-4 w-4 p-0"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    navigator.clipboard.writeText(order.id);
+                                    sonnerToast.success(
+                                      "Order ID copied to clipboard",
+                                    );
+                                  }}
+                                  title="Copy Order ID"
+                                >
+                                  <Copy className="h-3 w-3" />
+                                </Button>
+                              </div>
+                            </div>
+
+                            <div className="flex flex-col sm:flex-col items-end sm:items-end justify-start gap-2 sm:gap-1 text-right flex-shrink-0 min-w-fit">
+                              <div className="flex items-center gap-2">
+                                <Badge
+                                  className={`${getOrderStatusColor(orderStatus)} text-xs`}
+                                >
+                                  {orderStatus}
+                                </Badge>
+                                <ChevronDown
+                                  className={`h-5 w-5 text-muted-foreground transform transition-transform duration-300 ${
+                                    isOpen ? "rotate-180" : "rotate-0"
+                                  }`}
+                                />
+                              </div>
+
+                              <div className="flex flex-col items-end text-xs text-muted-foreground">
+                                <p className="flex items-center gap-1 whitespace-nowrap">
+                                  <Clock className="h-3 w-3" />
+                                  {new Date(order.created_at).toLocaleString(
+                                    undefined,
+                                    {
+                                      year: "numeric",
+                                      month: "short",
+                                      day: "numeric",
+                                      hour: "2-digit",
+                                      minute: "2-digit",
+                                    },
+                                  )}
+                                </p>
+                                <p className="whitespace-nowrap">
+                                  {order.items.length} product
+                                  {order.items.length !== 1 ? "s" : ""}
+                                </p>
+
+                                {order.use_credits_request && (
+                                  <div className="flex flex-col items-end gap-1 mt-1">
+                                    <Badge className="bg-amber-100 text-amber-900 border-amber-200 hover:bg-amber-100 flex items-center gap-1 py-0.5 px-2 text-[10px]">
+                                      <JapaneseYen className="h-2.5 w-2.5 text-amber-600" />
+                                      Wants to use credits
+                                      <span className="ml-1 opacity-70">
+                                        (Amount: ¥
                                         {Number(
-                                          order.profiles?.credit_balance ?? 0,
+                                          order.credit_to_use ?? 0,
                                         ).toLocaleString("en-US")}
+                                        )
                                       </span>
+                                    </Badge>
+                                    <span className="text-[10px] text-amber-700 opacity-80 px-1">
+                                      Balance: ¥
+                                      {Number(
+                                        order.profiles?.credit_balance ?? 0,
+                                      ).toLocaleString("en-US")}
+                                    </span>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </Button>
+                    </CollapsibleTrigger>
+
+                    <CollapsibleContent>
+                      <div className="px-4 pb-4 border-t pt-3">
+                        {/* Status Flow */}
+                        <div className="mb-4">
+                          <StatusFlow steps={getStatusSteps(order)} />
+                        </div>
+
+                        {/* Rejection Details */}
+                        {order.is_rejected && order.rejection_details && (
+                          <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+                            <div className="flex items-start gap-2">
+                              <AlertCircle className="h-5 w-5 text-red-600 mt-0.5 flex-shrink-0" />
+                              <div className="flex-1">
+                                <p className="font-medium text-red-900 mb-1">
+                                  Order Rejected
+                                </p>
+                                <p className="text-sm text-red-800">
+                                  {order.rejection_details.rejection_reason}
+                                </p>
+                                <p className="text-xs text-red-600 mt-2">
+                                  Rejected on{" "}
+                                  {new Date(
+                                    order.rejection_details.rejected_at,
+                                  ).toLocaleString()}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Products */}
+                        <div className="space-y-3">
+                          <h4 className="font-medium text-sm">
+                            Products in this order:
+                          </h4>
+                          {order.items.map((item, index: number) => (
+                            <div
+                              key={item.id}
+                              className="p-3 bg-secondary/30 rounded-lg"
+                            >
+                              <div className="flex items-start justify-between">
+                                <div className="flex-1 space-y-2">
+                                  <div className="flex items-center gap-2">
+                                    <p className="font-medium">
+                                      {index + 1}){" "}
+                                      {item.item_name || "Unnamed Product"}
+                                    </p>
+                                    {item.has_purchase_issue && (
+                                      <Badge className="bg-yellow-500/10 text-yellow-600 border-yellow-500/20 text-xs">
+                                        <Flag className="h-3 w-3 mr-1" />
+                                        Issue Flagged
+                                      </Badge>
+                                    )}
+                                  </div>
+
+                                  <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                                    <span>Qty: {item.quantity}</span>
+                                    {/* Product Link + Preview */}
+                                    <div className="space-y-2">
+                                      <a
+                                        href={item.product_url}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="flex items-center gap-1 text-blue-600 hover:underline break-all"
+                                        title={item.product_url} // shows full link on hover
+                                      >
+                                        <Link className="h-3 w-3 flex-shrink-0" />
+                                        {formatShortUrl(item.product_url)}
+                                      </a>
+                                    </div>
+                                  </div>
+
+                                  {item.notes && (
+                                    <p className="text-sm text-muted-foreground">
+                                      Notes: {item.notes}
+                                    </p>
+                                  )}
+
+                                  {/* Show rejection issue from snapshot */}
+                                  {(() => {
+                                    if (order.rejection_details) {
+                                      const rejectionIssue =
+                                        order.rejection_details.product_issues?.find(
+                                          (pi: any) =>
+                                            pi.product_id === item.id,
+                                        );
+
+                                      return rejectionIssue?.has_issue &&
+                                        rejectionIssue?.issue_description ? (
+                                        <div className="flex items-center gap-1 mt-2 bg-yellow-50 border border-yellow-200 rounded p-2">
+                                          <AlertCircle className="h-3 w-3 text-yellow-600 flex-shrink-0" />
+                                          <span className="text-xs text-yellow-700">
+                                            Issue:{" "}
+                                            {rejectionIssue.issue_description}
+                                          </span>
+                                        </div>
+                                      ) : null;
+                                    } else {
+                                      return item.purchase_issue_description ? (
+                                        <div className="flex items-center gap-1 mt-2 bg-yellow-50 border border-yellow-200 rounded p-2">
+                                          <AlertCircle className="h-3 w-3 text-yellow-600 flex-shrink-0" />
+                                          <span className="text-xs text-yellow-700">
+                                            Issue:{" "}
+                                            {item.purchase_issue_description}
+                                          </span>
+                                        </div>
+                                      ) : null;
+                                    }
+                                  })()}
+
+                                  {/* Individual purchase button for paid items */}
+                                  {item.status === "paid" && (
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      onClick={() => {
+                                        setItemForPurchased({ id: item.id });
+                                        setShowMarkIndividualPurchasedDialog(
+                                          true,
+                                        );
+                                      }}
+                                      className="mt-2"
+                                    >
+                                      <Package className="h-3 w-3 mr-1" />
+                                      Mark as Purchased
+                                    </Button>
+                                  )}
+
+                                  {/* Individual received button with dimension inputs for purchased items */}
+                                  {item.status === "purchased" && (
+                                    <div className="flex flex-col gap-2 mt-2">
+                                      <p className="text-xs text-muted-foreground">
+                                        <span className="text-red-500">*</span>{" "}
+                                        Weight is required to mark as received
+                                      </p>
+                                      <div className="flex flex-col justify-between sm:flex-row items-stretch sm:items-center gap-2">
+                                        <div className="flex items-center gap-2 flex-wrap">
+                                          <Input
+                                            type="number"
+                                            placeholder="Weight (g) *"
+                                            className="w-28 h-8 border-gray-200 focus:border-red-500"
+                                            id={`weight-${item.id}`}
+                                            min="0"
+                                            step="1"
+                                          />
+                                          <Input
+                                            type="number"
+                                            placeholder="Width (cm)"
+                                            className="w-24 h-8"
+                                            id={`width-${item.id}`}
+                                            min="0"
+                                            step="0.1"
+                                          />
+                                          <Input
+                                            type="number"
+                                            placeholder="Length (cm)"
+                                            className="w-24 h-8"
+                                            id={`length-${item.id}`}
+                                            min="0"
+                                            step="0.1"
+                                          />
+                                          <Input
+                                            type="number"
+                                            placeholder="Height (cm)"
+                                            className="w-24 h-8"
+                                            id={`height-${item.id}`}
+                                            min="0"
+                                            step="0.1"
+                                          />
+                                        </div>
+                                        <Button
+                                          onClick={() => {
+                                            const weightInput =
+                                              document.getElementById(
+                                                `weight-${item.id}`,
+                                              ) as HTMLInputElement;
+                                            const widthInput =
+                                              document.getElementById(
+                                                `width-${item.id}`,
+                                              ) as HTMLInputElement;
+                                            const lengthInput =
+                                              document.getElementById(
+                                                `length-${item.id}`,
+                                              ) as HTMLInputElement;
+                                            const heightInput =
+                                              document.getElementById(
+                                                `height-${item.id}`,
+                                              ) as HTMLInputElement;
+
+                                            const weight = weightInput?.value
+                                              ? parseFloat(weightInput.value)
+                                              : undefined;
+
+                                            if (
+                                              weight === undefined ||
+                                              weight === null ||
+                                              isNaN(weight)
+                                            ) {
+                                              toast({
+                                                title: "Weight Required",
+                                                description:
+                                                  "Please enter the weight in grams before marking as received. Use 0 if unknown.",
+                                                variant: "destructive",
+                                              });
+                                              weightInput?.focus();
+                                              return;
+                                            }
+
+                                            setItemForReceived({
+                                              id: item.id,
+                                              itemName: item.item_name,
+                                              weight,
+                                              width: widthInput?.value
+                                                ? parseFloat(widthInput.value)
+                                                : undefined,
+                                              length: lengthInput?.value
+                                                ? parseFloat(lengthInput.value)
+                                                : undefined,
+                                              height: heightInput?.value
+                                                ? parseFloat(heightInput.value)
+                                                : undefined,
+                                            });
+                                            setShowMarkReceivedDialog(true);
+                                          }}
+                                          size="sm"
+                                          variant="outline"
+                                          className="border border-green-200 text-green-600 hover:border-green-300 hover:bg-green-50/30 w-full sm:w-auto"
+                                        >
+                                          <Check className="h-3.5 w-3.5 mr-1" />
+                                          Mark as Received
+                                        </Button>
+                                      </div>
+                                    </div>
+                                  )}
+
+                                  {/* Display dimensions for received items */}
+                                  {item.status === "received" && (
+                                    <div className="text-sm text-muted-foreground mt-2">
+                                      {(item as any).weight && (
+                                        <span>
+                                          Weight: {(item as any).weight}g
+                                        </span>
+                                      )}
+                                      {((item as any).width ||
+                                        (item as any).length ||
+                                        (item as any).height) && (
+                                        <span
+                                          className={`${(item as any).weight ? "ml-2" : ""}`}
+                                        >
+                                          Dimensions: {(item as any).width || 0}{" "}
+                                          × {(item as any).length || 0} ×{" "}
+                                          {(item as any).height || 0} cm
+                                        </span>
+                                      )}
                                     </div>
                                   )}
                                 </div>
                               </div>
                             </div>
-                          </div>
-                        </Button>
-                      </CollapsibleTrigger>
+                          ))}
+                        </div>
 
-                      <CollapsibleContent>
-                        <div className="px-4 pb-4 border-t pt-3">
-                          {/* Status Flow */}
-                          <div className="mb-4">
-                            <StatusFlow steps={getStatusSteps(order)} />
-                          </div>
-
-                          {/* Rejection Details */}
-                          {order.is_rejected && order.rejection_details && (
-                            <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
-                              <div className="flex items-start gap-2">
-                                <AlertCircle className="h-5 w-5 text-red-600 mt-0.5 flex-shrink-0" />
-                                <div className="flex-1">
-                                  <p className="font-medium text-red-900 mb-1">
-                                    Order Rejected
-                                  </p>
-                                  <p className="text-sm text-red-800">
-                                    {order.rejection_details.rejection_reason}
-                                  </p>
-                                  <p className="text-xs text-red-600 mt-2">
-                                    Rejected on{" "}
-                                    {new Date(
-                                      order.rejection_details.rejected_at,
-                                    ).toLocaleString()}
-                                  </p>
-                                </div>
-                              </div>
-                            </div>
-                          )}
-
-                          {/* Products */}
-                          <div className="space-y-3">
-                            <h4 className="font-medium text-sm">
-                              Products in this order:
-                            </h4>
-                            {order.items.map((item, index: number) => (
-                              <div
-                                key={item.id}
-                                className="p-3 bg-secondary/30 rounded-lg"
-                              >
-                                <div className="flex items-start justify-between">
-                                  <div className="flex-1 space-y-2">
-                                    <div className="flex items-center gap-2">
-                                      <p className="font-medium">
-                                        {index + 1}){" "}
-                                        {item.item_name || "Unnamed Product"}
-                                      </p>
-                                      {item.has_purchase_issue && (
-                                        <Badge className="bg-yellow-500/10 text-yellow-600 border-yellow-500/20 text-xs">
-                                          <Flag className="h-3 w-3 mr-1" />
-                                          Issue Flagged
-                                        </Badge>
-                                      )}
-                                    </div>
-
-                                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                                      <span>Qty: {item.quantity}</span>
-                                      {/* Product Link + Preview */}
-                                      <div className="space-y-2">
-                                        <a
-                                          href={item.product_url}
-                                          target="_blank"
-                                          rel="noopener noreferrer"
-                                          className="flex items-center gap-1 text-blue-600 hover:underline break-all"
-                                          title={item.product_url} // shows full link on hover
-                                        >
-                                          <Link className="h-3 w-3 flex-shrink-0" />
-                                          {formatShortUrl(item.product_url)}
-                                        </a>
-                                      </div>
-                                    </div>
-
-                                    {item.notes && (
-                                      <p className="text-sm text-muted-foreground">
-                                        Notes: {item.notes}
-                                      </p>
-                                    )}
-
-                                    {/* Show rejection issue from snapshot */}
-                                    {(() => {
-                                      if (order.rejection_details) {
-                                        const rejectionIssue =
-                                          order.rejection_details.product_issues?.find(
-                                            (pi: any) =>
-                                              pi.product_id === item.id,
-                                          );
-
-                                        return rejectionIssue?.has_issue &&
-                                          rejectionIssue?.issue_description ? (
-                                          <div className="flex items-center gap-1 mt-2 bg-yellow-50 border border-yellow-200 rounded p-2">
-                                            <AlertCircle className="h-3 w-3 text-yellow-600 flex-shrink-0" />
-                                            <span className="text-xs text-yellow-700">
-                                              Issue:{" "}
-                                              {rejectionIssue.issue_description}
-                                            </span>
-                                          </div>
-                                        ) : null;
-                                      } else {
-                                        return item.purchase_issue_description ? (
-                                          <div className="flex items-center gap-1 mt-2 bg-yellow-50 border border-yellow-200 rounded p-2">
-                                            <AlertCircle className="h-3 w-3 text-yellow-600 flex-shrink-0" />
-                                            <span className="text-xs text-yellow-700">
-                                              Issue:{" "}
-                                              {item.purchase_issue_description}
-                                            </span>
-                                          </div>
-                                        ) : null;
-                                      }
-                                    })()}
-
-                                    {/* Individual purchase button for paid items */}
-                                    {item.status === "paid" && (
-                                      <Button
-                                        size="sm"
-                                        variant="outline"
-                                        onClick={() => {
-                                          setItemForPurchased({ id: item.id });
-                                          setShowMarkIndividualPurchasedDialog(
-                                            true,
-                                          );
-                                        }}
-                                        className="mt-2"
-                                      >
-                                        <Package className="h-3 w-3 mr-1" />
-                                        Mark as Purchased
-                                      </Button>
-                                    )}
-
-                                    {/* Individual received button with dimension inputs for purchased items */}
-                                    {item.status === "purchased" && (
-                                      <div className="flex flex-col gap-2 mt-2">
-                                        <p className="text-xs text-muted-foreground">
-                                          <span className="text-red-500">
-                                            *
-                                          </span>{" "}
-                                          Weight is required to mark as received
-                                        </p>
-                                        <div className="flex flex-col justify-between sm:flex-row items-stretch sm:items-center gap-2">
-                                          <div className="flex items-center gap-2 flex-wrap">
-                                            <Input
-                                              type="number"
-                                              placeholder="Weight (g) *"
-                                              className="w-28 h-8 border-gray-200 focus:border-red-500"
-                                              id={`weight-${item.id}`}
-                                              min="0"
-                                              step="1"
-                                            />
-                                            <Input
-                                              type="number"
-                                              placeholder="Width (cm)"
-                                              className="w-24 h-8"
-                                              id={`width-${item.id}`}
-                                              min="0"
-                                              step="0.1"
-                                            />
-                                            <Input
-                                              type="number"
-                                              placeholder="Length (cm)"
-                                              className="w-24 h-8"
-                                              id={`length-${item.id}`}
-                                              min="0"
-                                              step="0.1"
-                                            />
-                                            <Input
-                                              type="number"
-                                              placeholder="Height (cm)"
-                                              className="w-24 h-8"
-                                              id={`height-${item.id}`}
-                                              min="0"
-                                              step="0.1"
-                                            />
-                                          </div>
-                                          <Button
-                                            onClick={() => {
-                                              const weightInput =
-                                                document.getElementById(
-                                                  `weight-${item.id}`,
-                                                ) as HTMLInputElement;
-                                              const widthInput =
-                                                document.getElementById(
-                                                  `width-${item.id}`,
-                                                ) as HTMLInputElement;
-                                              const lengthInput =
-                                                document.getElementById(
-                                                  `length-${item.id}`,
-                                                ) as HTMLInputElement;
-                                              const heightInput =
-                                                document.getElementById(
-                                                  `height-${item.id}`,
-                                                ) as HTMLInputElement;
-
-                                              const weight = weightInput?.value
-                                                ? parseFloat(weightInput.value)
-                                                : undefined;
-
-                                              if (
-                                                weight === undefined ||
-                                                weight === null ||
-                                                isNaN(weight)
-                                              ) {
-                                                toast({
-                                                  title: "Weight Required",
-                                                  description:
-                                                    "Please enter the weight in grams before marking as received. Use 0 if unknown.",
-                                                  variant: "destructive",
-                                                });
-                                                weightInput?.focus();
-                                                return;
-                                              }
-
-                                              setItemForReceived({
-                                                id: item.id,
-                                                itemName: item.item_name,
-                                                weight,
-                                                width: widthInput?.value
-                                                  ? parseFloat(widthInput.value)
-                                                  : undefined,
-                                                length: lengthInput?.value
-                                                  ? parseFloat(
-                                                      lengthInput.value,
-                                                    )
-                                                  : undefined,
-                                                height: heightInput?.value
-                                                  ? parseFloat(
-                                                      heightInput.value,
-                                                    )
-                                                  : undefined,
-                                              });
-                                              setShowMarkReceivedDialog(true);
-                                            }}
-                                            size="sm"
-                                            variant="outline"
-                                            className="border border-green-200 text-green-600 hover:border-green-300 hover:bg-green-50/30 w-full sm:w-auto"
-                                          >
-                                            <Check className="h-3.5 w-3.5 mr-1" />
-                                            Mark as Received
-                                          </Button>
-                                        </div>
-                                      </div>
-                                    )}
-
-                                    {/* Display dimensions for received items */}
-                                    {item.status === "received" && (
-                                      <div className="text-sm text-muted-foreground mt-2">
-                                        {(item as any).weight && (
-                                          <span>
-                                            Weight: {(item as any).weight}g
-                                          </span>
-                                        )}
-                                        {((item as any).width ||
-                                          (item as any).length ||
-                                          (item as any).height) && (
-                                          <span
-                                            className={`${(item as any).weight ? "ml-2" : ""}`}
-                                          >
-                                            Dimensions:{" "}
-                                            {(item as any).width || 0} ×{" "}
-                                            {(item as any).length || 0} ×{" "}
-                                            {(item as any).height || 0} cm
-                                          </span>
-                                        )}
-                                      </div>
-                                    )}
-                                  </div>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-
-                          {/* Order Actions */}
-                          {!order.is_rejected && !order.is_cancelled && (
-                            <div className="flex flex-wrap gap-2 mt-4">
-                              {/* Show create quote if no quotes exist */}
-                              {!order.quotes?.length && (
-                                <>
-                                  <Dialog
-                                    open={showQuoteDialog}
-                                    onOpenChange={setShowQuoteDialog}
-                                  >
-                                    <DialogTrigger asChild>
-                                      <Button
-                                        size="sm"
-                                        variant="outline"
-                                        onClick={() => {
-                                          setSelectedOrder(order);
-                                          if (
-                                            order.use_credits_request &&
-                                            order.credit_to_use
-                                          ) {
-                                            setQuoteCreditAmount(
-                                              order.credit_to_use.toString(),
-                                            );
-                                          }
-                                        }}
-                                      >
-                                        <DollarSign className="h-4 w-4 mr-1" />
-                                        Create Quote
-                                      </Button>
-                                    </DialogTrigger>
-                                    <DialogContent className="max-w-2xl">
-                                      <DialogHeader>
-                                        <DialogTitle>
-                                          Create Order Quote
-                                        </DialogTitle>
-                                        <DialogDescription>
-                                          Enter the invoice URL for this order
-                                          quote.
-                                        </DialogDescription>
-                                      </DialogHeader>
-                                      <div className="space-y-4">
-                                        <div>
-                                          <Label htmlFor="quote-url">
-                                            Invoice URL
-                                          </Label>
-                                          <Input
-                                            id="quote-url"
-                                            type="url"
-                                            value={quoteInvoiceUrl}
-                                            onChange={(e) =>
-                                              setQuoteInvoiceUrl(e.target.value)
-                                            }
-                                            placeholder="Enter PayPal invoice URL"
-                                            className="mt-2"
-                                          />
-                                        </div>
-                                        {/* Credit Amount Input - shown only when user requested credits */}
-                                        {(selectedOrder as any)
-                                          ?.use_credits_request && (
-                                          <div className="p-3 rounded-lg bg-amber-50 border border-amber-200 space-y-2">
-                                            <div className="flex items-center gap-1.5 text-sm font-medium text-amber-700">
-                                              <JapaneseYen className="h-4 w-4" />
-                                              <span>
-                                                Customer wants to use credits
-                                              </span>
-                                              <span className="text-amber-900 font-semibold">
-                                                (Balance: ¥
-                                                {(
-                                                  selectedOrder?.profiles as any
-                                                )?.credit_balance?.toLocaleString(
-                                                  "en-US",
-                                                ) ?? "0"}
-                                                )
-                                              </span>
-                                            </div>
-                                            <Label
-                                              htmlFor="quote-credit-amount"
-                                              className="text-sm"
-                                            >
-                                              Credit to apply (¥)
-                                            </Label>
-                                            <Input
-                                              id="quote-credit-amount"
-                                              type="number"
-                                              min="0"
-                                              step="1"
-                                              max={
-                                                (selectedOrder?.profiles as any)
-                                                  ?.credit_balance ?? 0
-                                              }
-                                              value={quoteCreditAmount}
-                                              onChange={(e) =>
-                                                setQuoteCreditAmount(
-                                                  e.target.value,
-                                                )
-                                              }
-                                              placeholder="Enter credit amount to apply..."
-                                              className="mt-1"
-                                            />
-                                            {quoteCreditAmount &&
-                                              parseFloat(quoteCreditAmount) >
-                                                ((
-                                                  selectedOrder?.profiles as any
-                                                )?.credit_balance ?? 0) && (
-                                                <p className="text-xs text-red-500 mt-1">
-                                                  ⚠️ Amount exceeds user's
-                                                  available balance (¥
-                                                  {(
-                                                    (
-                                                      selectedOrder?.profiles as any
-                                                    )?.credit_balance ?? 0
-                                                  ).toLocaleString("en-US")}
-                                                  )
-                                                </p>
-                                              )}
-                                          </div>
-                                        )}
-                                      </div>
-                                      <DialogFooter>
-                                        <Button onClick={createOrderQuote}>
-                                          Create Quote
-                                        </Button>
-                                      </DialogFooter>
-                                    </DialogContent>
-                                  </Dialog>
-
-                                  <Dialog
-                                    open={showRejectDialog}
-                                    onOpenChange={setShowRejectDialog}
-                                  >
-                                    <DialogTrigger asChild>
-                                      <Button
-                                        size="sm"
-                                        variant="outline"
-                                        className="text-red-600 hover:text-red-700"
-                                        onClick={() => setSelectedOrder(order)}
-                                      >
-                                        <X className="h-4 w-4 mr-1" />
-                                        Reject Order
-                                      </Button>
-                                    </DialogTrigger>
-                                    <DialogContent className="max-w-2xl">
-                                      <DialogHeader>
-                                        <DialogTitle>Reject Order</DialogTitle>
-                                        <DialogDescription>
-                                          Reject the entire order. The customer
-                                          will be able to edit and resubmit.
-                                        </DialogDescription>
-                                      </DialogHeader>
-                                      <div className="space-y-4">
-                                        <div>
-                                          <Label htmlFor="rejection-reason">
-                                            Rejection Reason *
-                                          </Label>
-                                          <Textarea
-                                            id="rejection-reason"
-                                            value={rejectionReason}
-                                            onChange={(e) =>
-                                              setRejectionReason(e.target.value)
-                                            }
-                                            placeholder="Explain why the order is being rejected..."
-                                            className="min-h-[100px]"
-                                          />
-                                        </div>
-
-                                        {/* Product Issues */}
-                                        <div>
-                                          <Label>
-                                            Flag Specific Products with Issues
-                                            (optional)
-                                          </Label>
-                                          <div className="space-y-2 mt-2 max-h-60 overflow-y-auto">
-                                            {order.items.map((item) => {
-                                              const issue = productIssues.get(
-                                                item.id,
-                                              ) || {
-                                                hasIssue: false,
-                                                description: "",
-                                              };
-                                              return (
-                                                <div
-                                                  key={item.id}
-                                                  className="p-3 border rounded-lg"
-                                                >
-                                                  <div className="flex items-start gap-2">
-                                                    <Checkbox
-                                                      checked={issue.hasIssue}
-                                                      onCheckedChange={(
-                                                        checked,
-                                                      ) =>
-                                                        updateProductIssue(
-                                                          item.id,
-                                                          checked as boolean,
-                                                          issue.description,
-                                                        )
-                                                      }
-                                                    />
-                                                    <div className="flex-1">
-                                                      <p className="text-sm font-medium">
-                                                        {item.item_name ||
-                                                          "Unnamed Product"}
-                                                      </p>
-                                                      {issue.hasIssue && (
-                                                        <Input
-                                                          className="mt-2"
-                                                          placeholder="Describe the issue with this product..."
-                                                          value={
-                                                            issue.description
-                                                          }
-                                                          onChange={(e) =>
-                                                            updateProductIssue(
-                                                              item.id,
-                                                              true,
-                                                              e.target.value,
-                                                            )
-                                                          }
-                                                        />
-                                                      )}
-                                                    </div>
-                                                  </div>
-                                                </div>
-                                              );
-                                            })}
-                                          </div>
-                                        </div>
-                                      </div>
-                                      <DialogFooter>
-                                        <Button
-                                          variant="destructive"
-                                          onClick={rejectOrder}
-                                        >
-                                          Reject Order
-                                        </Button>
-                                      </DialogFooter>
-                                    </DialogContent>
-                                  </Dialog>
-                                </>
-                              )}
-
-                              {/* Cancel Order button - appears for New or Quoted orders */}
-                              {(!order.quotes?.length ||
-                                order.quotes?.some(
-                                  (q) =>
-                                    q.type === "product" && q.status === "sent",
-                                )) && (
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  className="text-gray-600 hover:text-gray-700"
-                                  onClick={() => {
-                                    setOrderToCancel(order);
-                                    setShowCancelDialog(true);
-                                  }}
-                                >
-                                  <XCircle className="h-4 w-4 mr-1" />
-                                  Cancel Order
-                                </Button>
-                              )}
-
-                              {/* Show confirm payment button for sent product quotes */}
-                              {order.quotes?.some(
-                                (q) =>
-                                  q.status === "sent" && q.type === "product",
-                              ) && (
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  className="text-green-600 hover:text-green-700"
-                                  onClick={() => {
-                                    setOrderForPayment(order);
-                                    setShowConfirmPaymentDialog(true);
-                                  }}
-                                >
-                                  <CheckCircle className="h-4 w-4 mr-1" />
-                                  Confirm Payment
-                                </Button>
-                              )}
-
-                              {/* After product payment confirmed - Mark as Purchased */}
-                              {order.items.some(
-                                (item) => item.status === "paid",
-                              ) && (
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  onClick={() => {
-                                    setOrderForPurchased(order);
-                                    setShowMarkPurchasedDialog(true);
-                                  }}
-                                >
-                                  <Package className="h-4 w-4 mr-1" />
-                                  Mark All Paid as Purchased
-                                </Button>
-                              )}
-
-                              {/* After purchased - Mark as Received */}
-                              {order.items.some(
-                                (item) => item.status === "purchased",
-                              ) && (
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  className="border border-green-200 text-green-600 hover:border-green-300 hover:bg-green-50/30 w-auto text-xs sm:text-sm"
-                                  onClick={() => {
-                                    const dimensions = new Map<
-                                      string,
-                                      {
-                                        weight?: number;
-                                        width?: number;
-                                        length?: number;
-                                        height?: number;
-                                      }
-                                    >();
-                                    const missingWeight: string[] = [];
-
-                                    order.items.forEach((item) => {
-                                      if (item.status === "purchased") {
-                                        const weightInput =
-                                          document.getElementById(
-                                            `weight-${item.id}`,
-                                          ) as HTMLInputElement;
-                                        const widthInput =
-                                          document.getElementById(
-                                            `width-${item.id}`,
-                                          ) as HTMLInputElement;
-                                        const lengthInput =
-                                          document.getElementById(
-                                            `length-${item.id}`,
-                                          ) as HTMLInputElement;
-                                        const heightInput =
-                                          document.getElementById(
-                                            `height-${item.id}`,
-                                          ) as HTMLInputElement;
-
-                                        const itemDimensions: any = {};
-                                        const weight = weightInput?.value
-                                          ? parseFloat(weightInput.value)
-                                          : undefined;
-
-                                        if (
-                                          weight !== undefined &&
-                                          !isNaN(weight)
-                                        ) {
-                                          itemDimensions.weight = weight;
-                                        } else {
-                                          missingWeight.push(
-                                            item.item_name || "Unnamed Product",
-                                          );
-                                        }
-
-                                        if (widthInput?.value)
-                                          itemDimensions.width = parseFloat(
-                                            widthInput.value,
-                                          );
-                                        if (lengthInput?.value)
-                                          itemDimensions.length = parseFloat(
-                                            lengthInput.value,
-                                          );
-                                        if (heightInput?.value)
-                                          itemDimensions.height = parseFloat(
-                                            heightInput.value,
-                                          );
-
-                                        if (
-                                          Object.keys(itemDimensions).length > 0
-                                        ) {
-                                          dimensions.set(
-                                            item.id,
-                                            itemDimensions,
-                                          );
-                                        }
-                                      }
-                                    });
-
-                                    if (missingWeight.length > 0) {
-                                      toast({
-                                        title: "Weight Required",
-                                        description: `Please enter weight for: ${missingWeight.join(", ")}. Use 0 if unknown.`,
-                                        variant: "destructive",
-                                      });
-                                      return;
-                                    }
-
-                                    setDimensionsForAllReceived(dimensions);
-                                    setItemsWithoutWeight(missingWeight);
-                                    setOrderForAllReceived(order);
-                                    setShowMarkAllReceivedDialog(true);
-                                  }}
-                                >
-                                  <Check className="h-4 w-4 mr-1" />
-                                  Mark All Purchased as Received
-                                </Button>
-                              )}
-
-                              {/* Emergency Cancel for Paid or Purchased orders */}
-                              {order.items.some(
-                                (item) =>
-                                  item.status === "paid" ||
-                                  item.status === "purchased",
-                              ) && (
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  className="text-black hover:text-red-700 hover:bg-red-50 border-gray-300"
-                                  onClick={() => {
-                                    setOrderToCancel(order);
-                                    setShowCancelDialog(true);
-                                  }}
-                                >
-                                  <XCircle className="h-4 w-4 mr-1" />
-                                  Cancel Order
-                                </Button>
-                              )}
-
-                              {/* Show confirm shipping payment button */}
-                              {order.quotes?.some(
-                                (q) =>
-                                  q.status === "sent" && q.type === "shipping",
-                              ) && (
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  className="text-green-600 hover:text-green-700"
-                                  onClick={() => confirmShippingPayment(order)}
-                                >
-                                  <CreditCard className="h-4 w-4 mr-1" />
-                                  Confirm Shipping Payment
-                                </Button>
-                              )}
-
-                              {/* After shipping payment confirmed - Ship Order */}
-                              {order.items.every(
-                                (item) => item.status === "shipping_paid",
-                              ) && (
+                        {/* Order Actions */}
+                        {!order.is_rejected && !order.is_cancelled && (
+                          <div className="flex flex-wrap gap-2 mt-4">
+                            {/* Show create quote if no quotes exist */}
+                            {!order.quotes?.length && (
+                              <>
                                 <Dialog
-                                  open={showTrackingDialog}
-                                  onOpenChange={setShowTrackingDialog}
+                                  open={showQuoteDialog}
+                                  onOpenChange={setShowQuoteDialog}
                                 >
                                   <DialogTrigger asChild>
                                     <Button
                                       size="sm"
                                       variant="outline"
-                                      className="text-blue-600 hover:text-blue-700"
+                                      onClick={() => {
+                                        setSelectedOrder(order);
+                                        if (order.use_credits_request && order.credit_to_use) {
+                                          setQuoteCreditAmount(order.credit_to_use.toString());
+                                        }
+                                      }}
                                     >
-                                      <Truck className="h-4 w-4 mr-1" />
-                                      Mark as Shipped
+                                      <DollarSign className="h-4 w-4 mr-1" />
+                                      Create Quote
                                     </Button>
                                   </DialogTrigger>
-                                  <DialogContent>
+                                  <DialogContent className="max-w-2xl">
                                     <DialogHeader>
-                                      <DialogTitle>Ship Order</DialogTitle>
+                                      <DialogTitle>
+                                        Create Order Quote
+                                      </DialogTitle>
                                       <DialogDescription>
-                                        Enter the tracking number for this
-                                        shipment.
+                                        Enter the invoice URL for this order
+                                        quote.
                                       </DialogDescription>
                                     </DialogHeader>
                                     <div className="space-y-4">
                                       <div>
-                                        <Label htmlFor="tracking">
-                                          Tracking Number
+                                        <Label htmlFor="quote-url">
+                                          Invoice URL
                                         </Label>
                                         <Input
-                                          id="tracking"
-                                          value={trackingNumber}
+                                          id="quote-url"
+                                          type="url"
+                                          value={quoteInvoiceUrl}
                                           onChange={(e) =>
-                                            setTrackingNumber(e.target.value)
+                                            setQuoteInvoiceUrl(e.target.value)
                                           }
-                                          placeholder="Enter tracking number"
+                                          placeholder="Enter PayPal invoice URL"
+                                          className="mt-2"
                                         />
                                       </div>
+                                      {/* Credit Amount Input - shown only when user requested credits */}
+                                      {(selectedOrder as any)
+                                        ?.use_credits_request && (
+                                        <div className="p-3 rounded-lg bg-amber-50 border border-amber-200 space-y-2">
+                                          <div className="flex items-center gap-1.5 text-sm font-medium text-amber-700">
+                                            <JapaneseYen className="h-4 w-4" />
+                                            <span>
+                                              Customer wants to use credits
+                                            </span>
+                                            <span className="text-amber-900 font-semibold">
+                                              (Balance: ¥
+                                              {(
+                                                selectedOrder?.profiles as any
+                                              )?.credit_balance?.toLocaleString(
+                                                "en-US",
+                                              ) ?? "0"}
+                                              )
+                                            </span>
+                                          </div>
+                                          <Label
+                                            htmlFor="quote-credit-amount"
+                                            className="text-sm"
+                                          >
+                                            Credit to apply (¥)
+                                          </Label>
+                                          <Input
+                                            id="quote-credit-amount"
+                                            type="number"
+                                            min="0"
+                                            step="1"
+                                            max={
+                                              (selectedOrder?.profiles as any)
+                                                ?.credit_balance ?? 0
+                                            }
+                                            value={quoteCreditAmount}
+                                            onChange={(e) =>
+                                              setQuoteCreditAmount(
+                                                e.target.value,
+                                              )
+                                            }
+                                            placeholder="Enter credit amount to apply..."
+                                            className="mt-1"
+                                          />
+                                          {quoteCreditAmount &&
+                                            parseFloat(quoteCreditAmount) >
+                                              ((selectedOrder?.profiles as any)
+                                                ?.credit_balance ?? 0) && (
+                                              <p className="text-xs text-red-500 mt-1">
+                                                ⚠️ Amount exceeds user's
+                                                available balance (¥
+                                                {(
+                                                  (
+                                                    selectedOrder?.profiles as any
+                                                  )?.credit_balance ?? 0
+                                                ).toLocaleString("en-US")}
+                                                )
+                                              </p>
+                                            )}
+                                        </div>
+                                      )}
                                     </div>
                                     <DialogFooter>
-                                      <Button onClick={() => shipOrder(order)}>
-                                        Confirm Shipment
+                                      <Button onClick={createOrderQuote}>
+                                        Create Quote
                                       </Button>
                                     </DialogFooter>
                                   </DialogContent>
                                 </Dialog>
-                              )}
-                            </div>
-                          )}
 
-                          {/* Quote Information */}
-                          {order.quotes && order.quotes.length > 0 && (
-                            <div className="mt-4 p-4 border border-blue-200 bg-blue-50/50 rounded-xl">
-                              <p className="text-sm font-semibold text-blue-900 mb-2">
-                                Quote Information
-                              </p>
-
-                              <div className="space-y-2">
-                                {order.quotes.map((quote) => {
-                                  const formattedStatus =
-                                    quote.status.charAt(0).toUpperCase() +
-                                    quote.status.slice(1);
-
-                                  let shortUrl = quote.quote_url;
-                                  try {
-                                    const parsed = new URL(quote.quote_url);
-                                    const domain = parsed.hostname.replace(
-                                      /^www\./,
-                                      "",
-                                    );
-                                    const path =
-                                      parsed.pathname +
-                                      parsed.search +
-                                      parsed.hash;
-                                    shortUrl = `${domain}${path.length > 20 ? path.slice(0, 20) + "..." : path}`;
-                                  } catch {
-                                    shortUrl =
-                                      quote.quote_url.length > 25
-                                        ? quote.quote_url.slice(0, 25) + "..."
-                                        : quote.quote_url;
-                                  }
-
-                                  return (
-                                    <div
-                                      key={quote.id}
-                                      className="bg-white/60 rounded-lg p-3 border border-blue-100"
+                                <Dialog
+                                  open={showRejectDialog}
+                                  onOpenChange={setShowRejectDialog}
+                                >
+                                  <DialogTrigger asChild>
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      className="text-red-600 hover:text-red-700"
+                                      onClick={() => setSelectedOrder(order)}
                                     >
-                                      <div className="flex flex-col sm:flex-row sm:items-center sm:gap-3 gap-2 text-sm">
-                                        <p className="text-blue-900 font-medium flex-shrink-0">
-                                          Status: {formattedStatus}
-                                        </p>
+                                      <X className="h-4 w-4 mr-1" />
+                                      Reject Order
+                                    </Button>
+                                  </DialogTrigger>
+                                  <DialogContent className="max-w-2xl">
+                                    <DialogHeader>
+                                      <DialogTitle>Reject Order</DialogTitle>
+                                      <DialogDescription>
+                                        Reject the entire order. The customer
+                                        will be able to edit and resubmit.
+                                      </DialogDescription>
+                                    </DialogHeader>
+                                    <div className="space-y-4">
+                                      <div>
+                                        <Label htmlFor="rejection-reason">
+                                          Rejection Reason *
+                                        </Label>
+                                        <Textarea
+                                          id="rejection-reason"
+                                          value={rejectionReason}
+                                          onChange={(e) =>
+                                            setRejectionReason(e.target.value)
+                                          }
+                                          placeholder="Explain why the order is being rejected..."
+                                          className="min-h-[100px]"
+                                        />
+                                      </div>
 
-                                        <a
-                                          href={quote.quote_url}
-                                          target="_blank"
-                                          rel="noopener noreferrer"
-                                          className="flex items-center gap-1 text-blue-600 hover:text-blue-700 hover:underline break-all sm:break-normal min-w-0"
-                                          title={quote.quote_url}
-                                        >
-                                          <Link className="h-3.5 w-3.5 flex-shrink-0" />
-                                          <span className="truncate sm:inline">
-                                            {shortUrl}
-                                          </span>
-                                        </a>
+                                      {/* Product Issues */}
+                                      <div>
+                                        <Label>
+                                          Flag Specific Products with Issues
+                                          (optional)
+                                        </Label>
+                                        <div className="space-y-2 mt-2 max-h-60 overflow-y-auto">
+                                          {order.items.map((item) => {
+                                            const issue = productIssues.get(
+                                              item.id,
+                                            ) || {
+                                              hasIssue: false,
+                                              description: "",
+                                            };
+                                            return (
+                                              <div
+                                                key={item.id}
+                                                className="p-3 border rounded-lg"
+                                              >
+                                                <div className="flex items-start gap-2">
+                                                  <Checkbox
+                                                    checked={issue.hasIssue}
+                                                    onCheckedChange={(
+                                                      checked,
+                                                    ) =>
+                                                      updateProductIssue(
+                                                        item.id,
+                                                        checked as boolean,
+                                                        issue.description,
+                                                      )
+                                                    }
+                                                  />
+                                                  <div className="flex-1">
+                                                    <p className="text-sm font-medium">
+                                                      {item.item_name ||
+                                                        "Unnamed Product"}
+                                                    </p>
+                                                    {issue.hasIssue && (
+                                                      <Input
+                                                        className="mt-2"
+                                                        placeholder="Describe the issue with this product..."
+                                                        value={
+                                                          issue.description
+                                                        }
+                                                        onChange={(e) =>
+                                                          updateProductIssue(
+                                                            item.id,
+                                                            true,
+                                                            e.target.value,
+                                                          )
+                                                        }
+                                                      />
+                                                    )}
+                                                  </div>
+                                                </div>
+                                              </div>
+                                            );
+                                          })}
+                                        </div>
                                       </div>
                                     </div>
+                                    <DialogFooter>
+                                      <Button
+                                        variant="destructive"
+                                        onClick={rejectOrder}
+                                      >
+                                        Reject Order
+                                      </Button>
+                                    </DialogFooter>
+                                  </DialogContent>
+                                </Dialog>
+                              </>
+                            )}
+
+                            {/* Cancel Order button - appears for New or Quoted orders */}
+                            {(!order.quotes?.length ||
+                              order.quotes?.some(
+                                (q) =>
+                                  q.type === "product" && q.status === "sent",
+                              )) && (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="text-gray-600 hover:text-gray-700"
+                                onClick={() => {
+                                  setOrderToCancel(order);
+                                  setShowCancelDialog(true);
+                                }}
+                              >
+                                <XCircle className="h-4 w-4 mr-1" />
+                                Cancel Order
+                              </Button>
+                            )}
+
+                            {/* Show confirm payment button for sent product quotes */}
+                            {order.quotes?.some(
+                              (q) =>
+                                q.status === "sent" && q.type === "product",
+                            ) && (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="text-green-600 hover:text-green-700"
+                                onClick={() => {
+                                  setOrderForPayment(order);
+                                  setShowConfirmPaymentDialog(true);
+                                }}
+                              >
+                                <CheckCircle className="h-4 w-4 mr-1" />
+                                Confirm Payment
+                              </Button>
+                            )}
+
+                            {/* After product payment confirmed - Mark as Purchased */}
+                            {order.items.some(
+                              (item) => item.status === "paid",
+                            ) && (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => {
+                                  setOrderForPurchased(order);
+                                  setShowMarkPurchasedDialog(true);
+                                }}
+                              >
+                                <Package className="h-4 w-4 mr-1" />
+                                Mark All Paid as Purchased
+                              </Button>
+                            )}
+
+                            {/* After purchased - Mark as Received */}
+                            {order.items.some(
+                              (item) => item.status === "purchased",
+                            ) && (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="border border-green-200 text-green-600 hover:border-green-300 hover:bg-green-50/30 w-auto text-xs sm:text-sm"
+                                onClick={() => {
+                                  const dimensions = new Map<
+                                    string,
+                                    {
+                                      weight?: number;
+                                      width?: number;
+                                      length?: number;
+                                      height?: number;
+                                    }
+                                  >();
+                                  const missingWeight: string[] = [];
+
+                                  order.items.forEach((item) => {
+                                    if (item.status === "purchased") {
+                                      const weightInput =
+                                        document.getElementById(
+                                          `weight-${item.id}`,
+                                        ) as HTMLInputElement;
+                                      const widthInput =
+                                        document.getElementById(
+                                          `width-${item.id}`,
+                                        ) as HTMLInputElement;
+                                      const lengthInput =
+                                        document.getElementById(
+                                          `length-${item.id}`,
+                                        ) as HTMLInputElement;
+                                      const heightInput =
+                                        document.getElementById(
+                                          `height-${item.id}`,
+                                        ) as HTMLInputElement;
+
+                                      const itemDimensions: any = {};
+                                      const weight = weightInput?.value
+                                        ? parseFloat(weightInput.value)
+                                        : undefined;
+
+                                      if (
+                                        weight !== undefined &&
+                                        !isNaN(weight)
+                                      ) {
+                                        itemDimensions.weight = weight;
+                                      } else {
+                                        missingWeight.push(
+                                          item.item_name || "Unnamed Product",
+                                        );
+                                      }
+
+                                      if (widthInput?.value)
+                                        itemDimensions.width = parseFloat(
+                                          widthInput.value,
+                                        );
+                                      if (lengthInput?.value)
+                                        itemDimensions.length = parseFloat(
+                                          lengthInput.value,
+                                        );
+                                      if (heightInput?.value)
+                                        itemDimensions.height = parseFloat(
+                                          heightInput.value,
+                                        );
+
+                                      if (
+                                        Object.keys(itemDimensions).length > 0
+                                      ) {
+                                        dimensions.set(item.id, itemDimensions);
+                                      }
+                                    }
+                                  });
+
+                                  if (missingWeight.length > 0) {
+                                    toast({
+                                      title: "Weight Required",
+                                      description: `Please enter weight for: ${missingWeight.join(", ")}. Use 0 if unknown.`,
+                                      variant: "destructive",
+                                    });
+                                    return;
+                                  }
+
+                                  setDimensionsForAllReceived(dimensions);
+                                  setItemsWithoutWeight(missingWeight);
+                                  setOrderForAllReceived(order);
+                                  setShowMarkAllReceivedDialog(true);
+                                }}
+                              >
+                                <Check className="h-4 w-4 mr-1" />
+                                Mark All Purchased as Received
+                              </Button>
+                            )}
+
+                            {/* Emergency Cancel for Paid or Purchased orders */}
+                            {order.items.some(
+                              (item) => item.status === "paid" || item.status === "purchased",
+                            ) && (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="text-black hover:text-red-700 hover:bg-red-50 border-gray-300"
+                                onClick={() => {
+                                  setOrderToCancel(order);
+                                  setShowCancelDialog(true);
+                                }}
+                              >
+                                <XCircle className="h-4 w-4 mr-1" />
+                                Cancel Order
+                              </Button>
+                            )}
+
+                            {/* Show confirm shipping payment button */}
+                            {order.quotes?.some(
+                              (q) =>
+                                q.status === "sent" && q.type === "shipping",
+                            ) && (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="text-green-600 hover:text-green-700"
+                                onClick={() => confirmShippingPayment(order)}
+                              >
+                                <CreditCard className="h-4 w-4 mr-1" />
+                                Confirm Shipping Payment
+                              </Button>
+                            )}
+
+                            {/* After shipping payment confirmed - Ship Order */}
+                            {order.items.every(
+                              (item) => item.status === "shipping_paid",
+                            ) && (
+                              <Dialog
+                                open={showTrackingDialog}
+                                onOpenChange={setShowTrackingDialog}
+                              >
+                                <DialogTrigger asChild>
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className="text-blue-600 hover:text-blue-700"
+                                  >
+                                    <Truck className="h-4 w-4 mr-1" />
+                                    Mark as Shipped
+                                  </Button>
+                                </DialogTrigger>
+                                <DialogContent>
+                                  <DialogHeader>
+                                    <DialogTitle>Ship Order</DialogTitle>
+                                    <DialogDescription>
+                                      Enter the tracking number for this
+                                      shipment.
+                                    </DialogDescription>
+                                  </DialogHeader>
+                                  <div className="space-y-4">
+                                    <div>
+                                      <Label htmlFor="tracking">
+                                        Tracking Number
+                                      </Label>
+                                      <Input
+                                        id="tracking"
+                                        value={trackingNumber}
+                                        onChange={(e) =>
+                                          setTrackingNumber(e.target.value)
+                                        }
+                                        placeholder="Enter tracking number"
+                                      />
+                                    </div>
+                                  </div>
+                                  <DialogFooter>
+                                    <Button onClick={() => shipOrder(order)}>
+                                      Confirm Shipment
+                                    </Button>
+                                  </DialogFooter>
+                                </DialogContent>
+                              </Dialog>
+                            )}
+                          </div>
+                        )}
+
+                        {/* Quote Information */}
+                        {order.quotes && order.quotes.length > 0 && (
+                          <div className="mt-4 p-4 border border-blue-200 bg-blue-50/50 rounded-xl">
+                            <p className="text-sm font-semibold text-blue-900 mb-2">
+                              Quote Information
+                            </p>
+
+                            <div className="space-y-2">
+                              {order.quotes.map((quote) => {
+                                const formattedStatus =
+                                  quote.status.charAt(0).toUpperCase() +
+                                  quote.status.slice(1);
+
+                                let shortUrl = quote.quote_url;
+                                try {
+                                  const parsed = new URL(quote.quote_url);
+                                  const domain = parsed.hostname.replace(
+                                    /^www\./,
+                                    "",
                                   );
-                                })}
-                              </div>
+                                  const path =
+                                    parsed.pathname +
+                                    parsed.search +
+                                    parsed.hash;
+                                  shortUrl = `${domain}${path.length > 20 ? path.slice(0, 20) + "..." : path}`;
+                                } catch {
+                                  shortUrl =
+                                    quote.quote_url.length > 25
+                                      ? quote.quote_url.slice(0, 25) + "..."
+                                      : quote.quote_url;
+                                }
+
+                                return (
+                                  <div
+                                    key={quote.id}
+                                    className="bg-white/60 rounded-lg p-3 border border-blue-100"
+                                  >
+                                    <div className="flex flex-col sm:flex-row sm:items-center sm:gap-3 gap-2 text-sm">
+                                      <p className="text-blue-900 font-medium flex-shrink-0">
+                                        Status: {formattedStatus}
+                                      </p>
+
+                                      <a
+                                        href={quote.quote_url}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="flex items-center gap-1 text-blue-600 hover:text-blue-700 hover:underline break-all sm:break-normal min-w-0"
+                                        title={quote.quote_url}
+                                      >
+                                        <Link className="h-3.5 w-3.5 flex-shrink-0" />
+                                        <span className="truncate sm:inline">
+                                          {shortUrl}
+                                        </span>
+                                      </a>
+                                    </div>
+                                  </div>
+                                );
+                              })}
                             </div>
-                          )}
-                        </div>
-                      </CollapsibleContent>
-                    </Card>
-                  </Collapsible>
-                );
-              })}
-            </div>
+                          </div>
+                        )}
+                      </div>
+                    </CollapsibleContent>
+                  </Card>
+                </Collapsible>
+              );
+            })
           )}
 
           {/* Pagination */}
           {totalFilteredPages > 1 && (
-            <div className="flex justify-center items-center gap-2 mt-6">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setCurrentPage(1)}
-                disabled={currentPage === 1}
-                className="px-2"
-              >
-                <ChevronsLeft className="h-4 w-4" />
-              </Button>
+            <div className="flex justify-center gap-2 mt-6">
               <Button
                 variant="outline"
                 size="sm"
@@ -2867,7 +2690,7 @@ export function ProductRequestsManagement({
               >
                 Previous
               </Button>
-              <span className="flex items-center px-3 text-sm font-medium">
+              <span className="flex items-center px-3 text-sm">
                 Page {currentPage} of {totalFilteredPages}
               </span>
               <Button
@@ -2881,15 +2704,6 @@ export function ProductRequestsManagement({
                 disabled={currentPage === totalFilteredPages}
               >
                 Next
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setCurrentPage(totalFilteredPages)}
-                disabled={currentPage === totalFilteredPages}
-                className="px-2"
-              >
-                <ChevronsRight className="h-4 w-4" />
               </Button>
             </div>
           )}
@@ -2930,8 +2744,8 @@ export function ProductRequestsManagement({
                   </p>
                   <p className="text-sm">
                     This should only be done in emergency situations when items
-                    are out of stock or unavailable. A refund will be processed
-                    and this action cannot be undone.
+                    are out of stock or unavailable. A refund will be processed and this action cannot be
+                    undone.
                   </p>
                 </>
               ) : (
@@ -2945,16 +2759,13 @@ export function ProductRequestsManagement({
           </AlertDialogHeader>
 
           <div className="space-y-3 py-2">
-            {orderToCancel?.items.some(
-              (item) => item.status === "paid" || item.status === "purchased",
-            ) && (
+            {orderToCancel?.items.some((item) => item.status === "paid" || item.status === "purchased") && (
               <div>
                 <Label
                   htmlFor="cancel-credit-amount"
                   className="text-sm font-medium"
                 >
-                  Credit Amount to Refund (¥){" "}
-                  <span className="text-red-500">*</span>
+                  Credit Amount to Refund (¥) <span className="text-red-500">*</span>
                 </Label>
                 <Input
                   id="cancel-credit-amount"
@@ -2992,19 +2803,14 @@ export function ProductRequestsManagement({
             <AlertDialogAction
               onClick={adminCancelOrder}
               disabled={
-                isCancelling ||
-                !cancelCreditReason.trim() ||
+                isCancelling || !cancelCreditReason.trim() ||
                 (orderToCancel?.items.some(
-                  (item) =>
-                    item.status === "paid" || item.status === "purchased",
+                  (item) => item.status === "paid" || item.status === "purchased",
                 ) &&
                   !cancelCreditAmount)
               }
               className={
-                orderToCancel?.items.some(
-                  (item) =>
-                    item.status === "paid" || item.status === "purchased",
-                )
+                orderToCancel?.items.some((item) => item.status === "paid" || item.status === "purchased")
                   ? "bg-red-600 hover:bg-red-700"
                   : "bg-gray-600 hover:bg-gray-700"
               }
