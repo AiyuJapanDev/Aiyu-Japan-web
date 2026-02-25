@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Package,
@@ -114,6 +114,8 @@ interface OrderWithDetails extends Order {
   credit_amount_applied?: number;
 }
 
+const paginationCache = { currentPage: 1, itemsPerPage: 10 };
+
 interface ProductRequestsManagementProps {
   orderId?: string | null;
 }
@@ -124,13 +126,17 @@ export function ProductRequestsManagement({
   const queryClient = useQueryClient();
   const { refreshProfile } = useAuth();
   const [refreshing, setRefreshing] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPage, setCurrentPage] = useState(paginationCache.currentPage);
   const [openOrders, setOpenOrders] = useState<Set<string>>(new Set());
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [hideRejected, setHideRejected] = useState(false);
   const [hideCancelled, setHideCancelled] = useState(false);
-  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [itemsPerPage, setItemsPerPage] = useState(paginationCache.itemsPerPage);
+  const prevFilters = useRef({ statusFilter, itemsPerPage, hideRejected, hideCancelled, searchTerm });
+
+  useEffect(() => { paginationCache.currentPage = currentPage; }, [currentPage]);
+  useEffect(() => { paginationCache.itemsPerPage = itemsPerPage; }, [itemsPerPage]);
 
   const [selectedOrder, setSelectedOrder] = useState<OrderWithDetails | null>(
     null,
@@ -341,6 +347,12 @@ export function ProductRequestsManagement({
 
   useEffect(() => {
     if (orderId && orders.length > 0) {
+      const orderIndex = orders.findIndex((o) => o.id === orderId);
+      if (orderIndex !== -1) {
+        const targetPage = Math.floor(orderIndex / itemsPerPage) + 1;
+        setCurrentPage(targetPage);
+      }
+
       setOpenOrders((prev) => new Set(prev).add(orderId));
       setTimeout(() => {
         const element = document.getElementById(`order-${orderId}`);
@@ -350,7 +362,19 @@ export function ProductRequestsManagement({
   }, [orderId, orders.length]);
 
   useEffect(() => {
-    setCurrentPage(1);
+    const prev = prevFilters.current;
+    const changed =
+      prev.statusFilter !== statusFilter ||
+      prev.itemsPerPage !== itemsPerPage ||
+      prev.hideRejected !== hideRejected ||
+      prev.hideCancelled !== hideCancelled ||
+      prev.searchTerm !== searchTerm;
+
+    prevFilters.current = { statusFilter, itemsPerPage, hideRejected, hideCancelled, searchTerm };
+
+    if (changed) {
+      setCurrentPage(1);
+    }
   }, [statusFilter, itemsPerPage, hideRejected, hideCancelled, searchTerm]);
 
   const handleRefresh = async () => {
@@ -469,7 +493,6 @@ export function ProductRequestsManagement({
     }
 
     try {
-      // Create rejection details snapshot with product issues
       const productIssuesArray = selectedOrder.items.map((item) => ({
         product_id: item.id,
         product_url: item.product_url,
@@ -485,7 +508,6 @@ export function ProductRequestsManagement({
         product_issues: productIssuesArray,
       };
 
-      // Update order as rejected with snapshot
       const { error: orderError } = await supabase
         .from("orders")
         .update({
@@ -497,7 +519,6 @@ export function ProductRequestsManagement({
 
       if (orderError) throw orderError;
 
-      // Update all product requests to rejected
       const productIds = selectedOrder.items.map((item) => item.id);
       const { error: productsError } = await supabase
         .from("product_requests")
