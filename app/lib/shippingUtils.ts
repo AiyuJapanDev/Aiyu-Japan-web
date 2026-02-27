@@ -526,16 +526,8 @@ export const calculateShippingCostByCountry = (
   if (country === "Peru" && shippingMethod === 'peru-maritime') {
     const { priceTable, minWeight, maxWeight, step } = PERU_MARITIME_SHIPPING;
     
-    let effectiveWeight = weight;
-    if (dimensions?.L && dimensions?.W && dimensions?.H) {
-      const volumetricKg = calculateVolumetricWeight(
-        dimensions.L, 
-        dimensions.W, 
-        dimensions.H
-      );
-      const volumetricGrams = volumetricKg * 1000;
-      effectiveWeight = Math.max(weight, volumetricGrams);
-    }
+    // Maritime: use raw weight only (no volumetric)
+    const effectiveWeight = weight;
 
     const clamped = Math.max(minWeight, Math.min(maxWeight, effectiveWeight));
     const weightInKg = Math.ceil(clamped / step);
@@ -554,27 +546,18 @@ export const calculateShippingCostByCountry = (
     if (shippingMethod === 'paraguay-maritime') {
       const { ratePerKg, minWeight, maxWeight, step } = PARAGUAY_MARITIME_SHIPPING;
       
-      let effectiveWeight = weight;
-      
-      // 1. Cálculo Volumétrico (si hay dimensiones)
-      if (dimensions?.L && dimensions?.W && dimensions?.H) {
-        const volumetricKg = (dimensions.L * dimensions.W * dimensions.H) / 5000;
-        const volumetricGrams = volumetricKg * 1000;
-        effectiveWeight = Math.max(weight, volumetricGrams);
-      }
+      // Maritime: use raw weight only (no volumetric)
+      const effectiveWeight = weight;
 
-      // 2. Aplicar límites (mínimo 1kg, máximo 30kg)
+      // Aplicar límites (mínimo 1kg, máximo 30kg)
       const clamped = Math.max(minWeight, Math.min(maxWeight, effectiveWeight));
 
-      // 3. Aplicar redondeo de la "barrita" (cada 200g)
-      // Ejemplo: 1100g -> se redondea a 1200g
+      // Aplicar redondeo de la "barrita" (cada 200g)
       const rounded = Math.ceil(clamped / step) * step;
 
-      // 4. Calcular costo en USD y convertir a JPY para el sistema
+      // Calcular costo en USD y convertir a JPY
       const weightInKg = rounded / 1000;
       const costInUSD = weightInKg * ratePerKg;
-      
-      // Usamos el tipo de cambio inverso para obtener los Yenes
       const costInJPY = costInUSD / currencyRates.usd; 
       
       return costInJPY;

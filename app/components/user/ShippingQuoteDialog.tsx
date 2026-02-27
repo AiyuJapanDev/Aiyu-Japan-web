@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   Dialog,
   DialogContent,
@@ -52,6 +52,9 @@ interface ShippingQuoteDialogProps {
       product_url?: string;
     };
     weight?: number;
+    length?: number | null;
+    width?: number | null;
+    height?: number | null;
   }>;
   totalWeight: number;
   onSuccess?: () => void;
@@ -98,10 +101,32 @@ const ShippingQuoteDialog: React.FC<ShippingQuoteDialogProps> = ({
 
   const zoneInfo = selectedCountry ? getZoneForCountry(selectedCountry) : null;
   const isDHLOnly = selectedCountry ? isDHLOnlyCountry(selectedCountry) : false;
-  const numericWeight = Number(totalWeight) || 0;
   const hasExpress = selectedCountry
     ? hasExpressShipping(selectedCountry)
     : false;
+
+  // --- Weight calculation ---
+  const usesVolumetric = shippingMethod === "paraguay" || shippingMethod === "dhl";
+
+  const realTotalWeight = useMemo(() => {
+    return selectedItems.reduce((sum, item) => sum + (item.weight || 0), 0);
+  }, [selectedItems]);
+
+  const volumetricTotalWeight = useMemo(() => {
+    return selectedItems.reduce((sum, item) => {
+      const realWeight = item.weight || 0;
+      const l = item.length;
+      const w = item.width;
+      const h = item.height;
+      if (l && w && h) {
+        const volumetricWeight = ((l * w * h) / 5000) * 1000;
+        return sum + Math.max(realWeight, volumetricWeight);
+      }
+      return sum + realWeight;
+    }, 0);
+  }, [selectedItems]);
+
+  const numericWeight = Math.round(usesVolumetric ? volumetricTotalWeight : realTotalWeight) || 0;
 
   useEffect(() => {
     if (selectedCountry === "Paraguay") {
@@ -216,11 +241,18 @@ const ShippingQuoteDialog: React.FC<ShippingQuoteDialogProps> = ({
         )
       : null;
 
-  const shippingCost = shippingCostResult
-    ? typeof shippingCostResult === "number"
+  const shippingCost = (() => {
+    if (!shippingCostResult) return null;
+    let cost = typeof shippingCostResult === "number"
       ? shippingCostResult
-      : shippingCostResult.total
-    : null;
+      : shippingCostResult.total;
+    if (shippingMethod === "dhl") {
+      const handlingFee = 500;
+      const tax = (cost + handlingFee) * 0.1;
+      cost = cost + handlingFee + tax;
+    }
+    return Math.round(cost);
+  })();
 
   const animatedCost = useAnimatedNumber(shippingCost || 0, 1000);
 
@@ -298,21 +330,29 @@ const ShippingQuoteDialog: React.FC<ShippingQuoteDialogProps> = ({
         user_id: profile?.id,
         shipping_method: shippingMethod,
         destination: selectedCountry,
-        total_weight: totalWeight,
+        total_weight: numericWeight,
         estimated_cost: Math.round(shippingCost),
         shipping_address: shippingAddress,
         use_credit_request: useCredit,
         credit_to_use: useCredit 
           ? (creditType === "all" ? userCreditBalance : Math.max(0, Number(customCreditAmount)))
           : 0,
-        items: selectedItems.map((item) => ({
-          order_item_id: item.id,
-          order_id: item.order_id || "", // Handle optional order_id
-          item_name: item.product_request.item_name,
-          quantity: item.product_request.quantity,
-          weight: item.weight || 0,
-          product_url: item.product_request.product_url,
-        })),
+        items: selectedItems.map((item) => {
+          const realW = item.weight || 0;
+          const l = item.length, w = item.width, h = item.height;
+          const volW = (l && w && h)
+            ? Math.round(((l * w * h) / 5000) * 1000)
+            : null;
+          const finalW = usesVolumetric && volW !== null ? Math.max(realW, volW) : realW;
+          return {
+            order_item_id: item.id,
+            order_id: item.order_id || "",
+            item_name: item.product_request.item_name,
+            quantity: item.product_request.quantity,
+            weight: finalW,
+            product_url: item.product_request.product_url,
+          };
+        }),
       });
 
       if (error) throw error;
@@ -339,7 +379,7 @@ const ShippingQuoteDialog: React.FC<ShippingQuoteDialogProps> = ({
 
         await notifyAllAdmins(
           "new_shipping_request",
-          `New shipping quote request from ${customerName} ${customerId} — ${selectedCountry} (${shippingMethod}). ${selectedItems.length} item${selectedItems.length > 1 ? "s" : ""}, ${totalWeight}g total.`,
+          `New shipping quote request from ${customerName} ${customerId} — ${selectedCountry} (${shippingMethod}). ${selectedItems.length} item${selectedItems.length > 1 ? "s" : ""}, ${numericWeight}g total.`,
           quoteData.id,
         );
       }
@@ -386,19 +426,52 @@ const ShippingQuoteDialog: React.FC<ShippingQuoteDialogProps> = ({
               {t("selectedItems")} ({selectedItems.length})
             </h3>
             <div className="space-y-2 max-h-32 overflow-y-auto text-sm font-body text-gray-700">
-              {selectedItems.map((item) => (
-                <div key={item.id} className="flex justify-between">
-                  <span>
-                    {item.product_request.item_name} ×
-                    {item.product_request.quantity}
-                  </span>
-                  <span className="text-gray-500">{item.weight}g</span>
-                </div>
-              ))}
+              {selectedItems.map((item) => {
+                const realW = item.weight || 0;
+                const l = item.length, w = item.width, h = item.height;
+                const volW = (l && w && h)
+                  ? Math.round(((l * w * h) / 5000) * 1000)
+                  : null;
+                const displayW = usesVolumetric && volW !== null ? Math.max(realW, volW) : realW;
+                return (
+                  <div key={item.id} className="flex justify-between items-center">
+                    <span>
+                      {item.product_request.item_name} ×
+                      {item.product_request.quantity}
+                    </span>
+                    <span className="flex items-center gap-2 tabular-nums">
+                      {volW !== null && volW !== realW ? (() => {
+                        const volWins = usesVolumetric && volW > realW;
+                        return (
+                          <>
+                            <span className={volWins ? "text-gray-300 line-through text-xs" : "text-gray-700 font-semibold"}>
+                              {realW}g
+                            </span>
+                            <span className={volWins ? "text-orange-600 font-bold" : "text-gray-300 text-xs"}>
+                              {volW}g
+                            </span>
+                          </>
+                        );
+                      })() : (
+                        <span className="text-gray-500">{realW}g</span>
+                      )}
+                    </span>
+                  </div>
+                );
+              })}
             </div>
             <div className="mt-3 pt-3 border-t flex justify-between font-semibold text-gray-800">
               <span>{t("totalWeight")}</span>
-              <span>{totalWeight}g</span>
+              <span className="flex items-center gap-2 tabular-nums">
+                {usesVolumetric && volumetricTotalWeight > realTotalWeight ? (
+                  <>
+                    <span className="text-gray-300 line-through text-sm">{Math.round(realTotalWeight)}g</span>
+                    <span className="text-orange-600 font-bold">{numericWeight}g</span>
+                  </>
+                ) : (
+                  <span>{numericWeight}g</span>
+                )}
+              </span>
             </div>
           </Card>
 
@@ -474,8 +547,9 @@ const ShippingQuoteDialog: React.FC<ShippingQuoteDialogProps> = ({
             </RadioGroup>
           </div>
 
-          {/* Dimensions (optional for DHL, Paraguay, Paraguay Maritime, Peru Maritime) */}
-          {(shippingMethod === "dhl" ||
+          {/* Dimensions (only for calculator mode, not from storage) */}
+          {selectedItems.length === 0 &&
+           (shippingMethod === "dhl" ||
             shippingMethod === "paraguay" ||
             shippingMethod === "paraguay-maritime" ||
             shippingMethod === "peru-maritime") && (

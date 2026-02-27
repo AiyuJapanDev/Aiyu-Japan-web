@@ -287,7 +287,7 @@ export const ShippingPage = () => {
                   await supabase
                     .from("product_requests")
                     .select(
-                      "product_url, item_name, quantity, weight, has_shipping_issue, shipping_issue_description, is_box, local_tracking_number",
+                      "product_url, item_name, quantity, weight, length, width, height, has_shipping_issue, shipping_issue_description, is_box, local_tracking_number",
                     )
                     .eq("id", item.order_item_id)
                     .maybeSingle();
@@ -299,9 +299,15 @@ export const ShippingPage = () => {
                 console.log("Error:", prError);
 
                 if (productRequestData) {
+                  const realW = productRequestData.weight || 0;
+                  const l = productRequestData.length, w = productRequestData.width, h = productRequestData.height;
+                  const adjustedW = (l && w && h)
+                    ? Math.round(Math.max(realW, ((l * w * h) / 5000) * 1000))
+                    : realW;
                   const enrichedItem = {
                     ...item,
                     ...productRequestData,
+                    weight: adjustedW,
                     item_name: productRequestData.item_name || item.item_name,
                   };
                   console.log(
@@ -326,7 +332,7 @@ export const ShippingPage = () => {
                   const { data: productRequestData2 } = await supabase
                     .from("product_requests")
                     .select(
-                      "product_url, item_name, quantity, weight, has_shipping_issue, shipping_issue_description, is_box, local_tracking_number",
+                      "product_url, item_name, quantity, weight, length, width, height, has_shipping_issue, shipping_issue_description, is_box, local_tracking_number",
                     )
                     .eq("id", orderItemData.product_request_id)
                     .maybeSingle();
@@ -337,9 +343,15 @@ export const ShippingPage = () => {
                   );
 
                   if (productRequestData2) {
+                    const realW = productRequestData2.weight || 0;
+                    const l = productRequestData2.length, w = productRequestData2.width, h = productRequestData2.height;
+                    const adjustedW = (l && w && h)
+                      ? Math.round(Math.max(realW, ((l * w * h) / 5000) * 1000))
+                      : realW;
                     const enrichedItem = {
                       ...item,
                       ...productRequestData2,
+                      weight: adjustedW,
                       item_name:
                         productRequestData2.item_name || item.item_name,
                     };
