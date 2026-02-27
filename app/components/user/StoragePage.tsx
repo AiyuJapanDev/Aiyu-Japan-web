@@ -11,6 +11,7 @@ import {
   Clock,
   ChevronDown,
   ArrowRight,
+  AlertCircle,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
@@ -31,6 +32,12 @@ import {
 import ShippingQuoteDialog from "@/components/user/ShippingQuoteDialog";
 import { useNavigate } from "react-router";
 import { useApp } from "@/contexts/AppContext";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface StorageItem {
   id: string;
@@ -41,6 +48,9 @@ interface StorageItem {
   item_name?: string;
   quantity: number;
   weight?: number;
+  length?: number | null;
+  width?: number | null;
+  height?: number | null;
   status: string;
   created_at: string;
   order_created_at: string;
@@ -76,6 +86,9 @@ export const StoragePage = () => {
   const { t } = useApp();
 
   const selectedItemsList = items.filter((item) => selectedItems.has(item.id));
+
+  // Total weight uses real weight only; volumetric adjustment is applied
+  // in ShippingQuoteDialog when the user selects DHL or Paraguay aéreo
   const totalWeight = selectedItemsList.reduce(
     (sum, item) => sum + (item.weight || 0),
     0,
@@ -126,7 +139,7 @@ export const StoragePage = () => {
         .from("product_requests")
         .select(
           `
-          id, product_url, item_name, quantity, status, weight, is_box,
+          id, product_url, item_name, quantity, status, weight, length, width, height, is_box,
           local_tracking_number, created_at,
           order_items!left (
             id, order:orders!left (id, order_personal_id, created_at)
@@ -149,6 +162,9 @@ export const StoragePage = () => {
           item_name: item.item_name,
           quantity: item.quantity || 1,
           weight: item.weight,
+          length: item.length,
+          width: item.width,
+          height: item.height,
           status: item.status,
           created_at: item.created_at,
           order_created_at:
@@ -261,9 +277,16 @@ export const StoragePage = () => {
                     <TableHead className="text-[11px] font-bold uppercase text-slate-400 text-center">
                       {t("quantity") || "Cant."}
                     </TableHead>
-                    <TableHead className="text-[11px] font-bold uppercase text-slate-400 text-center">
+                    <TableHead className="text-[11px] font-bold uppercase text-slate-400 text-right whitespace-nowrap">
                       {t("weight")}
                     </TableHead>
+                    <TableHead className="text-[11px] font-bold uppercase text-slate-400 text-center whitespace-nowrap">
+                      {t("dimensions")}
+                    </TableHead>
+                    <TableHead className="text-[11px] font-bold uppercase text-slate-400 text-right whitespace-nowrap">
+                      {t("volumetricW")}
+                    </TableHead>
+
                     <TableHead className="text-[11px] font-bold uppercase text-slate-400 text-center">
                       {t("orderNumberShort")}
                     </TableHead>
@@ -276,14 +299,18 @@ export const StoragePage = () => {
                   {availableItems.length === 0 ? (
                     <TableRow>
                       <TableCell
-                        colSpan={6}
+                        colSpan={8}
                         className="h-32 text-center text-slate-400 italic"
                       >
                         {t("noContent")}
                       </TableCell>
                     </TableRow>
                   ) : (
-                    availableItems.map((item) => (
+                    availableItems.map((item) => {
+                      const volWeight = (item.length && item.width && item.height)
+                        ? Math.round(((item.length * item.width * item.height) / 5000) * 1000)
+                        : null;
+                      return (
                       <TableRow
                         key={item.id}
                         className={`${!item.weight ? "opacity-50" : ""} hover:bg-slate-50/30`}
@@ -319,11 +346,24 @@ export const StoragePage = () => {
                         <TableCell className="text-center font-semibold text-slate-600">
                           {item.quantity}
                         </TableCell>
-                        <TableCell className="text-center">
-                          <span className="text-xs font-bold text-slate-500">
+                        <TableCell className="text-right">
+                          <span className="text-xs font-bold text-slate-500 tabular-nums">
                             {item.weight ? `${item.weight}g` : t("pending")}
                           </span>
                         </TableCell>
+                        <TableCell className="text-center">
+                          <span className="text-xs font-bold text-slate-400 whitespace-nowrap tabular-nums">
+                            {(item.length && item.width && item.height)
+                              ? `${item.length}×${item.width}×${item.height}`
+                              : "-"}
+                          </span>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <span className="text-xs font-bold text-slate-400 tabular-nums">
+                            {volWeight !== null ? `${volWeight}g` : "-"}
+                          </span>
+                        </TableCell>
+
                         <TableCell className="text-center text-xs font-mono font-bold text-slate-400">
                           {item.order_personal_id
                             ? `#${item.order_personal_id}`
@@ -333,7 +373,8 @@ export const StoragePage = () => {
                           {new Date(item.order_created_at).toLocaleDateString()}
                         </TableCell>
                       </TableRow>
-                    ))
+                      );
+                    })
                   )}
                 </TableBody>
               </Table>
@@ -354,6 +395,7 @@ export const StoragePage = () => {
               {t("storageAlert3") ||
                 "No hay límite de tiempo para almacenar los artículos"}
             </p>
+            <p>• {t("volumetricWeightTooltip")}</p>
           </div>
         </div>
 
@@ -430,7 +472,7 @@ export const StoragePage = () => {
                   {selectedItems.size} {t("selected")}
                 </span>
                 <span className="text-sm font-bold text-orange-400 italic">
-                  {totalWeight}g {t("total")}
+                  {totalWeight}g {t("totalWeight")}
                 </span>
               </div>
             </div>

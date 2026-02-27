@@ -13,6 +13,7 @@ import { useSearchParams, useNavigate } from "react-router";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import UserManagement from "@/components/admin/UserManagement";
 import { ProductRequestsManagement } from "@/components/admin/ProductRequestsManagement";
+import AdminStatistics from "@/components/admin/AdminStatistics";
 
 import { StorageManagement } from "@/components/admin/StorageManagement";
 import { ShippingRequestsManagement } from "@/components/admin/ShippingRequestsManagement";
@@ -80,6 +81,7 @@ const AdminDashboard = () => {
         "notifications",
         "settings",
         "orders",
+        "statistics",
       ].includes(tabParam)
     ) {
       setActiveTab(tabParam);
@@ -164,6 +166,8 @@ const AdminDashboard = () => {
         return <ShippingRequestsManagement shipmentId={shipmentId} />;
       case "notifications":
         return <NotificationsView />;
+      case "statistics":
+        return <AdminStatistics />;
       case "settings":
         return <Settings />;
       default:

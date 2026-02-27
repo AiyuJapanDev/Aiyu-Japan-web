@@ -6,7 +6,7 @@ import {
   X,
   Package,
   Users,
-  FileText,
+  BarChart3,
   Settings,
   Truck,
   Warehouse,
@@ -36,6 +36,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
     { id: "storage", label: "Storage", icon: Warehouse },
     { id: "shipping-requests", label: "Shipping Requests", icon: Truck },
     { id: "users", label: "User Management", icon: Users },
+    { id: "statistics", label: "Statistics", icon: BarChart3 },
     { id: "notifications", label: "Notifications", icon: Bell },
     { id: "settings", label: "Settings", icon: Settings },
   ];
