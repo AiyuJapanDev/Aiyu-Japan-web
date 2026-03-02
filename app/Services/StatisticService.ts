@@ -8,7 +8,7 @@ import type {
   StatQuote,
   ExactCounts,
   StatisticsRawData,
-} from "@/types/statistics";
+} from "@/types/statisticsTypes/statistics";
 
 const QUERY_LIMIT = 10000;
 

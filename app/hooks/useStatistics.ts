@@ -15,7 +15,7 @@ import type {
   WeightByCountry,
   DestinationData,
   ShippingMethodData,
-} from "@/types/statistics";
+} from "@/types/statisticsTypes/statistics";
 
 export type DateRangeFilter = "30d" | "3m" | "1y" | "all";
 
@@ -45,7 +45,7 @@ function dateToKey(dateStr: string): string {
 
 
 /* ─── module-level cache (persists across tab switches, resets on F5) ─── */
-import type { StatisticsRawData } from "@/types/statistics";
+import type { StatisticsRawData } from "@/types/statisticsTypes/statistics";
 let _cache: StatisticsRawData | null = null;
 
 /* ─── hook return type ─── */

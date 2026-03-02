@@ -864,27 +864,35 @@ export const OrdersPage = () => {
                         {order.order_personal_id || order.id.slice(0, 8)}
                       </CardTitle>
 
-                      <Tooltip>
-                        <span className="cursor-default">
-                          <TooltipTrigger asChild>
-                            <span>
-                              <span
-                                className={`${getStatusColor(status)} px-2 py-1 text-xs rounded-md inline-flex items-center gap-1`}
-                              >
-                                {getStatusIcon(status)}
-                                <span className="ml-1">{statusText}</span>
+                      <div className="flex items-center gap-2">
+                        <Tooltip>
+                          <span className="cursor-default">
+                            <TooltipTrigger asChild>
+                              <span>
+                                <span
+                                  className={`${getStatusColor(status)} px-2 py-1 text-xs rounded-md inline-flex items-center gap-1`}
+                                >
+                                  {getStatusIcon(status)}
+                                  <span className="ml-1">{statusText}</span>
+                                </span>
                               </span>
-                            </span>
-                          </TooltipTrigger>
-                          <TooltipContent
-                            side="right"
-                            alignOffset={40}
-                            className="right-80 z-60 text-grey-700 border border-capybara-orange shadow-lg"
-                          >
-                            <p>{getStatusTooltip(status)}</p>
-                          </TooltipContent>
-                        </span>
-                      </Tooltip>
+                            </TooltipTrigger>
+                            <TooltipContent
+                              side="right"
+                              alignOffset={40}
+                              className="right-80 z-60 text-grey-700 border border-capybara-orange shadow-lg"
+                            >
+                              <p>{getStatusTooltip(status)}</p>
+                            </TooltipContent>
+                          </span>
+                        </Tooltip>
+
+                        {productQuote?.price_jpy && (
+                          <span className="text-xs font-bold bg-green-100 text-green-700 px-2 py-1 rounded-md border border-green-200">
+                            {t("quoteAmount")}: ¥{productQuote.price_jpy.toLocaleString("en")}
+                          </span>
+                        )}
+                      </div>
                     </div>
                     <CollapsibleTrigger asChild>
                       <Button
@@ -1085,15 +1093,22 @@ export const OrdersPage = () => {
                                       </span>
                                     </div>
                                   )}
+
+                                {/* Cancelled item: show reason */}
+                                {item.product_request.status === "cancelled" && item.product_request.rejection_reason && (
+                                  <div className="flex items-start gap-1 mt-2 bg-red-50 border border-red-200 rounded p-2">
+                                    <XCircle className="h-3 w-3 text-red-500 flex-shrink-0 mt-0.5" />
+                                    <span className="text-xs text-red-700">
+                                      {t("itemCancelledReason")}: {item.product_request.rejection_reason}
+                                    </span>
+                                  </div>
+                                )}
                               </div>
 
+                              {/* Status badge: per-item status, not whole order */}
                               {!order.is_rejected && (
                                 <div className="flex-shrink-0 ml-3 self-start">
-                                  {getProductStatusBadge(
-                                    order.is_cancelled
-                                      ? "cancelled"
-                                      : item.product_request.status,
-                                  )}
+                                  {getProductStatusBadge(item.product_request.status)}
                                 </div>
                               )}
                             </div>
@@ -1245,15 +1260,22 @@ export const OrdersPage = () => {
                                 className={`rounded-lg p-3 border-l-4 ${quote.status === 'paid' ? 'bg-white border-l-green-500 dark:bg-green-900/20' : 'bg-white border-l-orange-400 dark:bg-orange-900/20'}`}
                               >
                                 <div className="flex flex-col gap-2 text-sm">
-                                  <p className={`font-semibold ${quote.status === 'paid' ? 'text-green-800' : 'text-amber-800'}`}>
-                                    {quoteTypeText}
-                                  </p>
+                                  <div className="flex items-center justify-between">
+                                    <p className={`font-semibold ${quote.status === 'paid' ? 'text-green-800' : 'text-amber-800'}`}>
+                                      {quoteTypeText}
+                                    </p>
+                                    {quote.price_jpy && (
+                                      <p className="font-bold text-gray-700">
+                                        {t("quoteAmount")}: ¥{quote.price_jpy.toLocaleString()}
+                                      </p>
+                                    )}
+                                  </div>
                                   <div className="flex flex-col sm:flex-row sm:items-center sm:gap-3 gap-1">
                                     <p className={`${quote.status === 'paid' ? 'text-green-700' : 'text-orange-700'} font-medium`}>
                                       {quote.status === 'paid' ? t("infoPaidOrder") : t("infoPendingPayment")} - {t("status")}:{" "}
                                     </p>
                                     <p className={`${quote.status === 'paid' ? 'text-green-700' : 'text-orange-700'} font-bold flex-shrink-0`}>
-                                      {formattedStatus}
+                                      {quote.status === 'paid' ? t("statusPaid") : t("statusAwaitingPayment")}
                                     </p>
                                   </div>
 
