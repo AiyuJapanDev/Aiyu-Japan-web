@@ -99,3 +99,4 @@ export interface ShippingMethodData {
   method: string;
   count: number;
 }
+

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useApp } from "@/contexts/AppContext";
 import {
   Card,
   CardContent,
@@ -61,6 +62,7 @@ export function QuotesView() {
   const [loading, setLoading] = useState(true);
   const [openOrders, setOpenOrders] = useState<Set<string>>(new Set());
   const navigate = useNavigate();
+  const { t } = useApp();
 
   useEffect(() => {
     fetchData();
@@ -218,9 +220,9 @@ export function QuotesView() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold mb-2">Your Orders</h2>
+        <h2 className="text-2xl font-bold mb-2">{t("yourOrders")}</h2>
         <p className="text-muted-foreground">
-          Track your orders and manage requests
+          {t("trackOrdersManageRequests")}
         </p>
       </div>
 
@@ -354,7 +356,7 @@ export function QuotesView() {
                     {order.quotes.length > 0 && (
                       <div className="p-4 bg-blue-50 rounded-lg">
                         <h4 className="font-medium text-blue-900 mb-2">
-                          Quote Information
+                          {t("quoteInformation")}
                         </h4>
                         {order.quotes.map((quote) => (
                           <div key={quote.id} className="space-y-2">
@@ -362,17 +364,17 @@ export function QuotesView() {
                               <div>
                                 <p className="text-sm text-blue-700">
                                   {quote.type === "product"
-                                    ? "Product Quote"
-                                    : "Shipping Quote"}
+                                    ? t("productQuote")
+                                    : t("shippingQuote")}
                                 </p>
                                 <p className="text-sm text-blue-700">
-                                  Amount: ¥{quote.price_jpy.toLocaleString()}
+                                  {t("quoteAmount")}: ¥{quote.price_jpy.toLocaleString()}
                                 </p>
                                 <p className="text-sm text-blue-600">
-                                  Status:{" "}
+                                  {t("status")}:{" "}
                                   {quote.status === "sent"
-                                    ? "Awaiting Payment"
-                                    : quote.status}
+                                    ? t("statusAwaitingPayment")
+                                    : quote.status === "paid" ? t("statusPaid") : quote.status}
                                 </p>
                               </div>
                               {quote.status === "sent" && (
@@ -381,7 +383,7 @@ export function QuotesView() {
                                   size="sm"
                                 >
                                   <ExternalLink className="h-4 w-4 mr-2" />
-                                  Pay Now
+                                  {t("payNow")}
                                 </Button>
                               )}
                             </div>
@@ -394,14 +396,14 @@ export function QuotesView() {
                     {order.tracking_number && (
                       <div className="p-4 bg-green-50 rounded-lg">
                         <p className="text-sm font-medium text-green-900">
-                          Tracking Information
+                          {t("trackingInformation")}
                         </p>
                         <p className="text-sm text-green-700">
-                          Tracking Number: {order.tracking_number}
+                          {t("trackingNumber")} {order.tracking_number}
                         </p>
                         {order.shipped_at && (
                           <p className="text-sm text-green-600">
-                            Shipped on:{" "}
+                            {t("shippedOn")}{" "}
                             {new Date(order.shipped_at).toLocaleDateString()}
                           </p>
                         )}

@@ -524,6 +524,8 @@ export const translations = {
     // User Dashboard Navigation
     myAccountLabel: "My Account",
     creditLabel: "Credit:",
+    yourOrders: "Your Orders",
+    trackOrdersManageRequests: "Track your orders and manage requests",
     submitRequest: "Submit Request",
     submitRequestDesc: "Send links to the product you want to buy",
     orders: "Orders",
@@ -572,6 +574,8 @@ export const translations = {
     urlLabel: "URL",
 
     // Orders Page
+    cancelItem: "Cancel Item",
+    cancelItemWarning: "Are you sure you want to cancel this item? This action cannot be undone and you will need to submit a new request.",
     currentOrders: "Current Orders",
     cancelOrder: "Cancel Order",
     confirmCancelOrder: "Cancel Order?",
@@ -659,7 +663,7 @@ export const translations = {
     statusStepItemsOnTheWay: "Item(s) on the way to warehouse",
     statusStepAllAtWarehouse: "All Items at Warehouse",
     inStorage: "In Storage",
-    qty: "Qty:",
+    qty: "Quantity:",
     productNote: "Note:",
     viewManageStorage: "View and manage your items in storage",
     someItemsInStorage: "Some items may already be available in storage",
@@ -1376,6 +1380,8 @@ export const translations = {
     statsFilterCountry: "Country",
     statsFilterAllCountries: "All countries",
     statsFilterApply: "Apply Filters",
+    itemCancelledReason: "Cancellation Reason",
+    quoteAmount: "Amount",
   },
   es: {
     backToBlogs: "Volver a Blogs",
@@ -1920,6 +1926,8 @@ export const translations = {
     // User Dashboard Navigation
     myAccountLabel: "Mi Cuenta",
     creditLabel: "Crédito:",
+    yourOrders: "Tus Pedidos",
+    trackOrdersManageRequests: "Rastrea tus pedidos y gestiona solicitudes",
     submitRequest: "Enviar Links",
     submitRequestDesc: "Envía links del producto que deseas comprar",
     orders: "Pedidos",
@@ -1970,6 +1978,8 @@ export const translations = {
     urlLabel: "URL",
 
     // Orders Page
+    cancelItem: "Cancelar item",
+    cancelItemWarning: "¿Estás seguro de que quieres cancelar este artículo? Esta acción no puede ser deshecha y tendrás que enviar una nueva solicitud.",
     currentOrders: "Pedidos Actuales",
 
     cancelOrder: "Cancelar Pedido",
@@ -2059,7 +2069,7 @@ export const translations = {
     statusStepItemsOnTheWay: "Artículo(s) en camino al almacén",
     statusStepAllAtWarehouse: "Todos los artículos en el almacén",
     inStorage: "En Almacenamiento",
-    qty: "Cant:",
+    qty: "Unidades:",
     productNote: "Nota:",
     viewManageStorage: "Mira y gestiona tus artículos en almacenamiento",
     someItemsInStorage: "Algunos artículos ya pueden estar disponibles en almacenamiento",
@@ -2350,6 +2360,8 @@ export const translations = {
     statsFilterCountry: "País",
     statsFilterAllCountries: "Todos los países",
     statsFilterApply: "Aplicar Filtros",
+    itemCancelledReason: "Motivo de cancelación",
+    quoteAmount: "Monto",
 
     // Edit Order Page
     editRejectedOrder: "Editar Pedido Rechazado",
@@ -2782,7 +2794,6 @@ export const translations = {
       "Los artículos confiscados por la aduana no son reembolsables",
     restrictionsNote5:
       "Podemos negarnos a comprar cualquier artículo a nuestra discreción",
-    restrictionsDoubtsTitle: "¿Tienes dudas sobre un artículo específico?",
     restrictionsDoubtsDesc:
       "Si no estás seguro de si podemos comprar o enviar un artículo específico, no dudes en contactarnos antes de realizar tu pedido. Nuestro equipo de soporte estará encantado de ayudarte.",
     restrictionsViewFAQ: "Ver Preguntas Frecuentes Completas",

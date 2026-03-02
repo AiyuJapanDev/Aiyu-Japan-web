@@ -76,6 +76,7 @@ import type { ProductRequest, Order, Quote } from "@/types/orders";
 import type { Database } from "@/integrations/supabase/types";
 import { StatusFlow } from "@/components/ui/status-flow";
 import { createNotification } from "@/lib/notificationUtils";
+import { useApp } from "@/contexts/AppContext";
 
 type ProductRequestStatus =
   Database["public"]["Enums"]["product_request_status"];
@@ -208,7 +209,19 @@ export function ProductRequestsManagement({
   const [isMarkingIndividualPurchased, setIsMarkingIndividualPurchased] =
     useState(false);
 
+  // Cancel individual item
+  const [showCancelItemDialog, setShowCancelItemDialog] = useState(false);
+  const [itemToCancel, setItemToCancel] = useState<{
+    id: string;
+    name?: string;
+    status: string;
+  } | null>(null);
+  const [cancelItemCreditAmount, setCancelItemCreditAmount] = useState("");
+  const [cancelItemReason, setCancelItemReason] = useState("");
+  const [isCancellingItem, setIsCancellingItem] = useState(false);
+
   const { toast } = useToast();
+  const { t } = useApp();
 
   const {
     data: orders = [],
@@ -410,6 +423,15 @@ export function ProductRequestsManagement({
         : null;
       const userBalance = (selectedOrder?.profiles as any)?.credit_balance ?? 0;
 
+      if (!quotePrice || isNaN(parseFloat(quotePrice)) || parseFloat(quotePrice) <= 0) {
+        toast({
+          title: "Invalid Order Price",
+          description: "Please enter a valid positive number for the order price.",
+          variant: "destructive",
+        });
+        return;
+      }
+
       if (creditAmount && creditAmount < 0) {
         toast({
           title: "Invalid Credit Amount",
@@ -433,7 +455,7 @@ export function ProductRequestsManagement({
       )({
         type: "product",
         order_id: selectedOrder.id,
-        price_jpy: null,
+        price_jpy: parseFloat(quotePrice),
         status: "sent",
         quote_url: quoteInvoiceUrl,
         credit_amount_applied:
@@ -442,13 +464,18 @@ export function ProductRequestsManagement({
 
       if (quoteError) throw quoteError;
 
-      const productIds = selectedOrder.items.map((item) => item.id);
-      const { error: updateError } = await supabase
-        .from("product_requests")
-        .update({ status: "quoted" as ProductRequestStatus })
-        .in("id", productIds);
+      const productIds = selectedOrder.items
+        .filter((item: any) => !["cancelled", "rejected"].includes(item.status))
+        .map((item) => item.id);
 
-      if (updateError) throw updateError;
+      if (productIds.length > 0) {
+        const { error: updateError } = await supabase
+          .from("product_requests")
+          .update({ status: "quoted" as ProductRequestStatus })
+          .in("id", productIds);
+
+        if (updateError) throw updateError;
+      }
 
       queryClient.invalidateQueries({ queryKey: ["admin-orders"] });
 
@@ -470,6 +497,7 @@ export function ProductRequestsManagement({
       setShowQuoteDialog(false);
       setSelectedOrder(null);
       setQuoteInvoiceUrl("");
+      setQuotePrice("");
       setQuoteCreditAmount("");
       setProductIssues(new Map());
       queryClient.invalidateQueries({ queryKey: ["admin-orders"] });
@@ -834,9 +862,11 @@ export function ProductRequestsManagement({
         )
         .eq("order_id", order.id);
 
-      // Check if every item in the order is now 'received'
-      const allReceived = allOrderItems?.every(
-        (item: any) => item.product_requests.status === "received",
+      // Check if every item in the order is now 'received' or terminal (cancelled/rejected)
+      const allReceived = allOrderItems?.every((item: any) =>
+        ["received", "cancelled", "rejected"].includes(
+          item.product_requests.status,
+        ),
       );
 
       if (allReceived && allOrderItems && allOrderItems.length > 0) {
@@ -1016,6 +1046,44 @@ export function ProductRequestsManagement({
     }
   };
 
+  const cancelOrderItem = async () => {
+    if (!itemToCancel) return;
+    const creditNum = parseFloat(cancelItemCreditAmount);
+    if (!cancelItemReason.trim()) {
+      toast({ title: "Reason required", description: "Please enter a cancellation reason.", variant: "destructive" });
+      return;
+    }
+    if (isNaN(creditNum) || creditNum < 0) {
+      toast({ title: "Invalid credit amount", description: "Enter 0 or a positive number.", variant: "destructive" });
+      return;
+    }
+    setIsCancellingItem(true);
+    try {
+      const { error } = await (supabase.rpc as any)("cancel_order_item_with_credit", {
+        p_product_request_id: itemToCancel.id,
+        p_credit_amount: creditNum,
+        p_cancel_reason: cancelItemReason.trim(),
+      });
+      if (error) throw error;
+      toast({
+        title: "Item Cancelled",
+        description: `"${itemToCancel.name || "Item"}" has been cancelled.${
+          creditNum > 0 ? ` Credit of ¥${creditNum.toLocaleString()} assigned.` : ""
+        }`,
+      });
+      setShowCancelItemDialog(false);
+      setItemToCancel(null);
+      setCancelItemCreditAmount("");
+      setCancelItemReason("");
+      queryClient.invalidateQueries({ queryKey: ["admin-orders"] });
+      refreshProfile();
+    } catch (error: any) {
+      toast({ title: "Error", description: error.message || "Failed to cancel item", variant: "destructive" });
+    } finally {
+      setIsCancellingItem(false);
+    }
+  };
+
   const createShippingQuote = async (order: OrderWithDetails) => {
     if (!shippingPrice || !shippingInvoiceUrl) return;
 
@@ -1031,8 +1099,14 @@ export function ProductRequestsManagement({
 
       if (quoteError) throw quoteError;
 
-      // Update product statuses to shipping_quoted
-      const productIds = order.items.map((item) => item.id);
+      // Update product statuses to shipping_quoted (skip cancelled/rejected)
+      const productIds = order.items
+        .filter((item) => !['cancelled', 'rejected'].includes(item.status))
+        .map((item) => item.id);
+
+      if (productIds.length === 0) {
+        throw new Error('No active items to create a shipping quote for.');
+      }
 
       const { error: productError } = await supabase
         .from("product_requests")
@@ -1086,8 +1160,10 @@ export function ProductRequestsManagement({
         if (quoteError) throw quoteError;
       }
 
-      // Update all product requests to shipping_paid status
-      const productIds = order.items.map((item) => item.id);
+      // Update product requests to shipping_paid (skip cancelled/rejected)
+      const productIds = order.items
+        .filter((item) => !['cancelled', 'rejected'].includes(item.status))
+        .map((item) => item.id);
 
       const { error: productError } = await supabase
         .from("product_requests")
@@ -1127,8 +1203,10 @@ export function ProductRequestsManagement({
 
       if (orderError) throw orderError;
 
-      // Update all product requests to shipped status
-      const productIds = order.items.map((item) => item.id);
+      // Update product requests to shipped (skip cancelled/rejected)
+      const productIds = order.items
+        .filter((item) => !['cancelled', 'rejected'].includes(item.status))
+        .map((item) => item.id);
 
       const { error: productError } = await supabase
         .from("product_requests")
@@ -1161,12 +1239,16 @@ export function ProductRequestsManagement({
 
     // Check product statuses for more accurate status
     const productStatuses = order.items.map((item) => item.status);
-    const allSameStatus = productStatuses.every(
-      (status) => status === productStatuses[0],
+    const activeStatuses = productStatuses.filter(
+      (s) => s && !["cancelled", "rejected"].includes(s),
     );
 
-    if (allSameStatus && productStatuses[0]) {
-      switch (productStatuses[0]) {
+    const allSameStatus =
+      activeStatuses.length > 0 &&
+      activeStatuses.every((status) => status === activeStatuses[0]);
+
+    if (allSameStatus && activeStatuses[0]) {
+      switch (activeStatuses[0]) {
         case "shipping_paid":
           return "Ready to Ship";
         case "shipping_quoted":
@@ -1936,7 +2018,7 @@ export function ProductRequestsManagement({
                           {order.items.map((item, index: number) => (
                             <div
                               key={item.id}
-                              className="p-3 bg-secondary/30 rounded-lg"
+                              className="p-3 bg-secondary/30 rounded-lg flex"
                             >
                               <div className="flex items-start justify-between">
                                 <div className="flex-1 space-y-2">
@@ -2008,8 +2090,18 @@ export function ProductRequestsManagement({
                                     }
                                   })()}
 
+                                  {/* Show item cancellation reason (admin view) */}
+                                  {(item as any).status === "cancelled" && (item as any).rejection_reason && (
+                                    <div className="flex items-start gap-1 mt-2 bg-red-50 border border-red-200 rounded p-2">
+                                      <XCircle className="h-3 w-3 text-red-500 flex-shrink-0 mt-0.5" />
+                                      <span className="text-xs text-red-700">
+                                        Cancelled: {(item as any).rejection_reason}
+                                      </span>
+                                    </div>
+                                  )}
+
                                   {/* Individual purchase button for paid items */}
-                                  {item.status === "paid" && (
+                                  {(item as any).status === "paid" && (
                                     <Button
                                       size="sm"
                                       variant="outline"
@@ -2154,6 +2246,24 @@ export function ProductRequestsManagement({
                                       )}
                                     </div>
                                   )}
+
+                                  {/* Cancel individual item — pre-payment (no credit) or post-payment (with credit) */}
+                                  {!["cancelled", "rejected", "shipped", "delivered", "shipping_paid", "shipping_quoted"].includes(item.status) && !order.is_cancelled && !order.is_rejected && (
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      className="mt-2 border-red-200 text-red-500 hover:border-red-300 hover:bg-red-50/30"
+                                      onClick={() => {
+                                        setItemToCancel({ id: item.id, name: item.item_name, status: item.status });
+                                        setCancelItemCreditAmount("0");
+                                        setCancelItemReason("");
+                                        setShowCancelItemDialog(true);
+                                      }}
+                                    >
+                                      <XCircle className="h-3 w-3 mr-1" />
+                                      {t("cancelItem")}
+                                    </Button>
+                                  )}
                                 </div>
                               </div>
                             </div>
@@ -2176,8 +2286,12 @@ export function ProductRequestsManagement({
                                       variant="outline"
                                       onClick={() => {
                                         setSelectedOrder(order);
+                                        setQuoteInvoiceUrl("");
+                                        setQuotePrice("");
                                         if (order.use_credits_request && order.credit_to_use) {
                                           setQuoteCreditAmount(order.credit_to_use.toString());
+                                        } else {
+                                          setQuoteCreditAmount("");
                                         }
                                       }}
                                     >
@@ -2208,6 +2322,23 @@ export function ProductRequestsManagement({
                                             setQuoteInvoiceUrl(e.target.value)
                                           }
                                           placeholder="Enter PayPal invoice URL"
+                                          className="mt-2"
+                                        />
+                                      </div>
+                                      <div>
+                                        <Label htmlFor="quote-price">
+                                          Order Price (¥) *
+                                        </Label>
+                                        <Input
+                                          id="quote-price"
+                                          type="number"
+                                          min="0"
+                                          step="1"
+                                          value={quotePrice}
+                                          onChange={(e) =>
+                                            setQuotePrice(e.target.value)
+                                          }
+                                          placeholder="Enter total price in JPY"
                                           className="mt-2"
                                         />
                                       </div>
@@ -2764,9 +2895,7 @@ export function ProductRequestsManagement({
                     {orderToCancel?.order_personal_id}?
                   </p>
                   <p className="text-sm">
-                    This should only be done in emergency situations when items
-                    are out of stock or unavailable. A refund will be processed and this action cannot be
-                    undone.
+                    {t("cancelItemWarning")}
                   </p>
                 </>
               ) : (
@@ -3016,6 +3145,70 @@ export function ProductRequestsManagement({
               {isMarkingIndividualPurchased
                 ? "Marking..."
                 : "Mark as Purchased"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Cancel Individual Item Dialog */}
+      <AlertDialog open={showCancelItemDialog} onOpenChange={setShowCancelItemDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <XCircle className="h-5 w-5 text-red-500" />
+              {t("cancelItem")}
+            </AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div className="space-y-4">
+                <p>
+                  You are about to cancel{" "}
+                  <span className="font-bold text-foreground">
+                    "{itemToCancel?.name || "this item"}"
+                  </span>{" "}
+                  (Status:{" "}
+                  <span className="font-semibold capitalize text-foreground">{itemToCancel?.status}</span>
+                  ). This action cannot be undone.
+                </p>
+                <div className="space-y-2">
+                  <Label htmlFor="cancel-item-reason">Cancellation Reason <span className="text-red-500">*</span></Label>
+                  <Textarea
+                    id="cancel-item-reason"
+                    placeholder="Explain why this item is being cancelled..."
+                    value={cancelItemReason}
+                    onChange={(e) => setCancelItemReason(e.target.value)}
+                    rows={2}
+                    className="resize-none"
+                  />
+                </div>
+                {/* Only show credit field for items that were already paid */}
+                {itemToCancel && ["paid", "purchased", "received"].includes(itemToCancel.status) && (
+                  <div className="space-y-2">
+                    <Label htmlFor="cancel-item-credit">
+                      Credit Refund (¥)
+                      <span className="ml-1 text-xs text-muted-foreground font-normal">Enter 0 for no refund</span>
+                    </Label>
+                    <Input
+                      id="cancel-item-credit"
+                      type="number"
+                      min="0"
+                      step="1"
+                      placeholder="e.g. 3500"
+                      value={cancelItemCreditAmount}
+                      onChange={(e) => setCancelItemCreditAmount(e.target.value)}
+                    />
+                  </div>
+                )}
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isCancellingItem}>Back</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={cancelOrderItem}
+              disabled={isCancellingItem || !cancelItemReason.trim()}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              {isCancellingItem ? "Cancelling..." : "Confirm Cancellation"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
