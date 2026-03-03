@@ -139,12 +139,12 @@ export function PickupInfo() {
                 <strong>📱 WhatsApp para Delivery:</strong>
               </p>
               <a
-                href="https://wa.me/595985511321"
+                href="https://wa.me/595982287001"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-2 text-[#0077B6] hover:text-[#005a8c]"
               >
-                📞 +595 985 511 321
+                📞 +595 982 287 001
               </a>
             </div>
 

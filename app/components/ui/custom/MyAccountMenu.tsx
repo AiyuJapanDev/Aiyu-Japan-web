@@ -7,6 +7,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@/components/ui/hover-card";
 import { useApp } from "@/contexts/AppContext";
 import { useAuth } from "@/contexts/useAuth";
 import { useNotifications } from "@/hooks/useNotifications";
@@ -20,7 +25,8 @@ import {
   Truck,
   Home,
   Coins,
-  JapaneseYen
+  JapaneseYen,
+  Info
 } from "lucide-react";
 import { Link } from "react-router";
 import LogOutBtn from "./LogOutBtn";
@@ -49,13 +55,37 @@ export default function MyAccountMenu() {
           <p className="text-xs text-muted-foreground truncate max-w-[150px]">
             {user.email}
           </p>
-          <section className="flex items-center gap-1 text-xs text-muted-foreground">
-            <JapaneseYen className="h-3.5 w-3.5 shrink-0" color="orange" />
-            <span className="text-xs">{t("creditLabel")}</span>
-            <span className="text-sm font-medium">
-              {profile?.credit_balance?.toLocaleString('en-US') ?? '0'}
-            </span>
-          </section>
+          <HoverCard openDelay={200} closeDelay={100}>
+            <HoverCardTrigger asChild>
+              <button className="flex items-center gap-1 text-xs text-muted-foreground hover:text-orange-600 transition-colors cursor-pointer">
+                <JapaneseYen className="h-3.5 w-3.5 shrink-0" color="orange" />
+                <span className="text-xs">{t("creditLabel")}</span>
+                <span className="text-sm font-medium">
+                  {profile?.credit_balance?.toLocaleString('en-US') ?? '0'}
+                </span>
+                <Info className="h-3 w-3 ml-0.5" color="orange" />
+              </button>
+            </HoverCardTrigger>
+            <HoverCardContent 
+              className="w-64 p-3 bg-gradient-to-br from-orange-50 to-yellow-50 border-2 border-orange-200 shadow-lg"
+              align="start"
+              side="bottom"
+            >
+              <div className="flex items-start gap-2">
+                <div className="bg-orange-100 p-1.5 rounded-full flex-shrink-0">
+                  <Coins className="h-4 w-4 text-orange-600" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-orange-900 mb-1">
+                    {t("creditLabel")} {profile?.credit_balance?.toLocaleString('en-US') ?? '0'}¥
+                  </p>
+                  <p className="text-xs text-orange-700 leading-relaxed">
+                    {t("creditTooltip").replace("{amount}", profile?.credit_balance?.toLocaleString('en-US') ?? '0')}
+                  </p>
+                </div>
+              </div>
+            </HoverCardContent>
+          </HoverCard>
         </div>
         <ChevronsUpDown className="ml-2 h-4 w-4 text-muted-foreground" />
       </DropdownMenuTrigger>

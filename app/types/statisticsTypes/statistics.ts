@@ -7,6 +7,13 @@ export interface StatOrder {
   created_at: string;
 }
 
+export interface StatOrderItem {
+  id: string;
+  order_id: string;
+  product_request_id: string;
+  created_at: string;
+}
+
 export interface StatProfile {
   id: string;
   created_at: string;
@@ -20,6 +27,7 @@ export interface StatProductRequest {
   status: string;
   created_at: string;
   quantity: number;
+  is_box: boolean | null;
 }
 
 export interface StatShippingQuote {
@@ -56,10 +64,12 @@ export interface ExactCounts {
   products: number;
   shippings: number;
   quotes: number;
+  boxShipments: number;
 }
 
 export interface StatisticsRawData {
   orders: StatOrder[];
+  orderItems: StatOrderItem[];
   users: StatProfile[];
   products: StatProductRequest[];
   shippings: StatShippingQuote[];
