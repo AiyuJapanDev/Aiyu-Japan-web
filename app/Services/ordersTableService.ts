@@ -88,6 +88,14 @@ export const ordersService = {
     return { rows: built, count: count ?? built.length };
   },
 
+  async deleteOrderEntirely(orderId: string): Promise<boolean> {
+    const { data, error } = await supabase.rpc("delete_order_entirely", {
+      p_order_id: orderId,
+    });
+    if (error) throw error;
+    return !!data;
+  },
+
   _calculateQuoteStatus(order: any): string {
     if (order.is_cancelled) return "Cancelled";
     if (order.is_rejected) return "Rejected";

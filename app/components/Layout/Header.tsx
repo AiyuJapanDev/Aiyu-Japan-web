@@ -18,7 +18,14 @@ import {
   ShoppingCart,
   CoinsIcon,
   JapaneseYen,
+  Coins,
+  Info,
 } from "lucide-react";
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@/components/ui/hover-card";
 import { useState, useEffect, useRef } from "react";
 import { useNotifications } from "@/hooks/useNotifications";
 import {
@@ -85,6 +92,7 @@ const Header = () => {
     navigate(newPath + location.search + location.hash);
   };
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isCreditHoverOpen, setIsCreditHoverOpen] = useState(false);
   const { unreadCount } = useNotifications();
   const mobileMenuRef = useRef<HTMLDivElement>(null);
 
@@ -401,10 +409,34 @@ const Header = () => {
                 </Link>
               )}
               {isAdmin ? "" : user ? 
-                    <span className="w-auto h-8 gap-2 flex items-center text-gray-600 px-4 border-b border-capybara-orange rounded-xl">
-                      <JapaneseYen className="text-capybara-orange font-bold" size={18} />
-                      {profile?.credit_balance.toLocaleString('es-US') ?? '0'}
-                    </span>
+                    <HoverCard open={isCreditHoverOpen} onOpenChange={setIsCreditHoverOpen} openDelay={200} closeDelay={100}>
+                      <HoverCardTrigger asChild>
+                        <button className="w-auto h-8 gap-2 flex items-center text-gray-600 px-4 border-b border-capybara-orange rounded-xl hover:bg-orange-50 transition-colors cursor-pointer">
+                          <JapaneseYen className="text-capybara-orange font-bold" size={18} />
+                          {profile?.credit_balance?.toLocaleString('es-US') ?? '0'}
+                          <Info className="h-3.5 w-3.5 ml-1" color="orange" />
+                        </button>
+                      </HoverCardTrigger>
+                      <HoverCardContent 
+                        className="w-64 p-3 bg-gradient-to-br from-orange-50 to-yellow-50 border-2 border-orange-200 shadow-lg"
+                        align="end"
+                        side="bottom"
+                      >
+                        <div className="flex items-start gap-2">
+                          <div className="bg-orange-100 p-1.5 rounded-full flex-shrink-0">
+                            <Coins className="h-4 w-4 text-orange-600" />
+                          </div>
+                          <div className="flex-1">
+                            <p className="text-sm font-medium text-orange-900 mb-1">
+                              {t("creditLabel")} {profile?.credit_balance?.toLocaleString('en-US') ?? '0'}¥
+                            </p>
+                            <p className="text-xs text-orange-700 leading-relaxed">
+                              {t("creditTooltip").replace("{amount}", profile?.credit_balance?.toLocaleString('en-US') ?? '0')}
+                            </p>
+                          </div>
+                        </div>
+                      </HoverCardContent>
+                    </HoverCard>
               : ""}
 
               {isAdmin ? "" : user ? <Link to="/user-dashboard">

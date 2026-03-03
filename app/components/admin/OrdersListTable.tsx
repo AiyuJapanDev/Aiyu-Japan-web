@@ -11,7 +11,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Search, Loader2 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Search, Loader2, Download, Trash2 } from "lucide-react";
+import { useState } from "react";
+import { ordersService } from "@/Services/ordersTableService";
+import { toast } from "sonner";
 
 interface OrdersListTableProps {
   refreshSignal?: number;
@@ -19,6 +32,8 @@ interface OrdersListTableProps {
 
 export default function OrdersListTable({ refreshSignal }: OrdersListTableProps) {
   const { t } = useApp();
+  const [deleteOrderId, setDeleteOrderId] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   
   const {
     loading,
@@ -27,7 +42,8 @@ export default function OrdersListTable({ refreshSignal }: OrdersListTableProps)
     statusFilter, setStatusFilter,
     dateFilter, setDateFilter,
     page, setPage,
-    totalCount
+    totalCount,
+    fetchOrders
   } = useOrdersTable(refreshSignal);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / ITEMS_PER_PAGE));
@@ -35,6 +51,67 @@ export default function OrdersListTable({ refreshSignal }: OrdersListTableProps)
     (page - 1) * ITEMS_PER_PAGE,
     page * ITEMS_PER_PAGE,
   );
+
+  const exportToCSV = () => {
+    const headers = [
+      t("statsOrderId"),
+      t("statsAiyuId"),
+      t("statsClientName"),
+      t("statsCountry"),
+      t("statsDate"),
+      t("statsStatus"),
+      t("statsAmount"),
+      t("statsItemsCount")
+    ];
+
+    const csvRows = [
+      headers.join(","),
+      ...filtered.map(row => {
+        const badge = STATUS_BADGES[row.quoteStatus] || STATUS_BADGES["New"];
+        const dateStr = new Date(row.created_at).toLocaleDateString(t("language") === "es" ? "es-ES" : "en-US", {
+          month: "short", day: "numeric", year: "numeric",
+        });
+        return [
+          row.id.slice(0, 8).toUpperCase(),
+          row.aiyuId,
+          `"${row.clientName}"`,
+          row.country,
+          dateStr,
+          t(badge.labelKey as any),
+          row.amount,
+          row.itemsCount
+        ].join(",");
+      })
+    ];
+
+    const csvContent = csvRows.join("\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.href = url;
+    link.download = `orders_${new Date().toISOString().split('T')[0]}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
+  const handleDeleteOrder = async () => {
+    if (!deleteOrderId) return;
+    
+    setIsDeleting(true);
+    try {
+      await ordersService.deleteOrderEntirely(deleteOrderId);
+      toast.success(t("orderDeletedSuccess"));
+      setDeleteOrderId(null);
+      await fetchOrders();
+    } catch (error) {
+      console.error("Error deleting order:", error);
+      toast.error(t("orderDeleteError"));
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -46,7 +123,17 @@ export default function OrdersListTable({ refreshSignal }: OrdersListTableProps)
 
   return (
     <Card className="p-6">
-      <h3 className="text-lg font-bold text-slate-800 mb-1">{t("statsOrderList")}</h3>
+      <div className="flex items-center justify-between mb-1">
+        <h3 className="text-lg font-bold text-slate-800">{t("statsOrderList")}</h3>
+        <Button
+          size="sm"
+          onClick={exportToCSV}
+          className="h-9 gap-2 drop-shadow-md border bg-white rounded-xl hover:bg-blue-50"
+        >
+          <Download className="w-4 h-4" color="black"/>
+          <span className="hidden text-black sm:inline">Export CSV</span>
+        </Button>
+      </div>
 
       <div className="flex flex-col sm:flex-row gap-3 mb-5 mt-3">
         <Select value={statusFilter} onValueChange={(v: any) => setStatusFilter(v)}>
@@ -101,6 +188,7 @@ export default function OrdersListTable({ refreshSignal }: OrdersListTableProps)
               <th className="text-left py-3 px-3 text-xs font-bold text-slate-500 uppercase tracking-wider">{t("statsStatus")}</th>
               <th className="text-right py-3 px-3 text-xs font-bold text-slate-500 uppercase tracking-wider">{t("statsAmount")}</th>
               <th className="text-right py-3 px-3 text-xs font-bold text-slate-500 uppercase tracking-wider">{t("statsItemsCount")}</th>
+              <th className="text-center py-3 px-3 text-xs font-bold text-slate-500 uppercase tracking-wider">{t("statsActions")}</th>
             </tr>
           </thead>
           <tbody>
@@ -123,12 +211,23 @@ export default function OrdersListTable({ refreshSignal }: OrdersListTableProps)
                   </td>
                   <td className="py-3 px-3 text-right font-medium text-slate-700 tabular-nums">¥{row.amount.toLocaleString()}</td>
                   <td className="py-3 px-3 text-right text-slate-600 tabular-nums">{row.itemsCount}</td>
+                  <td className="py-3 px-3 text-center">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setDeleteOrderId(row.id)}
+                      className="h-8 w-8 p-0 hover:bg-red-50 hover:text-red-600 transition-colors"
+                      title={t("deleteOrder")}
+                    >
+                      <Trash2 className="h-4 w-4" color="red" />
+                    </Button>
+                  </td>
                 </tr>
               );
             })}
             {paginated.length === 0 && (
               <tr>
-                <td colSpan={8} className="py-12 text-center text-sm text-slate-400 italic">
+                <td colSpan={9} className="py-12 text-center text-sm text-slate-400 italic">
                   {t("statsNoOrdersFound")}
                 </td>
               </tr>
@@ -155,7 +254,7 @@ export default function OrdersListTable({ refreshSignal }: OrdersListTableProps)
 
           <div className="hidden sm:flex items-center gap-1">
             {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
-              let pageNum = totalPages <= 5 || page <= 3 ? i + 1 : page >= totalPages - 2 ? totalPages - 4 + i : page - 2 + i;
+              const pageNum = totalPages <= 5 || page <= 3 ? i + 1 : page >= totalPages - 2 ? totalPages - 4 + i : page - 2 + i;
               return (
                 <Button
                   key={pageNum} variant={page === pageNum ? "default" : "outline"} size="sm"
@@ -181,6 +280,27 @@ export default function OrdersListTable({ refreshSignal }: OrdersListTableProps)
           </Button>
         </div>
       </div>
+
+      <AlertDialog open={deleteOrderId !== null} onOpenChange={(open) => !open && setDeleteOrderId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t("confirmDeleteOrderTitle")}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t("confirmDeleteOrderDesc")}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>{t("cancel")}</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteOrder}
+              disabled={isDeleting}
+              className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
+            >
+              {isDeleting ? t("deleting") : t("deleteOrder")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Card>
   );
 }

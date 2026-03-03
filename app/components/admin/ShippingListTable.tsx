@@ -11,7 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Search, Loader2 } from "lucide-react";
+import { Search, Loader2, Download } from "lucide-react";
 import { useMemo } from "react";
 
 interface ShippingListTableProps {
@@ -39,6 +39,51 @@ export default function ShippingListTable({ refreshSignal }: ShippingListTablePr
     );
   }, [filtered, page]);
 
+  const exportToCSV = () => {
+    const headers = [
+      t("statsShippingId"),
+      t("statsAiyuId"),
+      t("statsClientName"),
+      t("statsCountry"),
+      t("statsDate"),
+      t("statsStatus"),
+      t("statsAmount"),
+      t("statsItemsCount")
+    ];
+
+    const csvRows = [
+      headers.join(","),
+      ...filtered.map(row => {
+        const badge = STATUS_BADGES[row.status] || STATUS_BADGES["pending"];
+        const dateStr = new Date(row.created_at).toLocaleDateString(t("language") === "es" ? "es-ES" : "en-US", {
+          month: "short", day: "numeric", year: "numeric",
+        });
+        const amount = row.actual_cost ?? row.estimated_cost ?? 0;
+        return [
+          row.shipment_personal_id || row.id.slice(0, 8).toUpperCase(),
+          row.aiyuId,
+          `"${row.clientName}"`,
+          row.destination,
+          dateStr,
+          t(badge.labelKey as any),
+          amount,
+          row.items?.length || 0
+        ].join(",");
+      })
+    ];
+
+    const csvContent = csvRows.join("\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.href = url;
+    link.download = `shipments_${new Date().toISOString().split('T')[0]}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-48">
@@ -49,7 +94,17 @@ export default function ShippingListTable({ refreshSignal }: ShippingListTablePr
 
   return (
     <Card className="p-6">
-      <h3 className="text-lg font-bold text-slate-800 mb-1">{t("statsShippingList")}</h3>
+      <div className="flex items-center justify-between mb-1">
+        <h3 className="text-lg font-bold text-slate-800">{t("statsShippingList")}</h3>
+        <Button
+          size="sm"
+          onClick={exportToCSV}
+          className="h-9 gap-2 drop-shadow-md border bg-white rounded-xl hover:bg-blue-50"
+        >
+          <Download className="w-4 h-4" color="black"/>
+          <span className="hidden text-black sm:inline">Export CSV</span>
+        </Button>
+      </div>
 
       <div className="flex flex-col sm:flex-row gap-3 mb-5 mt-3">
         <Select value={statusFilter} onValueChange={(v: any) => setStatusFilter(v)}>

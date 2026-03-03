@@ -1,10 +1,15 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Loader2, RefreshCw, Users, UserPlus, ShoppingCart, Package, Truck, Repeat, Calendar, Globe } from "lucide-react";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { 
+  Loader2, RefreshCw, Users, ShoppingCart, 
+  Package, Truck, Repeat, Calendar, Globe, Box
+} from "lucide-react";
+import { 
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue 
+} from "@/components/ui/select";
 import { useApp } from "@/contexts/AppContext";
 
-// Importa tus nuevos módulos
+// Módulos de estadísticas
 import { useStatistics } from "@/hooks/useStatistics";
 import type { DateRangeFilter } from "@/hooks/useStatistics";
 import OrdersListTable from "@/components/admin/OrdersListTable";
@@ -12,17 +17,84 @@ import ShippingListTable from "@/components/admin/ShippingListTable";
 import { KPICard } from "./stats/KpiCard";
 import { OrdersView } from "./stats/OrdersView";
 import { ShippingView } from "./stats/ShippingView";
+import { DynamicMainChart } from "./stats/DynamicMainChart";
+import { MasterDateFilter } from "./MasterDateFilter";
 
 export default function AdminStatistics() {
-  const [view, setView] = useState<"orders" | "shipping">("orders");
   const [refreshSignal, setRefreshSignal] = useState(0);
   const { t } = useApp();
-  const { loading, refetch, dateRange, setDateRange, countryFilter, setCountryFilter, availableCountries, ...stats } = useStatistics();
+  const { 
+    loading, 
+    refetch, 
+    dateRange, 
+    setDateRange, 
+    countryFilter, 
+    setCountryFilter, 
+    availableCountries,
+    customDateStart,
+    setCustomDateStart,
+    customDateEnd,
+    setCustomDateEnd,
+    ...stats 
+  } = useStatistics();
 
   const handleRefresh = async () => {
     setRefreshSignal((s) => s + 1);
     await refetch();
   };
+
+  const handleCustomDateChange = (start: Date | null, end: Date | null) => {
+    setCustomDateStart(start);
+    setCustomDateEnd(end);
+    if (start && end) {
+      setDateRange("custom");
+    } else {
+      setDateRange("all");
+    }
+  };
+
+  // Preparar datos para DynamicMainChart
+  // Generar meses desde septiembre 2025 (inicio de operaciones) hasta hoy
+  const buildMonthsSinceSeptember2025 = (): string[] => {
+    const keys: string[] = [];
+    const startDate = new Date(2025, 8, 1); // Septiembre 2025 (mes 8 en JS)
+    const currentDate = new Date();
+    
+    // Normalizar a primer día del mes para comparación correcta
+    const startMonth = new Date(startDate.getFullYear(), startDate.getMonth(), 1);
+    const currentMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+    
+    const current = new Date(startMonth);
+    while (current <= currentMonth) {
+      keys.push(`${current.getFullYear()}-${String(current.getMonth() + 1).padStart(2, "0")}`);
+      current.setMonth(current.getMonth() + 1);
+    }
+    
+    return keys;
+  };
+
+  const monthKeys12 = buildMonthsSinceSeptember2025();
+
+  // Construir datos para DynamicMainChart
+  // Los datos de ordersByMonth y shippingsByMonth ya vienen ordenados cronológicamente
+  const dynamicChartData = monthKeys12.map((monthKey, index) => {
+    const orderMonthData = stats.ordersByMonth[index];
+    const shippingMonthData = stats.shippingsByMonth[index];
+    const salesMonthData = stats.salesByMonth[index];
+    
+    const ordersCount = (orderMonthData?.orders as number) || 0;
+    const itemsCount = (orderMonthData?.items as number) || 0;
+    const shippingsCount = (shippingMonthData?.shipments as number) || 0;
+    const salesAmount = (salesMonthData?.sales as number) || 0;
+    
+    return {
+      date: `${monthKey}-01`, // Fecha ISO: "2025-09-01"
+      sales: salesAmount,
+      orders: ordersCount,
+      items: itemsCount,
+      shippings: shippingsCount,
+    };
+  });
 
   if (loading) {
     return (
@@ -33,36 +105,36 @@ export default function AdminStatistics() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-8">
+      {/* Header Section */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-extrabold text-slate-800">{t("statsTitle")}</h1>
+          <h1 className="text-2xl font-extrabold text-slate-800 tracking-tight">{t("statsTitle")}</h1>
           <p className="text-sm text-slate-400 font-medium">{t("statsSubtitle")}</p>
         </div>
         <div className="flex items-center gap-3">
-          <Button variant="outline" size="sm" className="rounded-xl gap-2" onClick={handleRefresh}>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="rounded-xl gap-2 h-10 border-slate-200" 
+            onClick={handleRefresh}
+          >
             <RefreshCw className="w-4 h-4" />
-            {t("statsRefresh")}
+            <span className="hidden xs:inline">{t("statsRefresh")}</span>
           </Button>
-          <Select value={view} onValueChange={(v: any) => setView(v)}>
-            <SelectTrigger className="w-[200px] rounded-xl"><SelectValue /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="orders">{t("statsViewOrders")}</SelectItem>
-              <SelectItem value="shipping">{t("statsViewShipping")}</SelectItem>
-            </SelectContent>
-          </Select>
         </div>
       </div>
 
-      {/* Filter bar */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-end gap-3 p-4 bg-white border border-slate-200 rounded-xl shadow-sm">
-        <div className="flex-1 min-w-0">
-          <label className="flex items-center gap-1.5 text-xs font-bold text-slate-500 mb-1.5">
+      {/* Filter Bar - Responsive Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-4 p-4 bg-white border border-slate-200 rounded-2xl shadow-sm items-end">
+        {/* Date Filter Column */}
+        <div className="md:col-span-5 lg:col-span-4 space-y-1.5">
+          <label className="flex items-center gap-1.5 text-xs font-bold text-slate-500 ml-1">
             <Calendar className="w-3.5 h-3.5" />
             {t("statsFilterDateRange")}
           </label>
           <Select value={dateRange} onValueChange={(v) => setDateRange(v as DateRangeFilter)}>
-            <SelectTrigger className="rounded-xl border-blue-200 h-10">
+            <SelectTrigger className="rounded-xl border-blue-100 h-10 bg-slate-50/30">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -70,17 +142,24 @@ export default function AdminStatistics() {
               <SelectItem value="3m">{t("statsFilterLast3Months")}</SelectItem>
               <SelectItem value="1y">{t("statsFilterThisYear")}</SelectItem>
               <SelectItem value="all">{t("statsFilterAll")}</SelectItem>
+              <SelectItem value="custom">{t("statsFilterCustom")}</SelectItem>
             </SelectContent>
           </Select>
+          {dateRange === "custom" && (
+            <div className="mt-2">
+              <MasterDateFilter onDateRangeChange={handleCustomDateChange} />
+            </div>
+          )}
         </div>
 
-        <div className="flex-1 min-w-0">
-          <label className="flex items-center gap-1.5 text-xs font-bold text-slate-500 mb-1.5">
+        {/* Country Filter Column */}
+        <div className="md:col-span-4 lg:col-span-5 space-y-1.5">
+          <label className="flex items-center gap-1.5 text-xs font-bold text-slate-500 ml-1">
             <Globe className="w-3.5 h-3.5" />
             {t("statsFilterCountry")}
           </label>
           <Select value={countryFilter} onValueChange={setCountryFilter}>
-            <SelectTrigger className="rounded-xl border-blue-200 h-10">
+            <SelectTrigger className="rounded-xl border-blue-100 h-10 bg-slate-50/30">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -92,46 +171,60 @@ export default function AdminStatistics() {
           </Select>
         </div>
 
-        <Button
-          variant="default"
-          className="rounded-xl h-10 px-6 bg-blue-500 hover:bg-blue-600 text-white font-bold text-sm shrink-0"
-          onClick={() => { /* filters are reactive, button is visual confirmation */ }}
-        >
-          {t("statsFilterApply")}
-        </Button>
+        {/* Apply Button Column */}
+        <div className="md:col-span-3 lg:col-span-3">
+          <Button
+            variant="default"
+            className="w-full rounded-xl h-10 bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-sm transition-all"
+            onClick={() => {}}
+          >
+            {t("statsFilterApply")}
+          </Button>
+        </div>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+      {/* Dynamic Main Chart - Hero Section */}
+      <DynamicMainChart data={dynamicChartData} />
+
+      {/* KPI Cards Grid */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
         <KPICard icon={Users} iconBg="bg-blue-500" value={stats.totalClients} label={t("statsTotalClients")} subtitle={t("statsUsers")} />
-        <KPICard icon={UserPlus} iconBg="bg-emerald-500" value={stats.newClients} label={t("statsNewClients")} subtitle={t("statsThisMonth")} />
         <KPICard icon={ShoppingCart} iconBg="bg-violet-500" value={stats.totalOrders} label={t("statsOrders")} subtitle={t("statsItems")} />
-        <KPICard icon={Package} iconBg="bg-green-500" value={stats.itemsSold} label={t("statsItemsSold")} subtitle={t("statsPaid")} />
+        <KPICard icon={Package} iconBg="bg-green-500" value={stats.itemsSold} label={t("statsItemsSold")} subtitle={t("statsTotal")} />
         <KPICard icon={Truck} iconBg="bg-orange-500" value={stats.totalShipments} label={t("statsShipments")} subtitle={t("statsShipments")} />
         <KPICard icon={Repeat} iconBg="bg-indigo-500" value={stats.repeatClients} label={t("statsRepeatClients")} subtitle={t("statsLoyal")} />
+        <KPICard icon={Box} iconBg="bg-amber-500" value={stats.boxShipments} label={t("statsBoxShipments")} subtitle={t("statsCasillero")} />
       </div>
 
-      {view === "orders" ? (
-        <OrdersView 
-          ordersByMonth={stats.ordersByMonth}
-          orderStatusData={stats.orderStatusData}
-          newUsersByMonth={stats.newUsersByMonth}
-          itemsByCountry={stats.itemsByCountry}
-        />
-      ) : (
-        <ShippingView 
-          shippingsByMonth={stats.shippingsByMonth}
-          shippingStatusData={stats.shippingStatusData}
-          shippingMethodData={stats.shippingMethodData}
-          allDestinations={stats.allDestinations}
-          weightByCountry={stats.weightByCountry}
-        />
-      )}
+      {/* Main Views */}
+      <div className="space-y-8">
+        {/* Orders Section */}
+        <div>
+          <h2 className="text-lg font-bold text-slate-800 mb-4">{t("statsViewOrders")}</h2>
+          <OrdersView 
+            ordersByMonth={stats.ordersByMonth}
+            orderStatusData={stats.orderStatusData}
+            newUsersByMonth={stats.newUsersByMonth}
+            itemsByCountry={stats.itemsByCountry}
+            topCountriesRegistered={stats.topCountriesRegistered}
+            topCountriesOrders={stats.topCountriesOrders}
+            refreshSignal={refreshSignal}
+          />
+        </div>
 
-      {view === "orders" ? (
-        <OrdersListTable refreshSignal={refreshSignal} />
-      ) : (
-        <ShippingListTable refreshSignal={refreshSignal} />
-      )}
+        {/* Shipping Section */}
+        <div>
+          <h2 className="text-lg font-bold text-slate-800 mb-4">{t("statsViewShipping")}</h2>
+          <ShippingView 
+            shippingsByMonth={stats.shippingsByMonth}
+            shippingStatusData={stats.shippingStatusData}
+            shippingMethodData={stats.shippingMethodData}
+            allDestinations={stats.allDestinations}
+            weightByCountry={stats.weightByCountry}
+            refreshSignal={refreshSignal}
+          />
+        </div>
+      </div>
     </div>
   );
 }
