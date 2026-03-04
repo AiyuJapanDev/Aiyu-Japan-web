@@ -402,18 +402,23 @@ export function useStatistics(): UseStatisticsReturn {
       }
     });
 
-    return Object.entries(counts).map(([name, value]) => {
-      let translatedName = name;
-      if (name === "paid") translatedName = t("statusPaid");
-      else if (name === "quoted") translatedName = t("statusQuoted");
-      else if (name === "requested") translatedName = t("statusRequested");
-      else if (name === "sent") translatedName = t("statusShipped");
-      else if (name === "cancelled") translatedName = t("statusCancelled");
-      else if (name === "rejected") translatedName = t("statusRejected");
-      else if (name === "received") translatedName = "Received";
-      else if (name === "purchased") translatedName = "Purchased";
-      return { name: translatedName, value };
-    });
+    const paidTotal = (counts["paid"] || 0) + (counts["received"] || 0) + (counts["purchased"] || 0);
+    const unpaidTotal = (counts["quoted"] || 0) + (counts["requested"] || 0) + 
+                        (counts["cancelled"] || 0) + (counts["rejected"] || 0);
+
+    const result: StatusDistribution[] = [];
+    if (paidTotal > 0) {
+      result.push({ name: "Pagados", value: paidTotal });
+    }
+    if (unpaidTotal > 0) {
+      result.push({ name: "No pagado", value: unpaidTotal });
+    }
+    // Mantener "sent" si existe
+    if (counts["sent"]) {
+      result.push({ name: t("statusShipped"), value: counts["sent"] });
+    }
+
+    return result;
   }, [orders, orderItems, products, dateCutoff, countryFilter, userCountryMap, t, customDateStart, customDateEnd]);
 
   const itemsByCountry = useMemo<CountryData[]>(() => {

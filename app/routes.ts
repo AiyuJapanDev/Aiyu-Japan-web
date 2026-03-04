@@ -14,6 +14,7 @@ export default [
     route("auth/reset-password", "routes/ResetPassword.tsx"),
     route("email-verification", "routes/EmailVerification.tsx"),
     route("calculator", "routes/Calculator.tsx"),
+    route("help-center", "routes/HelpCenter.tsx"),
 
     /* Store Guide Routes */
     route("store-guide", "./components/Layout/StoreGuideLayout.tsx", [

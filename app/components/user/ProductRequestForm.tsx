@@ -21,6 +21,7 @@ import {
 import {
   Dialog, DialogContent,
 } from "@/components/ui/dialog";
+import ReactGA from "react-ga4";
 
 interface ProductItem {
   url: string;
@@ -151,6 +152,13 @@ export function ProductRequestForm() {
           data[0].order_id
         );
       }
+
+      ReactGA.event({
+        category: "Product Request",
+        action: "Submit Product Order",
+        label: `Order #${orderPersonalId} - ${validItems.length} items`,
+        value: validItems.length,
+      });
 
       clearForm();
       setShowSuccessDialog(true);

@@ -18,6 +18,7 @@ import {
   PERU_MARITIME_SHIPPING,
 } from "@/lib/shippingUtils";
 import { useEffect, useState } from "react";
+import ReactGA from "react-ga4";
 
 const ShippingCalculator = () => {
   const { t } = useApp();
@@ -112,7 +113,6 @@ useEffect(() => {
       if (cost) {
         let totalCost = typeof cost === "number" ? cost : cost.total;
 
-        // Costos adicionales específicos de DHL
         if (shippingMethod === "dhl") {
           const handlingFee = 500;
           const tax = (totalCost + handlingFee) * 0.1;
@@ -121,23 +121,18 @@ useEffect(() => {
 
         let usdPrice: string;
 
-        // --- INICIO LÓGICA DE PRECIOS EN USD ---
 
-        // 1. Paraguay Marítimo: Forzar $12 USD por KG con saltos de 200g
         if (shippingMethod === "paraguay-maritime") {
           const step = 200;
           const minWeight = 1000;
           const maxWeight = 30000;
           
-          // Aplicamos redondeo para la visualización en USD
           const clampedWeight = Math.max(minWeight, Math.min(maxWeight, weight[0]));
           const roundedWeight = Math.ceil(clampedWeight / step) * step;
           
-          // Cálculo directo: (Gramos / 1000) * 12 USD
           const finalUsd = (roundedWeight / 1000) * 12;
           usdPrice = finalUsd.toFixed(2);
         } 
-        // 2. Perú Marítimo: Usar tabla de precios definida
         else if (shippingMethod === "peru-maritime") {
           const weightInKg = Math.ceil(weight[0] / 1000);
           const priceEntry = PERU_MARITIME_SHIPPING.priceTable.find(
@@ -145,12 +140,10 @@ useEffect(() => {
           );
           usdPrice = priceEntry ? priceEntry.usd.toFixed(2) : convertCurrency(totalCost, "usd");
         } 
-        // 3. Otros métodos: Conversión estándar basada en Yenes
         else {
           usdPrice = convertCurrency(totalCost, "usd");
         }
 
-        // --- FIN LÓGICA DE PRECIOS EN USD ---
 
         setShippingResults({
           shippingCost: totalCost,
@@ -180,6 +173,17 @@ useEffect(() => {
   useEffect(() => {
     setWeight([weightRange.min]);
   }, [shippingMethod, weightRange.min]);
+
+  useEffect(() => {
+    if (shippingResults && selectedCountry) {
+      ReactGA.event({
+        category: "Shipping Calculator",
+        action: "Calculate Shipping",
+        label: `${selectedCountry} - ${shippingMethod}`,
+        value: Math.round(parseFloat(shippingResults.usd)),
+      });
+    }
+  }, [shippingResults, selectedCountry, shippingMethod]);
 
   const animatedTotal = useAnimatedNumber(
     shippingResults?.shippingCost || 0,

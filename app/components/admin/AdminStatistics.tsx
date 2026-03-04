@@ -12,8 +12,6 @@ import { useApp } from "@/contexts/AppContext";
 // Módulos de estadísticas
 import { useStatistics } from "@/hooks/useStatistics";
 import type { DateRangeFilter } from "@/hooks/useStatistics";
-import OrdersListTable from "@/components/admin/OrdersListTable";
-import ShippingListTable from "@/components/admin/ShippingListTable";
 import { KPICard } from "./stats/KpiCard";
 import { OrdersView } from "./stats/OrdersView";
 import { ShippingView } from "./stats/ShippingView";
@@ -183,9 +181,6 @@ export default function AdminStatistics() {
         </div>
       </div>
 
-      {/* Dynamic Main Chart - Hero Section */}
-      <DynamicMainChart data={dynamicChartData} />
-
       {/* KPI Cards Grid */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
         <KPICard icon={Users} iconBg="bg-blue-500" value={stats.totalClients} label={t("statsTotalClients")} subtitle={t("statsUsers")} />
@@ -195,6 +190,9 @@ export default function AdminStatistics() {
         <KPICard icon={Repeat} iconBg="bg-indigo-500" value={stats.repeatClients} label={t("statsRepeatClients")} subtitle={t("statsLoyal")} />
         <KPICard icon={Box} iconBg="bg-amber-500" value={stats.boxShipments} label={t("statsBoxShipments")} subtitle={t("statsCasillero")} />
       </div>
+
+      {/* Dynamic Main Chart - Hero Section */}
+      <DynamicMainChart data={dynamicChartData} />
 
       {/* Main Views */}
       <div className="space-y-8">

@@ -20,6 +20,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useNavigate, useSearchParams } from "react-router";
 import { toast } from "sonner";
 import { useApp } from "@/contexts/AppContext";
+import ReactGA from "react-ga4";
 import { useAuth } from "@/contexts/useAuth";
 import {
   Tooltip,
@@ -125,23 +126,18 @@ export const OrdersPage = () => {
     fetchOrders();
   }, []);
 
-  // Reset to page 1 when filter or items per page changes
   useEffect(() => {
     setCurrentPage(1);
   }, [statusFilter, itemsPerPage, hideRejected, showCancelled]);
 
-  // Scroll to top when page changes
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, [currentPage]);
 
-  // Handle deep linking to specific order
   useEffect(() => {
     const orderId = searchParams.get("orderId");
     if (orderId && orders.length > 0) {
-      // Open the order
       setOpenOrders(new Set([orderId]));
-      // Scroll to it
       setTimeout(() => {
         const element = document.getElementById(`order-${orderId}`);
         if (element) {
@@ -231,12 +227,10 @@ export const OrdersPage = () => {
       order.order_items?.map((item) => item.product_request.status) ?? [];
     const progress = getPurchaseProgress(order);
 
-    // Check if all items are at warehouse
     if (progress.allReceived) {
       return "all_received";
     }
 
-    // Check if some items are purchased and some at warehouse (in transit)
     if (
       progress.allPurchased ||
       (progress.purchasedCount > 0 && progress.receivedCount > 0)
@@ -244,7 +238,6 @@ export const OrdersPage = () => {
       return "in_transit";
     }
 
-    // Check purchase status
     if (progress.somePurchased) return "some_purchased";
 
     const productQuote = order.quotes?.find((q) => q.type === "product");
@@ -259,7 +252,6 @@ export const OrdersPage = () => {
     type StepStatus = "completed" | "current" | "rejected" | "upcoming";
     const progress = getPurchaseProgress(order);
 
-    // Determine dynamic labels for purchase and transit steps
     const purchaseLabel =
       progress.allPurchased ||
       status === "in_transit" ||
@@ -511,6 +503,11 @@ export const OrdersPage = () => {
   };
 
   const handlePayment = (quoteUrl: string) => {
+    ReactGA.event({
+      category: "Payment",
+      action: "Open Payment Link",
+      label: "Payment Intent",
+    });
     window.open(quoteUrl, "_blank");
   };
 

@@ -10,12 +10,11 @@ import {
   ResponsiveContainer,
   Tooltip 
 } from "recharts";
-import { DollarSign, ShoppingCart, Package, Truck } from "lucide-react";
+import { ShoppingCart, Package, Truck } from "lucide-react";
 import { useApp } from "@/contexts/AppContext";
 
 interface ChartDataPoint {
   date: string;
-  sales: number;
   orders: number;
   items: number;
   shippings: number;
@@ -25,7 +24,7 @@ interface DynamicMainChartProps {
   data: ChartDataPoint[];
 }
 
-type MetricType = "sales" | "orders" | "items" | "shippings";
+type MetricType = "orders" | "items" | "shippings";
 
 interface MetricConfig {
   key: MetricType;
@@ -38,15 +37,6 @@ interface MetricConfig {
 }
 
 const METRIC_CONFIGS: Record<MetricType, MetricConfig> = {
-  sales: {
-    key: "sales",
-    label: "Ventas",
-    labelKey: "statsSales",
-    color: "#3b82f6",
-    icon: DollarSign,
-    gradientId: "salesGradient",
-    formatValue: (value: number) => `$${value.toLocaleString()}`,
-  },
   orders: {
     key: "orders",
     label: "Pedidos",
@@ -112,7 +102,7 @@ const CustomTooltip = ({ active, payload, label, metricConfig }: CustomTooltipPr
 
 export function DynamicMainChart({ data }: DynamicMainChartProps) {
   const { t } = useApp();
-  const [activeMetric, setActiveMetric] = useState<MetricType>("sales");
+  const [activeMetric, setActiveMetric] = useState<MetricType>("orders");
 
   const currentConfig = METRIC_CONFIGS[activeMetric];
   const Icon = currentConfig.icon;
@@ -150,7 +140,7 @@ export function DynamicMainChart({ data }: DynamicMainChartProps) {
           onValueChange={(value) => setActiveMetric(value as MetricType)}
           className="w-full sm:w-auto"
         >
-          <TabsList className="grid grid-cols-4 w-full sm:w-auto">
+          <TabsList className="grid grid-cols-3 w-full sm:w-auto">
             {Object.values(METRIC_CONFIGS).map((config) => {
               const TabIcon = config.icon;
               return (
@@ -207,7 +197,7 @@ export function DynamicMainChart({ data }: DynamicMainChartProps) {
                 fontSize={12}
                 tick={{ fill: "#64748b" }}
                 tickFormatter={(value) => 
-                  activeMetric === "sales" 
+                  activeMetric === "orders" 
                     ? `$${(value / 1000).toFixed(0)}k` 
                     : value.toLocaleString()
                 }

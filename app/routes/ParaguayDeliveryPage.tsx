@@ -12,6 +12,7 @@ import { ShipmentStatus } from "@/components/ui/custom/ShipmentStatus";
 import { TrackingHero } from "@/components/ui/custom/TrackingHero";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import contentData from "@/lib/data.server";
+import ReactGA from "react-ga4";
 
 export async function loader({ params }: LoaderFunctionArgs) {
   const data = await contentData[params.lang].paraguayDeliveries.find(
@@ -31,10 +32,17 @@ export default function EnvioParaguay() {
   const [showContent, setShowContent] = useState(false);
 
   useEffect(() => {
-    // Show content after initial animation
     const timer = setTimeout(() => setShowContent(true), 1500);
     return () => clearTimeout(timer);
   }, []);
+
+  useEffect(() => {
+    ReactGA.event({
+      category: "Shipping",
+      action: "View Paraguay Delivery Info",
+      label: `Load: ${data.loadNumber}`,
+    });
+  }, [data.loadNumber]);
 
   return (
     <ProtectedRoute>

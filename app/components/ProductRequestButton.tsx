@@ -14,6 +14,7 @@ import { Label } from "@/components/ui/label";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useApp } from "@/contexts/AppContext";
 import { useLocation, useNavigate, useSearchParams } from "react-router";
+import ReactGA from "react-ga4";
 
 interface ProductItem {
   url: string;
@@ -58,6 +59,11 @@ const ProductRequestButton = () => {
       setIsMenuOpen(!isMenuOpen);
     } else {
       if (user) {
+        ReactGA.event({
+          category: "Product Request",
+          action: "Open Request Form",
+          label: "Product Request Intent",
+        });
         navigate("/user-dashboard?tab=submit");
       } else {
         setIsDialogOpen(true);
@@ -68,6 +74,11 @@ const ProductRequestButton = () => {
   const handleMenuAction = () => {
     setIsMenuOpen(false);
     if (user) {
+      ReactGA.event({
+        category: "Product Request",
+        action: "Open Request Form",
+        label: "Product Request Intent",
+      });
       navigate("/user-dashboard?tab=submit");
     } else {
       setIsDialogOpen(true);

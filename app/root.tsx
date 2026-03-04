@@ -1,6 +1,7 @@
 import Footer from "@/components/Layout/Footer";
 import Header from "@/components/Layout/Header";
 import ProductRequestButton from "@/components/ProductRequestButton";
+import HelpButton from "@/components/HelpButton";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -17,17 +18,18 @@ import {
   isRouteErrorResponse,
   useLoaderData,
   useRouteError,
+  useLocation,
 } from "react-router";
 import "./index.css";
 import NotFound from "./routes/NotFound";
 import { Route } from ".react-router/types/app/+types/root";
 import { Language } from "./lib/i18n";
+import ReactGA from "react-ga4";
+import { useEffect } from "react";
 
 const queryClient = new QueryClient();
 
 export async function loader({ params }: Route.LoaderArgs) {
-  // El locale real será manejado por LocaleLayout.tsx
-  // Aquí solo proporcionamos un fallback para el Layout component
   const locale = params.lang || "es";
 
   return { locale };
@@ -60,6 +62,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                     <Scripts />
                   </main>
                   <Footer />
+                  <HelpButton />
                 </div>
               </AuthProvider>
             </AppProvider>
@@ -70,7 +73,19 @@ export function Layout({ children }: { children: React.ReactNode }) {
   );
 }
 
+// Inicializar Google Analytics 4
+if (typeof window !== 'undefined') {
+  ReactGA.initialize('G-4J7LVRVXDT');
+}
+
 export default function App() {
+  const location = useLocation();
+
+  // Rastrear pageviews cuando cambia la ruta
+  useEffect(() => {
+    ReactGA.send({ hitType: "pageview", page: location.pathname + location.search });
+  }, [location]);
+
   return <Outlet />;
 }
 

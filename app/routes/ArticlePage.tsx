@@ -4,6 +4,8 @@ import { getImage } from "@/lib/utils";
 import { Article } from "@/types/blog";
 import { ArrowLeft, Calendar } from "lucide-react";
 import { useNavigate } from "react-router";
+import { useEffect } from "react";
+import ReactGA from "react-ga4";
 
 import type { Route } from ".react-router/types/app/routes/+types/ArticlePage";
 import BlockRenderer from "@/components/blocks/Blockrenderer";
@@ -59,15 +61,25 @@ export function meta({ loaderData }: Route.ComponentProps) {
 }
 
 export default function ArticlePage({ loaderData }: Route.ComponentProps) {
-  let navigate = useNavigate();
+  const navigate = useNavigate();
+  const { t } = useApp();
+  
+  useEffect(() => {
+    if (loaderData && loaderData.article && loaderData.article.title) {
+      ReactGA.event({
+        category: "Blog",
+        action: "Read Article",
+        label: loaderData.article.title,
+      });
+    }
+  }, [loaderData]);
+  
   if (!loaderData) return null;
 
   const { article, lang } = loaderData;
 
   const { title, content, cover, publishedAt, locale, author, blocks } =
     article;
-
-  const { t } = useApp();
 
   const formattedDate = new Date(publishedAt).toLocaleDateString(
     locale || "en-US",
