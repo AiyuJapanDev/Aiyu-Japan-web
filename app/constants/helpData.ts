@@ -55,7 +55,7 @@ export const helpArticlesEN: HelpData = {
     faqs: [
       {
         question: "Which online stores are compatible?",
-        answer: "We work with:\n- Amazon Japan\n- Rakuten\n- Yahoo! Auctions Japan\n- Yahoo! Shopping Japan\n- Mercari\n- Suruga-ya\n- Mandarake\n- Animate Online Shop\n- AmiAmi\n- Good Smile Online\n- Pokémon Center\n- CD Japan\n- And many more!"
+        answer: "We work with:\n\n• <a href='https://www.amazon.co.jp/' target='_blank' rel='noopener noreferrer' style='color: #f97316; text-decoration: underline;'>Amazon Japan</a>\n• <a href='https://www.rakuten.co.jp/' target='_blank' rel='noopener noreferrer' style='color: #f97316; text-decoration: underline;'>Rakuten</a>\n• <a href='https://auctions.yahoo.co.jp/' target='_blank' rel='noopener noreferrer' style='color: #f97316; text-decoration: underline;'>Yahoo! Auctions Japan</a>\n• <a href='https://shopping.yahoo.co.jp/' target='_blank' rel='noopener noreferrer' style='color: #f97316; text-decoration: underline;'>Yahoo! Shopping Japan</a>\n• <a href='https://jp.mercari.com/' target='_blank' rel='noopener noreferrer' style='color: #f97316; text-decoration: underline;'>Mercari</a>\n• <a href='https://www.suruga-ya.com/' target='_blank' rel='noopener noreferrer' style='color: #f97316; text-decoration: underline;'>Suruga-ya</a>\n• <a href='https://order.mandarake.co.jp/' target='_blank' rel='noopener noreferrer' style='color: #f97316; text-decoration: underline;'>Mandarake</a>\n• <a href='https://www.animate-onlineshop.jp/' target='_blank' rel='noopener noreferrer' style='color: #f97316; text-decoration: underline;'>Animate Online Shop</a>\n• <a href='https://www.amiami.com/' target='_blank' rel='noopener noreferrer' style='color: #f97316; text-decoration: underline;'>AmiAmi</a>\n• <a href='https://goodsmileshop.com/' target='_blank' rel='noopener noreferrer' style='color: #f97316; text-decoration: underline;'>Good Smile Online</a>\n• <a href='https://www.pokemoncenter-online.com/' target='_blank' rel='noopener noreferrer' style='color: #f97316; text-decoration: underline;'>Pokémon Center</a>\n• <a href='https://www.cdjapan.co.jp/' target='_blank' rel='noopener noreferrer' style='color: #f97316; text-decoration: underline;'>CD Japan</a>\n• And many more!"
       },
       {
         question: "Can I buy at Yahoo Auctions?",
@@ -213,7 +213,7 @@ export const helpArticlesEN: HelpData = {
       },
       {
         question: "Can I cancel an order?",
-        answer: "Depends on the status:\n\n✓ Requested/Awaiting Payment: Free cancellation\n✓ Paid (not yet purchased): Possible refund\n✗ Purchased: Depends on store's return policy\n✗ In Transit/Warehouse: Non-refundable\n\nContact support ASAP if you need to cancel. Some stores may charge restocking fees."
+        answer: "Depends on the status:\n\n✅ Requested/Awaiting Payment: Free cancellation\n✅ Paid (not yet purchased): Possible refund\n❌ Purchased: Depends on store's return policy\n❌ In Transit/Warehouse: Non-refundable\n\nContact support ASAP if you need to cancel. Some stores may charge restocking fees."
       },
       {
         question: "How does tracking work?",
@@ -344,15 +344,15 @@ export const helpArticlesES: HelpData = {
     faqs: [
       {
         question: "¿Qué es Aiyu Japan?",
-        answer: "Aiyu Japan es una empresa de servicio Proxy japonés que ayuda a los usuarios a comprar productos desde Japón y ofrece envío internacional a todo el mundo. A diferencia de otros servicios proxy que agregan tarifas ocultas o cargos extra después de la compra, Aiyu Japan ofrece una única tarifa transparente que ya incluye almacenamiento ilimitado, consolidación y solicitud de fotos."
+        answer: "Aiyu Japan es una empresa de servicio Proxy japonés que ayuda a los usuarios a comprar productos desde Japón y ofrece envío internacional a todo el mundo sin excepcion! A diferencia de otros servicios proxy que agregan tarifas ocultas o cargos extra después de la compra del producto, Aiyu Japan ofrece una única tarifa transparente que ya incluye serivicios extras como almacenamiento de tiempo ilimitado, consolidación de sus compras y solicitud de fotografias basica, ademas de una atencion personalizada si necesita el usuario!"
       },
       {
         question: "¿Cómo funciona el proceso básico?",
-        answer: "1. Encuentra tu artículo en tu tienda japonesa favorita (Uniqlo, Pokémon Center, Animate, Amazon Japan, etc.)\n2. Copia el enlace del producto (URL)\n3. Envíanos el enlace a través de nuestro formulario de solicitud\n4. Verificamos disponibilidad y te enviamos un enlace de pago\n5. Después del pago, compramos los artículos por ti\n6. Los artículos llegan a nuestro almacén en Osaka\n7. Los pesamos y te enviamos la cotización de envío internacional\n8. Eliges tu método de envío y enviamos tu paquete a cualquier parte del mundo"
+        answer: "1. Encuentra tu artículo en tu tienda japonesa favorita (Uniqlo, Pokémon Center, Animate, Amazon Japan, etc.)\n\n2. Copia el enlace del producto (URL)\n\n3. Subelo a tu cuenta a traves del formulario!\n\n4. Verificamos disponibilidad y te lo cotizamos\n\n5. Si esta de acuerdo, paga la factura que le llegara luego.\n\n6. Sus compras llegan a nuestro almacen en Osaka!\n\n7. Eliges el método de envío que mas te guste y espera por tu paquete!"
       },
       {
         question: "¿Necesito saber japonés?",
-        answer: "No, no es necesario. Nuestro servicio está completamente disponible en español e inglés. Si necesitas que compremos por ti, solo envíanos el enlace del producto y nosotros nos encargamos de todo. También proporcionamos traducciones si es necesario."
+        answer: "No, no es necesario. Nuestro servicio está completamente disponible en español e inglés. Si necesitas que compremos por ti, solo envíanos el enlace del producto y nosotros nos encargamos de todo. También proporcionamos traducciones si es necesario. Ademas te recomendamos traducir la pagina Japonesa con el traductor de tu navegador."
       },
       {
         question: "¿Puedo comprar de cualquier tienda japonesa?",
@@ -360,7 +360,7 @@ export const helpArticlesES: HelpData = {
       },
       {
         question: "¿Cuánto tiempo tarda el proceso completo?",
-        answer: "Desde la compra hasta la entrega:\n- Procesamiento de compra: 1-2 días\n- Entrega al almacén de Osaka: 3-7 días\n- Procesamiento y consolidación: 1-3 días (opcional)\n- Envío internacional: 15-21 días (Económico), 4-10 días (EMS), 2-5 días (DHL Express), o 3 meses hábiles (Envío Marítimo para Paraguay/Perú)\n\nTotal: 2-3 semanas con envío express, 1-2 meses con envío económico, o 3-4 meses con envío marítimo."
+        answer: "Desde la compra hasta la entrega:\n\n• Procesamiento de compra: algunas horas a 2 días\n• Entrega al almacén de Osaka: 3-5 días\n• Procesamiento y consolidación: 1-3 días (opcional)\n• Envío internacional: 15-25 días (Económico), 4-10 días (EMS), 2-5 días (DHL Express), o 3 meses hábiles (Envío Marítimo para Paraguay/Perú/USA)\n\nTotal desde el momento de la compra: 2-3 semanas con envío express, 1 mes con envío económico, o 3-4 meses con envío marítimo."
       }
     ]
   },
@@ -370,23 +370,23 @@ export const helpArticlesES: HelpData = {
     faqs: [
       {
         question: "¿Qué tiendas online son compatibles?",
-        answer: "Trabajamos con:\n- Amazon Japan\n- Rakuten\n- Yahoo! Auctions Japan\n- Yahoo! Shopping Japan\n- Mercari\n- Suruga-ya\n- Mandarake\n- Animate Online Shop\n- AmiAmi\n- Good Smile Online\n- Pokémon Center\n- CD Japan\n- ¡Y muchas más!"
+        answer: "Trabajamos con:\n\n• <a href='https://www.amazon.co.jp/' target='_blank' rel='noopener noreferrer' style='color: #f97316; text-decoration: underline;'>Amazon Japan</a>\n• <a href='https://www.rakuten.co.jp/' target='_blank' rel='noopener noreferrer' style='color: #f97316; text-decoration: underline;'>Rakuten</a>\n• <a href='https://auctions.yahoo.co.jp/' target='_blank' rel='noopener noreferrer' style='color: #f97316; text-decoration: underline;'>Yahoo! Auctions Japan</a>\n• <a href='https://shopping.yahoo.co.jp/' target='_blank' rel='noopener noreferrer' style='color: #f97316; text-decoration: underline;'>Yahoo! Shopping Japan</a>\n• <a href='https://jp.mercari.com/' target='_blank' rel='noopener noreferrer' style='color: #f97316; text-decoration: underline;'>Mercari</a>\n• <a href='https://www.suruga-ya.com/' target='_blank' rel='noopener noreferrer' style='color: #f97316; text-decoration: underline;'>Suruga-ya</a>\n• <a href='https://order.mandarake.co.jp/' target='_blank' rel='noopener noreferrer' style='color: #f97316; text-decoration: underline;'>Mandarake</a>\n• <a href='https://www.animate-onlineshop.jp/' target='_blank' rel='noopener noreferrer' style='color: #f97316; text-decoration: underline;'>Animate Online Shop</a>\n• <a href='https://www.amiami.com/' target='_blank' rel='noopener noreferrer' style='color: #f97316; text-decoration: underline;'>AmiAmi</a>\n• <a href='https://goodsmileshop.com/' target='_blank' rel='noopener noreferrer' style='color: #f97316; text-decoration: underline;'>Good Smile Online</a>\n• <a href='https://www.pokemoncenter-online.com/' target='_blank' rel='noopener noreferrer' style='color: #f97316; text-decoration: underline;'>Pokémon Center</a>\n• <a href='https://www.cdjapan.co.jp/' target='_blank' rel='noopener noreferrer' style='color: #f97316; text-decoration: underline;'>CD Japan</a>\n• ¡Y muchas más!"
       },
       {
         question: "¿Puedo comprar en subastas de Yahoo Auctions?",
-        answer: "Sí, ofrecemos servicio de pujas en Yahoo Auctions Japan. Solo envíanos el enlace del artículo, tu puja máxima y nosotros pujamos por ti. Se aplica la tarifa del servicio de Shopping Agent de ¥500-¥1,000 por artículo."
+        answer: "No, lastimosamente nuestro sistema actual no soporta las ventas en subastas, solamente actuamos como intermediario de compras directas de productos, esperamos que en un futuro las subastas esten integradas!"
       },
       {
         question: "¿Pueden comprar en tiendas físicas?",
-        answer: "¡Sí! Ofrecemos servicio de compra presencial en Osaka. Tarifa: ¥1,500 por visita (incluye hasta 1 hora en tienda). Esto es perfecto para artículos solo disponibles en tiendas físicas. Contáctanos a través de nuestras redes sociales para reservar."
+        answer: "¡Sí! Ofrecemos servicio de compra presencial en Osaka. Tarifa: ¥1,500 por visita (incluye hasta 1 hora en tienda). Esto es perfecto para artículos solo disponibles en tiendas físicas. Contáctanos a través de nuestras redes sociales o por correo electronico para coordinar."
       },
       {
         question: "¿Puedo comprar productos de segunda mano?",
-        answer: "Sí, puedes comprar productos usados de Mercari, Yahoo Auctions, Hard Off, Book Off, Mandarake, Suruga-ya y otras tiendas de segunda mano. Podemos solicitar fotos adicionales del producto si las necesitas."
+        answer: "Sí, puedes comprar productos usados de Mercari, Yahoo shopping, Hard Off, Book Off, Mandarake, Suruga-ya y otras tiendas de segunda mano! A eso nos dedicamos!!"
       },
       {
         question: "¿Hay tiendas con las que no trabajen?",
-        answer: "Algunas tiendas tienen políticas estrictas contra servicios proxy:\n- Pokémon Center Online (política estricta, pero podemos intentarlo)\n- Nintendo Store Japón (limitado)\n- Algunas tiendas de preventa exclusivas\n\nSiempre contáctanos primero si no estás seguro."
+        answer: "Algunas tiendas tienen políticas estrictas contra servicios proxy:\n\nExisten algunas tiendas donde comprar sus productos puede que no sea posible debido a que no trabajan con proxys, es decir por licencias no pueden enviar sus productos al exterior, ademas no participamos en eventos de productos donde solo 1 unidad puede ser conseguido por persona."
       }
     ]
   },
@@ -400,27 +400,31 @@ export const helpArticlesES: HelpData = {
       },
       {
         question: "¿Cuáles son las tarifas de servicio?",
-        answer: "Servicio de Shopping Agent:\n- Artículos hasta ¥10,000: ¥500 por artículo\n- Artículos sobre ¥10,000: ¥1,000 por artículo\n\nServicio de Dirección Japonesa/Casillero:\n- ¥1,000 por caja recibida\n\nImportante: Los pedidos de Shopping Agent pueden consolidarse e incluyen todos los beneficios premium. Las cajas del servicio de casillero también pueden consolidarse junto a los de Shopping Agent."
+        answer: "Servicio de Shopping Agent:\n\n• Artículos hasta ¥10,000 de valor: ¥500 por artículo\n• Artículos sobre ¥10,000 de valor: ¥1,000 por artículo\n\nServicio de Dirección Japonesa/Casillero:\n• ¥1,000 por caja recibida\n\nImportante: Los pedidos de Shopping Agent pueden consolidarse e incluyen todos los beneficios premium. Las cajas del servicio de casillero también pueden consolidarse junto a los de Shopping Agent."
       },
       {
-        question: "¿Qué incluye el servicio de Shopping Agent?",
-        answer: "La tarifa de servicio de ¥500-¥1,000 incluye:\n✓ Búsqueda de producto y procesamiento de compra\n✓ Almacenamiento ilimitado gratis\n✓ Consolidación gratuita con otros paquetes\n✓ Solicitud de fotos gratis\n✓ Empaque estándar o doble\n✓ Soporte privado para tus pedidos\n\n¡Todo esto incluido en una tarifa transparente!"
+        question: "¿Qué incluye el servicio de Shopping Agent y Casillero?",
+        answer: "La tarifa de servicio de ¥500-¥1,000 incluye:\n\n✓ Búsqueda de producto y procesamiento de compra\n✓ Almacenamiento ilimitado gratis\n✓ Consolidación gratuita con otros paquetes\n✓ Solicitud de fotos gratis\n✓ Empaque estándar o doble\n✓ Soporte privado para tus pedidos\n\n¡Todo esto incluido en una tarifa transparente!"
+      },
+      {
+        question: "¿Qué incluye el servicio de Casillero?",
+        answer: "La tarifa de servicio de ¥1,000 por paquete incluye:\n\n✓ Almacenamiento ilimitado gratis\n✓ Consolidación gratuita con otros paquetes\n✓ Soporte privado para tus pedidos"
       },
       {
         question: "¿Cómo se calcula el envío internacional?",
-        answer: "El costo de envío se basa en:\n- Peso real del paquete\n- Peso volumétrico (Largo × Ancho × Alto / 5000) para envío aéreo\n- País de destino\n- Método de envío (Económico, EMS, DHL Express)\n\nUsamos el que sea MAYOR entre peso real y volumétrico. Puedes usar nuestra calculadora de envío para estimaciones."
+        answer: "El costo de envío es variable por pais, se calcula en base a estos puntos:\n\n• Peso real del paquete\n• Peso volumétrico (Largo × Ancho × Alto / 5000) para envío aéreo de DHL o ciertos paises (Ej: Paraguay)\n• País de destino\n• Método de envío (Si es Económico, EMS, DHL, UPS, Maritimo)\n\nEn el caso de DHL y envios a Paraguay aereo usamos el que sea MAYOR entre peso real y volumen de su caja. Puedes usar nuestra calculadora de envío para estimaciones."
       },
       {
         question: "¿Hay costos ocultos o adicionales?",
-        answer: "NO hay costos ocultos. Los únicos costos son:\n1. Precio del producto\n2. Envío doméstico en Japón (del vendedor a nuestro almacén)\n3. Nuestra tarifa de servicio (¥500-¥1,000 por artículo)\n4. Envío internacional\n\nIMPORTANTE: Los impuestos de importación de tu país NO están incluidos y son tu responsabilidad."
+        answer: "NO hay costos ocultos.\n\nLos únicos costos son en Shopping Agent:\n\n1. Precio del producto + Tarifa Aiyu Japan\n\n2. Envío doméstico en Japón (de la tienda a nuestro almacén si es que hay)\n\n3. Envío internacional a su pais\n\n\n\nLos únicos costos son en servicio Casillero:\n\n1. Tarifa Aiyu Japan\n\n2. Envío internacional a su pais\n\nIMPORTANTE: Los impuestos de importación de tu país NO están incluidos, esto es responsabilidad del usuario poder averiguar con antelacion si es que lo necesita."
       },
       {
         question: "¿Aceptan descuentos o cupones de tiendas?",
-        answer: "¡Sí! Si la tienda acepta cupones o códigos de descuento, podemos aplicarlos en tu compra. Solo proporciónanos el código al momento de solicitar la compra. Los ahorros son completamente tuyos."
+        answer: "No, al ser Aiyu Japan una entidad empresarial, las tiendas no aceptan cupones o descuentos especificos dados por un tercero."
       },
       {
         question: "¿Qué pasa con artículos de compra limitada?",
-        answer: "Para artículos con límites de compra (1-3 unidades por cliente), se aplicará un cargo extra de ¥1,000 por artículo además de la tarifa normal de servicio. Esto es para artículos raros o restringidos."
+        answer: "Para artículos con límites de compra (1-3 unidades por cliente), se aplicará la ley \"First come first serve\" en caso de que el X item no haya sido reclamado por algun ususario antes, ademas se sumara un cargo extra de ¥1,000 por artículo además de la tarifa normal de servicio."
       }
     ]
   },
@@ -438,19 +442,15 @@ export const helpArticlesES: HelpData = {
       },
       {
         question: "Paso 3: ¿Cómo solicito una compra?",
-        answer: "Hay dos formas:\n\nA) Servicio de Shopping Agent (Recomendado): Ve a 'Solicitar Compra' > pega el enlace del producto > especifica cantidad y variantes > agregamos comisión del 5-10% y compramos por ti. Incluye todos los beneficios premium.\n\nB) Dirección Japonesa/Casillero: Compra tú mismo y envía a nuestra dirección japonesa. Cuesta ¥1,000 por caja recibida, pueden consolidarse junto a los de Shopping Agent."
+        answer: "Hay dos formas:\n\nA) Servicio de Shopping Agent (Recomendado): Ve a 'Solicitar Compra' > pega el enlace del producto > especifica cantidad y variantes > y envialo! Nosotros te responderemos luego en breve con la factura de pago!\n\nB) Dirección Japonesa/Casillero: Compra tú mismo y envía a nuestra dirección japonesa. Cuesta ¥1,000 por caja recibida, pueden consolidarse junto a los de Shopping Agent."
       },
       {
         question: "Paso 4: ¿Qué pasa cuando llega al almacén?",
-        answer: "1. Recibimos tu paquete en 24-48 horas de su llegada\n2. Lo registramos en tu cuenta\n3. Lo pesamos y tomamos fotos (gratis para servicio Shopping Agent)\n4. Te enviamos notificación por email\n5. Puedes solicitar consolidación con otros paquetes\n6. El paquete se almacena gratis por tiempo ilimitado"
+        answer: "1. Recibimos tu paquete en 12-48 horas como maximo desde su llegada\n\n2. Lo registramos en tu cuenta\n\n3. Lo pesamos y medimos!\n\n4. Recibes un email automatic solamente cuando todas tus compras de una orden hayan llegado!\n\n5. Tienes acceso a solicitar el envio internacional de tus pedidos!\n\nAclaracion: En caso no solicitar envio internacional, el paquete permanecera almacenado con nosotros."
       },
       {
-        question: "Paso 5: ¿Cómo funciona la consolidación?",
-        answer: "Si tienes múltiples paquetes en el almacén:\n1. Espera a que lleguen todos tus paquetes (o los que quieras consolidar)\n2. Ve a 'Almacén' > Selecciona paquetes\n3. Haz clic en 'Solicitar Cotización de Envío'\n4. Elige opciones: remover empaques, refuerzo extra, etc.\n5. Lo procesamos y te notificamos con peso final\n6. ¡Listo para enviar!\n\nNota: Todos los paquetes pueden consolidarse juntos para ahorrar en envío internacional."
-      },
-      {
-        question: "Paso 6: ¿Cómo solicito el envío internacional?",
-        answer: "1. Ve a 'Almacén' o espera nuestra cotización de envío\n2. Selecciona el/los paquetes a enviar\n3. Elige método de envío (Económico, EMS, o DHL Express)\n4. Declara el valor del contenido (sé honesto)\n5. Revisa el costo total\n6. Paga y confirma\n7. Enviamos en 1-2 días laborables"
+        question: "Paso 5: Como funciona la consolidacion y envio internacional?",
+        answer: "Si tienes múltiples paquetes en el almacén:\n\n1. Espera a que lleguen todos tus paquetes (o los que quieras consolidar)\n\n2. Ve a 'Almacén' > Selecciona los paquetes que quieras enviar\n\n3. Haz clic en 'Solicitar Cotización de Envío'\n\n4- Elige el metodo de envio que mas te convega\n\n5- Rellena tu informacion precisa de envio, como nombre, direccion, tax ID etc.\n\n5. Lo procesamos y te notificaremos con la factura de pago final\n\n6. ¡Listo para enviar!\n\nNota: En caso de que haya un problema con las medidas o el peso, su solicitud de envio sera rechazada, y se le pedira cambiar a un metodo de envio que se ajuste a sus necesidades."
       }
     ]
   },
@@ -502,7 +502,7 @@ export const helpArticlesES: HelpData = {
       },
       {
         question: "¿Cuál es la diferencia entre Shopping Agent y Dirección Japonesa?",
-        answer: "Servicio de Shopping Agent (¥500-¥1,000/artículo):\n• Compramos por ti\n• Incluye almacenamiento ilimitado, consolidación, fotos\n• Puedes combinar múltiples pedidos\n• Beneficios premium completos\n\nDirección Japonesa/Casillero (¥1,000/caja):\n• Compras tú mismo\n• Envías a nuestra dirección\n• Pueden consolidarse junto a los de Shopping Agent\n• Almacenamiento ilimitado\n\n¡Para mejor valor y flexibilidad, usa Shopping Agent!"
+        answer: "Servicio de Shopping Agent (¥500-¥1,000 o 5-10% del precio/artículo):\n• Compramos por ti\n• Incluye almacenamiento ilimitado, consolidación, fotos\n• Puedes combinar múltiples pedidos\n• Beneficios premium completos\n\nDirección Japonesa/Casillero (¥1,000/paquete recibido):\n• Compras tú mismo\n• Envías a nuestra dirección\n• Pueden consolidarse junto a los de Shopping Agent\n• Almacenamiento ilimitado\n\n¡Para mejor valor y flexibilidad, usa Shopping Agent!"
       },
       {
         question: "¿Cuánto tiempo toma mi primera compra?",
@@ -520,27 +520,23 @@ export const helpArticlesES: HelpData = {
     faqs: [
       {
         question: "¿Cómo solicito que compren por mí?",
-        answer: "1. Ve a 'Solicitar Compra'\n2. Pega el enlace del producto\n3. Especifica cantidad, color, talla, etc.\n4. Añade notas especiales si necesitas\n5. Te enviamos una cotización en 1-24 horas\n6. Si aceptas, compramos inmediatamente\n7. Puedes seguir el progreso en la sección 'Pedidos'"
+        answer: "1. Ve a 'Solicitar Compra'\n2. Pega el enlace URL del producto\n3. Especifica cantidad, color, talla, etc.\n4. Añade notas especiales si necesitas\n5. Te enviamos una cotización en 1-24 horas\n6. Si aceptas, compramos inmediatamente\n7. Puedes seguir el progreso luego en la sección de 'Pedidos'"
       },
       {
         question: "¿Qué significan los estados de pedido?",
-        answer: "• Solicitado: Estamos revisando tu solicitud\n• Esperando Pago: Cotización emitida, esperando pago\n• Pagado: Pago recibido, compraremos pronto\n• Algunos Comprados: Algunos artículos comprados, otros pendientes\n• Todos Comprados: Todos los artículos comprados\n• En Tránsito: El vendedor envió a nuestro almacén\n• Todos en Almacén: Todos los artículos recibidos y listos\n• Enviado: En camino hacia ti\n• Entregado: ¡El paquete llegó!"
+        answer: "• Solicitado: Estamos revisando disponibilidad y costos de tu pedido\n• Esperando Pago: Cotización emitida, esperando su aprobacion y pago.\n• Pagado: Pago recibido, compraremos pronto!\n• Algunos Comprados: Algunos artículos comprados, otros pendientes de comprar\n• Todos Comprados: Todos los artículos comprados\n• En Tránsito: Pedido comprado y enviado en camino al almacen\n• Todos en Almacén: Todos los artículos recibidos y listos\n• Enviado: En camino hacia ti!"
       },
       {
         question: "¿Puedo cancelar un pedido?",
-        answer: "Depende del estado:\n\n✓ Solicitado/Esperando Pago: Cancelación gratis\n✓ Pagado (aún no comprado): Posible reembolso\n✗ Comprado: Depende de la política de devolución de la tienda\n✗ En Tránsito/Almacén: No reembolsable\n\nContacta a soporte lo antes posible si necesitas cancelar. Algunas tiendas pueden cobrar tarifas de reposición."
-      },
-      {
-        question: "¿Cómo funciona el tracking?",
-        answer: "Tracking en dos etapas:\n\n1) Doméstico (Japón): Tracking de la tienda a nuestro almacén. Proporcionado por el vendedor cuando está disponible.\n\n2) Internacional: Tracking de Japón a tu país. Te damos el número de tracking cuando enviamos.\n\nPuedes ver ambos en tu panel en tiempo real."
+        answer: "Generalmente un pedido NO puede ser cancelado, pero depende del estado:\n\n✅ Solicitado/Esperando Pago: Cancelación permitida\n✅  Pagado (aún no comprado): Posible reembolso pero con creditos a su favor para una futura compra.\n❌ Comprado: No se pueden procesar reembolsos ni cambios.\n❌ En Tránsito/Almacén: No se pueden procesar reembolsos ni cambios.\n\nContacta a soporte lo antes posible si necesitas cancelar."
       },
       {
         question: "¿Qué pasa si el producto está agotado?",
-        answer: "Si el producto se agota después de tu solicitud:\n1. Te notificamos inmediatamente\n2. Opciones: esperar restock, buscar alternativa, o cancelar\n3. Reembolso completo si cancelas\n4. Sin cargos de servicio\n\nSiempre verificamos disponibilidad antes de cotizar cuando es posible."
+        answer: "Si el producto se agota después de tu solicitud y pago:\n\n1. Te notificamos inmediatamente traves del sistema de cancelacion.\n\n2. Sera acreditado a su cuenta el monto original + la tarifa de servicio por ese producto.\n\n4. Podra usar este credito a su favor para otras compras que tenga, solo debe seleccionar al subir los nuevos links URL cuanto de su credito desea utilizar.\n\nPara evitar cancelaciones o rechazos de pedidos, favor pagar la factura enviada a usted lo antes posible."
       },
       {
         question: "¿Puedo modificar un pedido después de solicitarlo?",
-        answer: "Antes de comprar: Sí, contacta a soporte\n\nDespués de comprar: Generalmente NO. Algunas tiendas permiten cambios pero es raro. Opciones posibles:\n- Cancelar y recomprar (si la tienda acepta devoluciones)\n- Comprar el artículo correcto por separado\n\nPor eso es importante revisar cuidadosamente antes de aprobar."
+        answer: "Antes de comprar: Sí, en la orden que subio, si lo abre, tiene una opcion de editar pedido y volverlo a enviar.\n\nTambien, si su pedido es rechazado por el staff desde un principio, tendra la opcion de editarlo agregar o quitar productos que ya haya subido.\n\nPor eso es importante revisar cuidadosamente antes de aprobar."
       }
     ]
   },
@@ -549,28 +545,24 @@ export const helpArticlesES: HelpData = {
     description: "Cómo funciona tu almacén personal en Japón y todas las opciones disponibles.",
     faqs: [
       {
-        question: "¿Qué es mi dirección de almacén?",
-        answer: "Servicio de Shopping Agent: Nosotros manejamos todo. Los artículos se envían automáticamente a nuestro almacén.\n\nServicio de Dirección Japonesa/Casillero: Tu dirección personal en Japón incluye:\n- Nombre del almacén Aiyu Japan\n- Tu código único (ej: AJ00123)\n- Dirección completa en formato japonés\n- Código postal\n- Número de teléfono del almacén\n\nSIEMPRE usa tu código en el campo de nombre cuando compres directamente."
+        question: "¿Qué es mi dirección Japonesa?",
+        answer: "Es nuestro servicio de casillero: El usuario manda los paquetes que quiera a nuestra direccion en Japon, en donde nosotros nos hacemos cargo de la recepcion, consolidacion, cuidado,almacen y envoi a su pais!\n\nLa direccion de nuestro almacen se encuentra en el apartado de \"Account\" donde vera\n• Su Nombre al que debe ser etiquetado el paquete\n• Tu código único de usuario (ej: AJ00123)\n• Dirección completa en formato japonés y romanji\n• Número de teléfono del almacén\n\nObservacion: Siempre debes incluir tu codigo de usuario en la direccion postal, asi tu paquete sera recepcionado e identificado lo antes posible y evitas demoras."
       },
       {
         question: "¿Cuánto tiempo puedo almacenar mis paquetes?",
-        answer: "¡Almacenamiento ilimitado gratis para todos los servicios!\n\nSin límites de tiempo, sin cargos extra. Puedes consolidar múltiples paquetes y enviar cuando estés listo.\n\nNota: Recomendamos enviar en un tiempo razonable para evitar depreciación del valor de aduanas."
+        answer: "¡Almacenamiento tiempo ilimitado gratis para todos los servicios!\n\nSin límites de tiempo, sin cargos extra. Puedes consolidar múltiples paquetes y enviar cuando estés listo.\n\nNota: Recomendamos enviar en un tiempo razonable para evitar depreciación del producto."
       },
       {
         question: "¿Cómo funciona la consolidación?",
-        answer: "Paso a paso:\n1. Espera a que lleguen tus paquetes\n2. Ve a 'Almacén' > Selecciona paquetes\n3. Haz clic en 'Solicitar Cotización de Envío'\n4. Elige opciones: remover empaques, refuerzo extra, etc.\n5. Lo procesamos en 1-2 días laborables\n6. Te notificamos con fotos y peso final\n7. ¡Listo para enviar!\n\n¡La consolidación es GRATIS!"
+        answer: "La consolidación consiste en reunir todos tus paquetes individuales en una sola caja antes del envío. Esto incluye eliminar embalajes innecesarios (cajas extra, cartones, relleno) sin comprometer la protección de tus productos.\n\nEjemplo práctico:\nEl usuario 0001 compró en Mercari, Amazon y Adidas → 3 cajas separadas, 2.500 g en total → envío estimado: $100 USD.\nCon consolidación, los 3 paquetes se unen en una sola caja → envío final: $40 USD.\nAhorro: hasta un 60% del costo original."
       },
       {
         question: "¿Qué fotos recibo de mis paquetes?",
-        answer: "Para Servicio de Shopping Agent (GRATIS):\n- Fotos del paquete externo\n- Fotos del paquete abierto\n- Fotos del contenido\n- Fotos adicionales bajo solicitud\n\nPara Servicio de Casillero:\n- Fotos disponibles bajo solicitud (puede tener costo adicional)\n\nPuedes solicitar ángulos específicos, primeros planos o medidas en cualquier momento."
+        answer: "Solamente el servicio de Shopping agent cuenta con servicio de fotografia basica del paquete y su interior!\n\nEsto se puede adquriir por el momento solo consultando a un staff al privado, redes sociales, o correo electronico.\n\nEsto incluye si el cliente pide:\n• Fotos del paquete externo\n• Fotos del paquete abierto\n• Fotos del contenido\n\nPara Servicio de Casillero:\n\n• Fotos disponibles bajo solicitud (tiene costo adicional)\n\nPuedes solicitar ángulos específicos, primeros planos o medidas en cualquier momento."
       },
       {
         question: "¿Puedo solicitar inspección detallada?",
-        answer: "¡Sí! Para pedidos de Shopping Agent:\n\n✓ Abrimos paquetes\n✓ Verificamos que el producto coincida con la descripción\n✓ Revisamos defectos, rasguños, daños\n✓ Tomamos fotos detalladas\n✓ Verificamos accesorios incluidos\n✓ Test básico de funcionamiento (para electrónicos)\n\n¡Todo incluido en la tarifa de servicio! ¡Solo solicítalo!"
-      },
-      {
-        question: "¿Qué pasa si mi paquete llega dañado?",
-        answer: "Si el paquete llega dañado al almacén:\n1. Tomamos fotos del daño inmediatamente\n2. Te notificamos antes de abrirlo\n3. Opciones:\n   a) Reclamar con el vendedor/transportista\n   b) Aceptar como está (si es menor)\n   c) Devolver al vendedor (si acepta)\n\nLa responsabilidad es del vendedor o transportista doméstico, no de Aiyu Japan."
+        answer: "No, por el momento Aiyu Japan no ofrece inspeccion detallada gratuita de sus paquetes, esto requiere una atencion muy personalizada que costaria un costo adicional.\n\nLa inspeccion detallada incluye:\n\n✓ Abrimos paquetes\n✓ Verificamos que el producto coincida con la descripción\n✓ Revisamos defectos, rasguños, daños\n✓ Tomamos fotos detalladas\n✓ Verificamos accesorios incluidos\n✓ Test básico de funcionamiento (para electrónicos)\n\nFavor consultar con un staff a cargo para cotizacion."
       }
     ]
   },
@@ -580,27 +572,15 @@ export const helpArticlesES: HelpData = {
     faqs: [
       {
         question: "¿Tendré que pagar impuestos en mi país?",
-        answer: "Probablemente SÍ, si tu paquete supera el valor mínimo de tu país:\n\n- USA: Sobre $800 USD\n- España: Sobre €150\n- México: Sobre $50 USD\n- Colombia: Sobre $200 USD\n- Chile: Todos los paquetes pagan impuestos\n- Argentina: Sobre $50 USD\n- Paraguay: Sobre $100 USD\n\nVerifica las regulaciones específicas de tu país. Los impuestos NO están incluidos en nuestro servicio."
-      },
-      {
-        question: "¿Cuánto son los impuestos de importación?",
-        answer: "Varía por país, pero típicamente:\n\n- IVA/VAT: 10-21% del valor\n- Aranceles: 0-20% según tipo de producto\n- Tasa de gestión: $5-30 USD (courier)\n\nEjemplo: Paquete de $100 en España\n- IVA 21%: €21\n- Gestión: €10\n- Total: €31 adicionales\n\nUsa calculadoras online de tu país para estimar."
-      },
-      {
-        question: "¿Puedo declarar un valor menor para pagar menos impuestos?",
-        answer: "❌ NO RECOMENDAMOS ESTO:\n\n- Es ILEGAL en la mayoría de países\n- Riesgo de que tu paquete sea confiscado\n- Posibles multas o sanciones\n- El seguro no cubrirá el valor real si se pierde\n- Puede resultar en prohibición de importación\n\nDECLARA SIEMPRE EL VALOR REAL. Es más seguro y legal."
+        answer: "Probablemente SÍ, si tu paquete supera el valor mínimo de tu país, te recomendamos investigar el porcentaje de impuestos sobre tu compra internacional.\n\nHay paises donde pasan desapercibidos, pero siempre tienes que estar preparado.\n\n\n\nAqui te dejamos algunos ejemplos\n\n🌎 América del Norte\n\nPaís | Umbral | Notas\n🇺🇸 EE.UU. | Sin exención | Desde agosto 2025, todos los envíos pagan aranceles, sin importar el valor (antes era $800 USD)\n🇨🇦 Canadá | ~$20 CAD | Umbral muy bajo; casi todos los paquetes pagan aranceles + GST\n🇲🇽 México | ~$50 USD (USMCA) / ~$1 USD (otros) | Desde 2025, compras desde Japón tienen umbral casi nulo\n\n\n\n🌎 América del Sur\n\nPaís | Umbral | Notas\n🇦🇷 Argentina | $50 USD/mes | 50% de impuesto sobre el valor que exceda el límite; máx. $1.000 USD/año\n🇧🇷 Brasil | Sin exención real | Todas las compras pagan impuestos: ~40% en compras bajo $50 USD, ~90% en compras sobre $50 USD\n🇨🇱 Chile | Sin exención desde oct. 2025 | Compras hasta $500 USD pagan 19% IVA. Sobre $500 USD: 6% arancel + 19% IVA\n🇨🇴 Colombia | $200 USD | Envíos personales desde fuera de EE.UU. pueden tener umbral $0\n🇵🇪 Perú | ~$200 USD | Compras por encima pagan 19% IGV + aranceles variables\n🇺🇾 Uruguay | ~$200 USD | Sobre el umbral aplican IVA (22%) y aranceles\n🇵🇾 Paraguay | ~$100 USD | Impuestos aplicables sobre ese monto\n🇧🇴 Bolivia | Sin exención | Todos los paquetes internacionales pagan impuestos\n🇪🇨 Ecuador | Sin exención práctica | Aplica IVA (15%) + ISD (5%) sobre divisas + aranceles\n🇵🇦 Panamá | ~$100 USD | ITBMS (7%) + aranceles sobre el exceso\n🇩🇴 Rep. Dominicana | ~$200 USD | ITBIS (18%) + aranceles sobre el exceso\n\n\n\n🌍 Europa\n\nPaís/Región | Umbral | Notas\n🇪🇺 UE (España, Francia, Alemania, Italia, etc.) | €150 | IVA siempre aplica. Desde jul. 2026: €3 adicional por ítem bajo €150\n🇬🇧 Reino Unido | £135 | IVA siempre aplica; aranceles sobre el exceso\n\n\n\n⚠️ Importante: Los impuestos de importación no están incluidos en nuestro servicio. Las regulaciones cambian frecuentemente — te recomendamos verificar con la aduana de tu país antes de realizar tu pedido."
       },
       {
         question: "¿Qué documentos necesito para aduanas?",
-        answer: "Típicamente necesitas:\n\n✓ Factura comercial (la proporcionamos)\n✓ Declaración de contenido (la proporcionamos)\n✓ Tu identificación personal\n✓ Comprobante de pago (opcional)\n✓ Certificados especiales (productos regulados)\n\nLa mayoría de documentos los generamos automáticamente. Te avisamos si necesitas algo adicional."
-      },
-      {
-        question: "¿Qué pasa si mi paquete es retenido en aduanas?",
-        answer: "Si tu paquete es inspeccionado/retenido:\n\n1. El courier te notificará\n2. Pueden solicitar:\n   - Documentos adicionales\n   - Pago de impuestos\n   - Aclaraciones sobre el contenido\n3. Responde RÁPIDO (usualmente 10 días)\n4. Paga los impuestos requeridos\n5. El paquete será liberado\n\nContacta a nuestro soporte si necesitas ayuda con documentos."
+        answer: "En el caso de que Aduana de tu pais te solicite documentos de tu producto, en cada orden que hayas subido a nuestra web, cuentas con un enlace que lleva a la factura de pago, en ella solo lo descargas como PDF y puedes utilizarlo para declarar tu compra."
       },
       {
         question: "¿Algunos productos tienen restricciones especiales?",
-        answer: "Sí, productos que frecuentemente requieren permisos:\n\n⚠️ Baterías de litio: Restricciones de envío aéreo (máx 2 por envío)\n⚠️ Alimentos: Certificados sanitarios\n⚠️ Medicamentos: Receta médica obligatoria\n⚠️ Cosméticos: Límites de cantidad\n⚠️ Electrónicos: Certificaciones de tu país\n⚠️ Cuchillos/espadas: Permisos especiales\n⚠️ Líquidos/Aerosoles: No pueden enviarse por aire\n\nRevisa la sección de 'Objetos Prohibidos' antes de comprar."
+        answer: "Sí, productos que frecuentemente requieren permisos:\n\n⚠️ Baterías de litio: Restricciones de envío aéreo (máx 2 por envío) (algunos paises lo prohiben completamente su envio desde Japon, consulte su pais con las reglas especificas)\n\n⚠️ Alimentos: Certificados sanitarios\n⚠️ Medicamentos: Receta médica obligatoria\n⚠️ Cosméticos: Límites de cantidad\n⚠️ Electrónicos: Certificaciones de tu país\n⚠️ Cuchillos/espadas: Permisos especiales\n⚠️ Líquidos/Aerosoles: No pueden enviarse por aire\n\nRevisa la sección de 'Objetos Prohibidos' antes de comprar."
       }
     ]
   },
@@ -609,12 +589,8 @@ export const helpArticlesES: HelpData = {
     description: "Cómo usar y gestionar tus créditos provenientes de cancelaciones y devoluciones.",
     faqs: [
       {
-        question: "¿Qué es el sistema de créditos?",
-        answer: "Cuando cancelas un pedido o envío, o cuando procesamos una devolución, en lugar de retornar dinero a tu método de pago, agregamos créditos al saldo de tu cuenta Aiyu Japan. Estos créditos están en Yenes Japoneses (¥) y pueden usarse para futuras compras o envíos."
-      },
-      {
         question: "¿Cómo obtengo créditos?",
-        answer: "Recibes créditos en estas situaciones:\n\n• Cancelación de pedido: Si cancelas un pedido que ya estaba pagado, el monto se retorna como créditos\n• Cancelación de envío: Si cancelas un envío que estaba pago, el monto se convierte en créditos\n• Devoluciones: Si hay un problema con tu pedido y procesamos un reembolso, lo recibes como créditos\n• Sobrecargos: Si te cobramos más que el costo final, la diferencia se retorna como créditos\n\nTodos los movimientos de crédito quedan registrados y visibles en tu cuenta."
+        answer: "Recibes créditos en estas situaciones:\n\n• Cancelación de pedido: Si cancelas un pedido que ya estaba pagado, el monto se retorna como créditos\n• Cancelación de envío: Si cancelas un envío que estaba pago, el monto se convierte en créditos\n• Devoluciones: Si hay un problema con tu pedido y procesamos un reembolso, lo recibes como créditos (Obligatorio: para reclamar esto, debe haber una prueba de video del unboxing/apertura de su paquete)\n• Sobrecargos: Si te cobramos más que el costo final, la diferencia se retorna como créditos\n\nTodos los movimientos de crédito quedan registrados y visibles en tu cuenta."
       },
       {
         question: "¿Cómo puedo usar mis créditos?",
@@ -630,7 +606,7 @@ export const helpArticlesES: HelpData = {
       },
       {
         question: "¿Los créditos expiran?",
-        answer: "¡NO! Tus créditos NUNCA expiran. Permanecen en tu cuenta indefinidamente hasta que decidas usarlos.\n\nBeneficios:\n✓ Sin presión de tiempo para usarlos\n✓ Acumula créditos de múltiples cancelaciones\n✓ Guárdalos para una compra grande futura\n✓ Úsalos estratégicamente cuando más los necesites"
+        answer: "¡NO! Tus créditos NUNCA expiran. Permanecen en tu cuenta indefinidamente hasta que decidas usarlos.\n\nBeneficios:\n✅ Sin presión de tiempo para usarlos\n✅ Acumula créditos de múltiples cancelaciones\n✅ Guárdalos para una compra grande futura\n✅ Úsalos estratégicamente cuando más los necesites"
       },
       {
         question: "¿Puedo retirar los créditos como efectivo?",
@@ -652,75 +628,170 @@ export const helpArticlesES: HelpData = {
   }
 };
 
+const commonProhibitedItems = [
+  "Oro, plata, oro blanco, otros metales preciosos, piedras preciosas, incluidos diamantes y piedras semipreciosas, monedas de todos los países (billetes y monedas), diversos artículos de joyería, otros objetos de valor",
+  "Valores negociables",
+  "Correspondencia y medios de comunicación definidos como correspondencia en la legislación vigente",
+  "Animales vivos",
+  "Restos corporales, placas conmemorativas y cenizas",
+  "Objetos que pueden transubstanciarse o descomponerse fácilmente",
+  "Explosivos de armas de fuego pequeñas y armas de fuego",
+  "Sustancias explosivas",
+  "Gas comprimido",
+  "Líquidos y sólidos inflamables, sólidos combustibles",
+  "Lámpara de flash",
+  "Sustancias magnéticas",
+  "Mercurio",
+  "Ácidos y otras sustancias putrefactas, bases y ácidos",
+  "Oxidantes",
+  "Veneno",
+  "Materiales radioactivos",
+  "Materiales vaporizadores",
+  "Artículos definidos como peligros para la aviación (de acuerdo con las Instrucciones Técnicas de la OACI y las Regulaciones sobre Mercancías Peligrosas de la IATA)",
+  "Estupefacientes y psicofármacos según la definición de la Junta Internacional de Fiscalización de Estupefacientes, así como otras drogas ilícitas cuya exportación e importación están prohibidas",
+  "Artículos obscenos e ilegales",
+  "Artículos falsificados y ediciones pirateadas",
+  "Objetos nocivos para los usuarios o el público en general; artículos que puedan contaminar o dañar la carga, las instalaciones de carga y la propiedad de terceros",
+  "Explosivos y otros artículos peligrosos, elementos sucios que pueden dañar los paquetes de otros",
+  "Artículos cuyo transporte está prohibido por ley",
+  "Carga cuyo transporte, exportación o importación está prohibido o limitado por ley del gobierno del país exportador/importador, estado, municipio local y federación, incluido el país de tránsito",
+  "Alimento",
+  "Armas letales",
+  "Elementos que contienen múltiples datos personales",
+  "Tarjetas de crédito y efectivo",
+  "Pasaporte",
+  "Boletos de admisión a exámenes",
+  "Conocimientos de embarque",
+  "Productos animales",
+  "Plantas (incluidos productos a base de hierbas)",
+  "Materiales farmacológicos, medicamentos, muestras médicas (es decir, muestras de diagnóstico, sangre, muestras de tejido)",
+  "Armas, armas, espadas, municiones y sus partes",
+  "Líquidos",
+  "Antigüedades, objetos de arte y artefactos",
+  "Coleccionables y rarezas",
+  "Diamantes industriales"
+];
+
 export const prohibitedItems = {
   "Argentina": {
-    items: ["Medicamentos sin receta", "Productos lácteos sin pasteurizar", "Carnes y embutidos", "Plantas y semillas sin certificado fitosanitario", "Monedas y billetes sin autorización BCRA", "Baterías de litio (más de 2 unidades)", "Líquidos y aerosoles", "Productos falsificados"]
+    items: commonProhibitedItems
   },
   "Brasil": {
-    items: ["Medicamentos sin autorización ANVISA", "Productos electrónicos usados", "Juguetes sin certificación INMETRO", "Alimentos sin registro", "Bebidas alcohólicas sin licencia", "Material pornográfico", "Productos falsificados"]
+    items: commonProhibitedItems
   },
   "Chile": {
-    items: ["Productos de origen animal sin certificado SAG", "Plantas sin autorización", "Medicamentos controlados", "Armas y municiones", "Productos pirotécnicos", "Baterías de litio (más de 2 unidades)", "Productos falsificados"]
+    items: [
+      ...commonProhibitedItems,
+      "⚡ RESTRICCIÓN ESPECÍFICA: Baterías de litio (prohibidas por vía aérea)"
+    ]
   },
   "Colombia": {
-    items: ["Medicamentos sin registro INVIMA", "Armas químicas o biológicas", "Material pornográfico", "Fauna y flora protegida", "Productos que violen propiedad intelectual", "Líquidos y aerosoles por vía aérea"]
+    items: [
+      ...commonProhibitedItems,
+      "⚡ RESTRICCIÓN ESPECÍFICA: Baterías de litio (prohibidas)",
+      "🍫 RESTRICCIÓN ESPECÍFICA: Cacao y productos derivados",
+      "🥛 RESTRICCIÓN ESPECÍFICA: Productos lácteos",
+      "🍬 RESTRICCIÓN ESPECÍFICA: Alimentos procesados y dulces"
+    ]
   },
   "Costa Rica": {
-    items: ["Alimentos perecederos sin permiso", "Productos agrícolas sin certificado", "Medicamentos sin autorización", "Material obsceno", "Especies protegidas", "Productos falsificados"]
+    items: commonProhibitedItems
   },
   "Ecuador": {
-    items: ["Productos químicos peligrosos", "Medicamentos controlados sin receta", "Productos de origen animal sin certificado AGROCALIDAD", "Armas y explosivos", "Productos falsificados", "Baterías de litio (más de 2 unidades)"]
+    items: [
+      ...commonProhibitedItems,
+      "⚡ RESTRICCIÓN ESPECÍFICA: Baterías de litio - Máximo 2 unidades por paquete",
+      "⚠️ RESTRICCIÓN ESPECÍFICA: Baterías de litio NO pueden enviarse por EMS (usar paquete pequeño certificado)"
+    ]
   },
   "El Salvador": {
-    items: ["Drogas narcóticas", "Armas de fuego", "Material pornográfico", "Medicamentos sin registro", "Productos que violen marcas registradas", "Líquidos y aerosoles"]
+    items: [
+      ...commonProhibitedItems,
+      "⚡ RESTRICCIÓN ESPECÍFICA: Baterías de litio (prohibidas por vía aérea)",
+      "🍯 RESTRICCIÓN ESPECÍFICA: Alimentos con azúcar o edulcorantes (confirmar con embajada: 03-6804-2177)"
+    ]
   },
   "España": {
-    items: ["Armas y municiones sin licencia", "Medicamentos no autorizados en UE", "Productos falsificados", "Carne y productos cárnicos", "Material pornográfico infantil", "Baterías de litio (más de 2 unidades)"]
+    items: commonProhibitedItems
+  },
+  "Francia": {
+    items: [
+      ...commonProhibitedItems,
+      "🍿 RESTRICCIÓN ESPECÍFICA: Snacks y alimentos (prohibidos)"
+    ]
+  },
+  "Alemania": {
+    items: [
+      ...commonProhibitedItems,
+      "🍿 RESTRICCIÓN ESPECÍFICA: Alimentos solo permitidos si no tienen fines comerciales"
+    ]
   },
   "Estados Unidos": {
-    items: ["Productos de origen animal sin USDA", "Medicamentos no aprobados por FDA", "Productos de Cuba, Irán, Corea del Norte", "Artículos falsificados", "Semillas sin permiso APHIS", "Líquidos y aerosoles por vía aérea"]
+    items: [
+      ...commonProhibitedItems,
+      "⚡ NOTA: Baterías de litio permitidas con documentación que declare que están integradas"
+    ]
   },
   "Guatemala": {
-    items: ["Estupefacientes", "Armas químicas", "Material pornográfico", "Productos agrícolas sin certificado", "Medicamentos sin registro sanitario", "Productos falsificados"]
+    items: commonProhibitedItems
   },
   "Honduras": {
-    items: ["Sustancias psicotrópicas sin autorización", "Armas y explosivos", "Productos falsificados", "Material pornográfico", "Productos agrícolas sin certificado fitosanitario", "Baterías de litio (más de 2 unidades)"]
+    items: commonProhibitedItems
   },
   "México": {
-    items: ["Medicamentos controlados sin receta", "Productos que violen marcas registradas", "Armas y municiones", "Material pornográfico infantil", "Alimentos de origen animal sin certificado SAGARPA", "Líquidos y aerosoles por vía aérea"]
+    items: [
+      ...commonProhibitedItems,
+      "🍿 RESTRICCIÓN ESPECÍFICA: Snacks y alimentos (prohibidos)",
+      "💰 RESTRICCIÓN ESPECÍFICA: Artículos que superen 1,000 MXN de valor",
+      "🎮 RESTRICCIÓN PRÁCTICA: Consolas de juegos (limitación de valor)",
+      "📱 RESTRICCIÓN PRÁCTICA: Teléfonos celulares (limitación de valor)"
+    ]
   },
   "Nicaragua": {
-    items: ["Drogas y narcóticos", "Armas de fuego", "Material subversivo", "Productos agrícolas sin autorización", "Medicamentos sin registro", "Productos falsificados"]
+    items: commonProhibitedItems
   },
   "Panamá": {
-    items: ["Estupefacientes", "Armas químicas y biológicas", "Productos de origen animal sin certificado", "Material pornográfico", "Productos falsificados", "Baterías de litio (más de 2 unidades)"]
+    items: commonProhibitedItems
   },
   "Paraguay": {
-    items: ["Medicamentos sin registro DNVS", "Productos agrícolas sin certificado fitosanitario", "Armas y municiones", "Material pornográfico", "Productos que violen propiedad intelectual", "Líquidos y aerosoles", "Baterías de litio (más de 2 unidades)"]
+    items: [
+      ...commonProhibitedItems,
+      "✈️ VÍA AÉREA: Baterías de litio (prohibidas - permitidas por vía marítima)",
+      "✈️ VÍA AÉREA: Alimentos y snacks (prohibidos - permitidos por vía marítima)",
+      "✈️ VÍA AÉREA: Productos químicos (prohibidos - permitidos por vía marítima)",
+      "🚢 NOTA: Envío marítimo disponible - permite artículos restringidos en aéreo (excepto prohibidos legalmente)"
+    ]
   },
   "Perú": {
-    items: ["Medicamentos sin registro DIGEMID", "Productos agrícolas sin certificado SENASA", "Armas químicas", "Material pornográfico infantil", "Fauna silvestre protegida", "Productos falsificados"]
+    items: [
+      ...commonProhibitedItems,
+      "⚡ RESTRICCIÓN ESPECÍFICA: Baterías de litio (prohibidas por vía aérea)",
+      "🍯 RESTRICCIÓN ESPECÍFICA: Alimentos con miel (confirmar con embajada: 03-3406-4243)"
+    ]
   },
   "Puerto Rico": {
-    items: ["Productos de origen animal sin USDA", "Medicamentos no aprobados por FDA", "Plantas sin permiso APHIS", "Artículos falsificados", "Armas sin licencia", "Líquidos y aerosoles por vía aérea"]
+    items: [
+      ...commonProhibitedItems,
+      "⚡ NOTA: Baterías de litio permitidas con documentación que declare que están integradas"
+    ]
   },
   "República Dominicana": {
-    items: ["Medicamentos sin registro sanitario", "Productos agrícolas sin certificado", "Armas y explosivos", "Material pornográfico", "Productos falsificados", "Baterías de litio (más de 2 unidades)"]
+    items: commonProhibitedItems
   },
   "Uruguay": {
-    items: ["Medicamentos sin autorización MSP", "Productos de origen vegetal sin certificado DGSA", "Armas de fuego", "Material pornográfico infantil", "Productos pirateados", "Líquidos y aerosoles"]
+    items: commonProhibitedItems
   },
   "Venezuela": {
-    items: ["Medicamentos sin registro MPPS", "Armas y municiones", "Material subversivo", "Productos agrícolas sin certificado ICA", "Artículos falsificados", "Baterías de litio (más de 2 unidades)"]
+    items: commonProhibitedItems
   },
   "Japón": {
-    items: ["Narcóticos y drogas", "Armas de fuego y espadas", "Material pornográfico", "Productos falsificados", "Medicamentos no aprobados", "Frutas y vegetales frescos"]
+    items: commonProhibitedItems
   },
   "China": {
-    items: ["Contenido político sensible", "Armas y municiones", "Material pornográfico", "Medicamentos sin aprobación", "Productos religiosos prohibidos", "Literatura prohibida", "Productos falsificados"]
+    items: commonProhibitedItems
   },
   "Corea del Sur": {
-    items: ["Material pornográfico", "Productos de Corea del Norte", "Armas y municiones", "Medicamentos no registrados", "Productos que violen propiedad intelectual", "Baterías de litio (más de 2 unidades)"]
+    items: commonProhibitedItems
   }
 };
 
@@ -728,3 +799,226 @@ export const allCountries = Object.keys(prohibitedItems).sort();
 
 // Default export based on user's language preference
 export const helpArticles = helpArticlesES; // Default to Spanish, can be changed based on context
+
+// Shipping constraints by country
+export const SHIPPING_CONSTRAINTS = {
+  "US": {
+    batteries: { allowed: true, notes: "Adjuntar documentos que declaren claramente que las baterías están integradas." },
+    snacks: { allowed: true, notes: null },
+    valueLimit: null
+  },
+  "Estados Unidos": {
+    batteries: { allowed: true, notes: "Adjuntar documentos que declaren claramente que las baterías están integradas." },
+    snacks: { allowed: true, notes: null },
+    valueLimit: null
+  },
+  "France": {
+    batteries: { allowed: true, notes: null },
+    snacks: { allowed: false, notes: null },
+    valueLimit: null
+  },
+  "Francia": {
+    batteries: { allowed: true, notes: null },
+    snacks: { allowed: false, notes: null },
+    valueLimit: null
+  },
+  "Germany": {
+    batteries: { allowed: true, notes: null },
+    snacks: { allowed: false, notes: "Los alimentos solo pueden enviarse si no tienen fines comerciales." },
+    valueLimit: null
+  },
+  "Alemania": {
+    batteries: { allowed: true, notes: null },
+    snacks: { allowed: false, notes: "Los alimentos solo pueden enviarse si no tienen fines comerciales." },
+    valueLimit: null
+  },
+  "Mexico": {
+    batteries: { allowed: true, notes: null },
+    snacks: { allowed: false, notes: null },
+    valueLimit: { amount: 1000, currency: "MXN", extra: "En la práctica, no es posible enviar consolas de juegos o teléfonos." }
+  },
+  "México": {
+    batteries: { allowed: true, notes: null },
+    snacks: { allowed: false, notes: null },
+    valueLimit: { amount: 1000, currency: "MXN", extra: "En la práctica, no es posible enviar consolas de juegos o teléfonos." }
+  },
+  "Peru": {
+    batteries: { allowed: false, notes: null },
+    snacks: { allowed: true, notes: "Si el alimento contiene miel, es necesario confirmar con la embajada de Perú (03-3406-4243)." },
+    valueLimit: null
+  },
+  "Perú": {
+    batteries: { allowed: false, notes: null },
+    snacks: { allowed: true, notes: "Si el alimento contiene miel, es necesario confirmar con la embajada de Perú (03-3406-4243)." },
+    valueLimit: null
+  },
+  "El Salvador": {
+    batteries: { allowed: false, notes: null },
+    snacks: { allowed: true, notes: "Si el alimento contiene azúcar o edulcorantes, es necesario confirmar con la embajada de El Salvador (03-6804-2177)." },
+    valueLimit: null
+  },
+  "Ecuador": {
+    batteries: { allowed: true, notes: "Artículos con baterías de litio no pueden enviarse por EMS. El límite es de dos baterías por paquete. Se debe enviar como paquete pequeño certificado.", maxQuantity: 2, forbiddenMethods: ["EMS"] },
+    snacks: { allowed: true, notes: null },
+    valueLimit: null
+  },
+  "Colombia": {
+    batteries: { allowed: false, notes: null },
+    snacks: { allowed: true, notes: "No se pueden enviar cacao, productos lácteos ni alimentos procesados. En la práctica, no es posible enviar dulces." },
+    valueLimit: null
+  },
+  "Chile": {
+    batteries: { allowed: false, notes: null },
+    snacks: { allowed: true, notes: null },
+    valueLimit: null
+  },
+  "Paraguay": {
+    batteries: { allowed: false, notes: "Prohibido por vía aérea. Permitido por vía marítima.", maritimeAllowed: true },
+    snacks: { allowed: false, notes: "Prohibido por vía aérea. Permitido por vía marítima.", maritimeAllowed: true },
+    chemicalProducts: { allowed: false, notes: "Prohibido por vía aérea. Permitido por vía marítima.", maritimeAllowed: true },
+    valueLimit: null
+  }
+} as const;
+
+// Global forbidden items (apply to all countries and methods)
+export const GLOBAL_FORBIDDEN_ITEMS = commonProhibitedItems;
+
+// Validation result type
+export interface ShippingValidationResult {
+  allowed: boolean;
+  warnings: string[];
+  errors: string[];
+}
+
+/**
+ * Validates if a shipment is allowed based on country, item type, and shipping method
+ * @param country - Destination country (e.g., 'Mexico', 'Paraguay', 'Ecuador')
+ * @param itemType - Type of item: 'batteries', 'snacks', 'chemicals', or specific forbidden item
+ * @param shippingMethod - Shipping method: 'EMS', 'DHL', 'Airmail', 'Maritime', etc.
+ * @returns ShippingValidationResult with allowed status and any warnings/errors
+ * 
+ * @example
+ * // Check if batteries can be sent to Ecuador via EMS
+ * const result1 = validateShipping('Ecuador', 'batteries', 'EMS');
+ * // result1.allowed = false, result1.errors = ['Baterías de litio no pueden enviarse a Ecuador por EMS.']
+ * 
+ * @example
+ * // Check if snacks can be sent to Paraguay via Maritime
+ * const result2 = validateShipping('Paraguay', 'snacks', 'Maritime');
+ * // result2.allowed = true, result2.warnings = ['Permitido por vía marítima.']
+ * 
+ * @example
+ * // Check if snacks can be sent to Colombia
+ * const result3 = validateShipping('Colombia', 'snacks', 'Airmail');
+ * // result3.allowed = true, result3.warnings = ['No se pueden enviar cacao, productos lácteos ni alimentos procesados...']
+ */
+export function validateShipping(
+  country: string,
+  itemType: 'batteries' | 'snacks' | 'chemicals' | string,
+  shippingMethod: string = 'Airmail'
+): ShippingValidationResult {
+  const result: ShippingValidationResult = {
+    allowed: true,
+    warnings: [],
+    errors: []
+  };
+
+  const isMaritime = shippingMethod.toLowerCase().includes('maritim') || shippingMethod.toLowerCase().includes('mar');
+  
+  // Check global forbidden items first
+  const lowerItemType = itemType.toLowerCase();
+  const isForbiddenGlobally = GLOBAL_FORBIDDEN_ITEMS.some(item => 
+    item.toLowerCase().includes(lowerItemType) || lowerItemType.includes(item.toLowerCase())
+  );
+  
+  if (isForbiddenGlobally) {
+    result.allowed = false;
+    result.errors.push(`${itemType} está en la lista de artículos prohibidos globalmente y no puede ser enviado a ningún país.`);
+    return result;
+  }
+
+  // Get country constraints
+  const constraints = SHIPPING_CONSTRAINTS[country as keyof typeof SHIPPING_CONSTRAINTS];
+  
+  if (!constraints) {
+    result.warnings.push(`No se encontraron restricciones específicas para ${country}. Verificar manualmente.`);
+    return result;
+  }
+
+  // For maritime shipping in Paraguay, most restrictions are lifted except global forbidden
+  if (country === "Paraguay" && isMaritime) {
+    result.warnings.push("Envío marítimo a Paraguay: Se permiten la mayoría de artículos excepto los prohibidos legalmente.");
+    return result;
+  }
+
+  // Check specific item type constraints
+  if (itemType === 'batteries' && constraints.batteries) {
+    const batteryConstraint = constraints.batteries;
+    
+    // Check if batteries are forbidden for the shipping method
+    if ('forbiddenMethods' in batteryConstraint && Array.isArray(batteryConstraint.forbiddenMethods) && batteryConstraint.forbiddenMethods.includes(shippingMethod)) {
+      result.allowed = false;
+      result.errors.push(`Baterías de litio no pueden enviarse a ${country} por ${shippingMethod}.`);
+    }
+    
+    if (!batteryConstraint.allowed && !isMaritime) {
+      result.allowed = false;
+      result.errors.push(`Baterías de litio no están permitidas para envío a ${country}.`);
+    } else if (batteryConstraint.allowed) {
+      if (batteryConstraint.notes) {
+        result.warnings.push(batteryConstraint.notes);
+      }
+      if ('maxQuantity' in batteryConstraint && batteryConstraint.maxQuantity) {
+        result.warnings.push(`Máximo ${batteryConstraint.maxQuantity} baterías por paquete.`);
+      }
+    }
+    
+    // Maritime exception for Paraguay
+    if (!batteryConstraint.allowed && 'maritimeAllowed' in batteryConstraint && batteryConstraint.maritimeAllowed && isMaritime) {
+      result.allowed = true;
+      result.warnings.push("Permitido por vía marítima.");
+    }
+  }
+
+  if (itemType === 'snacks' && constraints.snacks) {
+    const snackConstraint = constraints.snacks;
+    
+    if (!snackConstraint.allowed && !isMaritime) {
+      result.allowed = false;
+      result.errors.push(`Alimentos/snacks no están permitidos para envío a ${country}.`);
+    } else if (snackConstraint.allowed && snackConstraint.notes) {
+      result.warnings.push(snackConstraint.notes);
+    }
+    
+    // Maritime exception for Paraguay
+    if (!snackConstraint.allowed && 'maritimeAllowed' in snackConstraint && snackConstraint.maritimeAllowed && isMaritime) {
+      result.allowed = true;
+      result.warnings.push("Permitido por vía marítima.");
+    }
+  }
+
+  if (itemType === 'chemicals' && 'chemicalProducts' in constraints) {
+    const chemicalConstraint = (constraints as typeof SHIPPING_CONSTRAINTS['Paraguay']).chemicalProducts;
+    
+    if (chemicalConstraint && !chemicalConstraint.allowed && !isMaritime) {
+      result.allowed = false;
+      result.errors.push(`Productos químicos no están permitidos para envío aéreo a ${country}.`);
+    }
+    
+    // Maritime exception
+    if (chemicalConstraint && !chemicalConstraint.allowed && chemicalConstraint.maritimeAllowed && isMaritime) {
+      result.allowed = true;
+      result.warnings.push("Permitido por vía marítima.");
+    }
+  }
+
+  // Check value limits
+  if (constraints.valueLimit) {
+    const limit = constraints.valueLimit;
+    result.warnings.push(
+      `Este país tiene un límite de valor: ${limit.amount} ${limit.currency}. ${limit.extra || ''}`
+    );
+  }
+
+  return result;
+}

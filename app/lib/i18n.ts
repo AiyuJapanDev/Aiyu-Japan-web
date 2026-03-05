@@ -1271,8 +1271,8 @@ export const translations = {
     restrictionsTitle: "Item Restrictions",
     restrictionsSubtitle:
       "For everyone's safety and compliance with international laws, some items cannot be purchased or shipped.",
-    restrictionsProhibitedTitle: "Prohibited Items",
-    restrictionsProhibitedDesc: "We cannot buy or ship these items",
+    restrictionsProhibitedTitle: "Prohibited Items (Air Shipping)",
+    restrictionsProhibitedDesc: "These items cannot be shipped by air",
     restrictionsProhibited1: "Liquids, perfumes, oils, alcohol",
     restrictionsProhibited2: "Batteries or items containing lithium",
     restrictionsProhibited3: "Aerosols or flammable materials",
@@ -1302,6 +1302,15 @@ export const translations = {
       "You are responsible for knowing your country's import laws",
     restrictionsNote4: "Items confiscated by customs are non-refundable",
     restrictionsNote5: "We may refuse to buy any item at our discretion",
+    restrictionsNote6: "For Peru and Paraguay: sea shipping has more flexible restrictions. Food, batteries, sprays, and gases can be shipped by sea (explosives and truly dangerous items remain prohibited)",
+    restrictionsMaritimeTitle: "Sea Shipping - More Flexibility (Peru & Paraguay Only)",
+    restrictionsMaritimeDesc: "For Peru and Paraguay, sea shipping allows more items than air shipping",
+    restrictionsMaritimeAllowed: "Allowed by sea for Peru & Paraguay (NOT by air):",
+    restrictionsMaritimeItem1: "Food products and consumables",
+    restrictionsMaritimeItem2: "Batteries and lithium items",
+    restrictionsMaritimeItem3: "Sprays and aerosols",
+    restrictionsMaritimeItem4: "Gases (non-explosive)",
+    restrictionsMaritimeNote: "Note: This option is only available for Peru and Paraguay. Truly dangerous items (explosives, weapons, illegal substances) remain prohibited regardless of shipping method",
     restrictionsDoubtsTitle: "Have doubts about a specific item?",
     restrictionsDoubtsDesc:
       "If you are not sure if we can buy or ship a specific item, do not hesitate to contact us before placing your order. Our support team will be happy to help you.",
@@ -1403,6 +1412,22 @@ export const translations = {
     orderDeleteError: "Failed to delete order",
     itemCancelledReason: "Cancellation Reason",
     quoteAmount: "Amount",
+
+    // Tooltips
+    tooltipProfileInfo: "Your complete delivery address for international shipments. We need this information to ship your packages from Japan to your door. Include your full name, phone, complete address with postal code, and tax ID.",
+    tooltipJapaneseAddress: "Your personal locker address in Osaka, Japan. Use this address when buying directly from Japanese stores. Cost: ¥1,000 per box received + unlimited free storage. Can be consolidated with Shopping Agent orders.",
+    tooltipProductRequest: "Shopping Agent Service: Send us product links from any Japanese store (Amazon JP, Rakuten, Mercari, etc.). Fee: ¥500 per item (under ¥10,000) or ¥1,000 per item (over ¥10,000). Includes: unlimited storage, free consolidation, free photos, and purchase processing.",
+    tooltipUseCredits: "Credits can be applied to reduce your order cost. You receive credits from: order cancellations, partial refunds, or promotional credits. Credits never expire and can be used for any future purchase or shipping payment.",
+    tooltipCurrentOrders: "Track your purchase requests from submission to warehouse arrival. Status flow: Requested → Awaiting Payment → Paid → Being Purchased → Items Purchased → In Transit → All at Warehouse. Normal timeline: 3-7 days delivery to our warehouse after purchase.",
+    tooltipWarehouseStorage: "All items at our Osaka warehouse. Benefits: ✓ Unlimited free storage ✓ Free consolidation to combine multiple packages ✓ Save up to 40% on shipping costs by consolidating ✓ Free package photos (Shopping Agent orders). Select items to request international shipping quote.",
+    tooltipDimensions: "Package dimensions (Length × Width × Height in cm) are used to calculate volumetric weight for air shipping: Volumetric Weight = (L × W × H) / 5000. We charge the higher of real weight or volumetric weight for air dhl shipments.",
+    tooltipShippingQuotes: "International shipping quotes based on your selected items. Shipping methods: Economy (15-21 days), EMS (4-10 days), DHL Express (2-5 days). Once quoted and paid, we ship within 1-2 business days with full tracking.",
+    tooltipShippingSection: "Track all your international shipments. Includes: pending shipping quotes awaiting our quote, quoted shipments ready to pay, and shipped orders with tracking. Process: Request quote → Get quote → Pay → Ship → Track delivery to your door.",
+    
+    // Empty state tooltips
+    tooltipEmptyOrders: "Your purchase requests will appear here. Process: 1) Submit product links → 2) Get quote → 3) Pay → 4) We purchase → 5) Items arrive at warehouse. Timeline: 1-2 weeks from payment to warehouse arrival.",
+    tooltipEmptyStorage: "Items will appear here once they arrive at our Osaka warehouse (3-7 days after purchase). You can store them for free indefinitely and consolidate multiple packages to save on international shipping.",
+    tooltipEmptyShipping: "Your shipping requests will appear here. Process: Select items from storage → Request quote → Get shipping quote (Economy 15-21 days, EMS 4-10 days, DHL 2-5 days) → Pay → Package shipped to your door.",
   },
   es: {
     backToBlogs: "Volver a Blogs",
@@ -2801,8 +2826,8 @@ export const translations = {
     restrictionsTitle: "Restricciones de Artículos",
     restrictionsSubtitle:
       "Para la seguridad de todos y el cumplimiento de las leyes internacionales, algunos artículos no pueden ser comprados o enviados.",
-    restrictionsProhibitedTitle: "Artículos Prohibidos",
-    restrictionsProhibitedDesc: "No podemos comprar ni enviar estos artículos",
+    restrictionsProhibitedTitle: "Artículos Prohibidos (Envío Aéreo)",
+    restrictionsProhibitedDesc: "Estos artículos no se pueden enviar por vía aérea",
     restrictionsProhibited1: "Líquidos, perfumes, aceites, alcohol",
     restrictionsProhibited2: "Baterías o artículos que contengan litio",
     restrictionsProhibited3: "Aerosoles o materiales inflamables",
@@ -2836,9 +2861,34 @@ export const translations = {
       "Los artículos confiscados por la aduana no son reembolsables",
     restrictionsNote5:
       "Podemos negarnos a comprar cualquier artículo a nuestra discreción",
+    restrictionsNote6: "Para Perú y Paraguay: los envíos marítimos tienen restricciones más flexibles. Comida, baterías, sprays y gases pueden enviarse por vía marítima (explosivos y artículos verdaderamente peligrosos siguen prohibidos)",
+    restrictionsMaritimeTitle: "Envío Marítimo - Mayor Flexibilidad (Solo Perú y Paraguay)",
+    restrictionsMaritimeDesc: "Para Perú y Paraguay, el envío marítimo permite más artículos que el envío aéreo",
+    restrictionsMaritimeAllowed: "Permitido por vía marítima para Perú y Paraguay (NO por aéreo):",
+    restrictionsMaritimeItem1: "Productos alimenticios y consumibles",
+    restrictionsMaritimeItem2: "Baterías y artículos con litio",
+    restrictionsMaritimeItem3: "Sprays y aerosoles",
+    restrictionsMaritimeItem4: "Gases (no explosivos)",
+    restrictionsMaritimeNote: "Nota: Esta opción solo está disponible para Perú y Paraguay. Artículos verdaderamente peligrosos (explosivos, armas, sustancias ilegales) permanecen prohibidos independientemente del método de envío",
     restrictionsDoubtsDesc:
       "Si no estás seguro de si podemos comprar o enviar un artículo específico, no dudes en contactarnos antes de realizar tu pedido. Nuestro equipo de soporte estará encantado de ayudarte.",
     restrictionsViewFAQ: "Ver Preguntas Frecuentes Completas",
+
+    // Tooltips
+    tooltipProfileInfo: "Tu dirección completa de entrega para envíos internacionales. Necesitamos esta información para enviar tus paquetes desde Japón hasta tu puerta. Incluye nombre completo, teléfono, dirección completa con código postal y RFC/CUIL/VAT.",
+    tooltipJapaneseAddress: "Tu dirección de casillero personal en Osaka, Japón. Usa esta dirección cuando compres directamente en tiendas japonesas. Costo: ¥1,000 por caja recibida + almacenamiento gratis ilimitado. Puede ser consolidado con pedidos de Shopping Agent.",
+    tooltipProductRequest: "Servicio Shopping Agent: Envíanos links de productos de cualquier tienda japonesa (Amazon JP, Rakuten, Mercari, etc.). Tarifa: ¥500 por artículo (menor a ¥10,000) o ¥1,000 por artículo (mayor a ¥10,000). Incluye: almacenamiento ilimitado, consolidación gratis, fotos gratis y procesamiento de compra.",
+    tooltipUseCredits: "Los créditos pueden aplicarse para reducir el costo de tu pedido. Recibes créditos por: cancelaciones de pedidos, reembolsos parciales o créditos promocionales. Los créditos nunca expiran y pueden usarse para cualquier compra o pago de envío futuro.",
+    tooltipCurrentOrders: "Rastrea tus solicitudes de compra desde el envío hasta la llegada al almacén. Flujo de estado: Solicitado → Esperando Pago → Pagado → Siendo Comprado → Artículos Comprados → En Tránsito → Todo en Almacén. Tiempo normal: 3-7 días de entrega a nuestro almacén después de la compra.",
+    tooltipWarehouseStorage: "Todos los artículos en nuestro almacén de Osaka. Beneficios: ✓ Almacenamiento gratis ilimitado ✓ Consolidación gratis para combinar múltiples paquetes ✓ Ahorra hasta 40% en costos de envío consolidando ✓ Fotos de paquetes gratis (pedidos Shopping Agent). Selecciona artículos para solicitar cotización de envío internacional.",
+    tooltipDimensions: "Las dimensiones del paquete (Largo × Ancho × Alto en cm) se usan para calcular el peso volumétrico para envío aéreo: Peso Volumétrico = (L × A × H) / 5000. Cobramos el mayor entre el peso real o volumétrico para envíos aéreos DHL",
+    tooltipShippingQuotes: "Cotizaciones de envío internacional basadas en tus artículos seleccionados. Métodos de envío: Economy (15-21 días), EMS (4-10 días), DHL Express (2-5 días). Una vez cotizado y pagado, enviamos en 1-2 días hábiles con seguimiento completo.",
+    tooltipShippingSection: "Rastrea todos tus envíos internacionales. Incluye: cotizaciones de envío pendientes esperando nuestra cotización, envíos cotizados listos para pagar, y pedidos enviados con seguimiento. Proceso: Solicitar cotización → Recibir cotización → Pagar → Enviar → Rastrear entrega a tu puerta.",
+    
+    // Tooltips para estados vacíos
+    tooltipEmptyOrders: "Tus solicitudes de compra aparecerán aquí. Proceso: 1) Envía links de productos → 2) Recibe cotización → 3) Paga → 4) Compramos → 5) Artículos llegan al almacén. Tiempo: 1-2 semanas desde el pago hasta la llegada al almacén.",
+    tooltipEmptyStorage: "Los artículos aparecerán aquí cuando lleguen a nuestro almacén en Osaka (3-7 días después de la compra). Puedes almacenarlos gratis por tiempo ilimitado y consolidar múltiples paquetes para ahorrar en envío internacional.",
+    tooltipEmptyShipping: "Tus solicitudes de envío aparecerán aquí. Proceso: Selecciona artículos del almacén → Solicita cotización → Recibe cotización de envío (Economy 15-21 días, EMS 4-10 días, DHL 2-5 días) → Paga → Paquete enviado a tu puerta.",
   },
 };
 

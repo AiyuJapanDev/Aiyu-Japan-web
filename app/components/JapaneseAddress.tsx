@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label";
 import { toast } from "@/hooks/use-toast";
 import { Copy, MapPin } from "lucide-react";
 import { useApp } from "@/contexts/AppContext";
+import { InfoTooltip } from "@/components/ui/InfoTooltip";
 
 interface JapaneseAddressCardProps {
   userId?: string;
@@ -60,6 +61,10 @@ const JapaneseAddressCard: React.FC<JapaneseAddressCardProps> = ({
         <div className="flex items-center space-x-2">
           <MapPin className="h-5 w-5 text-capybara-orange" />
           <CardTitle>{t("japaneseAddresstitle")}</CardTitle>
+          <InfoTooltip 
+            title={t("japaneseAddresstitle")} 
+            content={t("tooltipJapaneseAddress")} 
+          />
         </div>
 
         {/* User Code Pill */}

@@ -32,6 +32,7 @@ import {
 import ShippingQuoteDialog from "@/components/user/ShippingQuoteDialog";
 import { useNavigate } from "react-router";
 import { useApp } from "@/contexts/AppContext";
+import { InfoTooltip } from "@/components/ui/InfoTooltip";
 import {
   Tooltip,
   TooltipContent,
@@ -217,8 +218,12 @@ export const StoragePage = () => {
       {/* HEADER */}
       <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight text-slate-900">
+          <h2 className="text-2xl font-bold tracking-tight text-slate-900 flex items-center">
             {t("warehouseStorage")}
+            <InfoTooltip 
+              title={t("warehouseStorage")} 
+              content={t("tooltipWarehouseStorage")} 
+            />
           </h2>
           <p className="text-sm text-slate-500 font-medium">
             {t("selectItemsToShip")}
@@ -281,7 +286,14 @@ export const StoragePage = () => {
                       {t("weight")}
                     </TableHead>
                     <TableHead className="text-[11px] font-bold uppercase text-slate-400 text-center whitespace-nowrap">
-                      {t("dimensions")}
+                      <span className="flex items-center justify-center">
+                        {t("dimensions")}
+                        <InfoTooltip 
+                          title={t("dimensions")} 
+                          content={t("tooltipDimensions")} 
+                          iconClassName="h-3 w-3"
+                        />
+                      </span>
                     </TableHead>
                     <TableHead className="text-[11px] font-bold uppercase text-slate-400 text-right whitespace-nowrap">
                       {t("volumetricW")}
@@ -300,9 +312,19 @@ export const StoragePage = () => {
                     <TableRow>
                       <TableCell
                         colSpan={8}
-                        className="h-32 text-center text-slate-400 italic"
+                        className="h-32 text-center"
                       >
-                        {t("noContent")}
+                        <div className="flex flex-col items-center gap-2 text-slate-400">
+                          <div className="flex items-center gap-2">
+                            <Package className="h-6 w-6" />
+                            <InfoTooltip 
+                              title={t("warehouseStorage")} 
+                              content={t("tooltipEmptyStorage")} 
+                            />
+                          </div>
+                          <span className="italic">{t("noItemsAtWarehouse")}</span>
+                          <span className="text-xs text-slate-500">{t("noItemsDescription")}</span>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ) : (
@@ -400,8 +422,13 @@ export const StoragePage = () => {
         </div>
 
         <div className="space-y-4">
-          <h3 className="text-sm font-bold text-slate-800 px-1">
+          <h3 className="text-sm font-bold text-slate-800 px-1 flex items-center">
             {t("shippingQuotesRequested")}
+            <InfoTooltip 
+              title={t("shippingQuotesRequested")} 
+              content={t("tooltipShippingQuotes")} 
+              iconClassName="h-3.5 w-3.5"
+            />
           </h3>
           <div className="space-y-3">
             {shippingQuotes

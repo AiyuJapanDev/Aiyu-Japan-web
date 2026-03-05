@@ -20,6 +20,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useNavigate, useSearchParams } from "react-router";
 import { toast } from "sonner";
 import { useApp } from "@/contexts/AppContext";
+import { InfoTooltip } from "@/components/ui/InfoTooltip";
 import ReactGA from "react-ga4";
 import { useAuth } from "@/contexts/useAuth";
 import {
@@ -592,7 +593,13 @@ export const OrdersPage = () => {
     return (
       <Card>
         <CardContent className="p-8 text-center">
-          <Package className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+          <div className="flex justify-center items-center mb-4">
+            <Package className="h-12 w-12 text-muted-foreground" />
+            <InfoTooltip 
+              title={t("currentOrders")} 
+              content={t("tooltipEmptyOrders")} 
+            />
+          </div>
           <p className="text-muted-foreground">{t("noActiveOrders")}</p>
           <p className="text-sm text-muted-foreground mt-2">
             {t("noActiveOrdersDescription")}
@@ -606,7 +613,13 @@ export const OrdersPage = () => {
     <TooltipProvider delayDuration={0}>
       <div className="space-y-4">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-2xl font-bold">{t("currentOrders")}</h2>
+          <h2 className="text-2xl font-bold flex items-center">
+            {t("currentOrders")}
+            <InfoTooltip 
+              title={t("currentOrders")} 
+              content={t("tooltipCurrentOrders")} 
+            />
+          </h2>
         </div>
 
         {/* Filter Toggle Button */}

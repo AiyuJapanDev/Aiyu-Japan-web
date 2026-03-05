@@ -12,6 +12,66 @@ const normalizeText = (text: string) => {
     .replace(/[\u0300-\u036f]/g, '');
 };
 
+// Function to render text with HTML links
+function renderTextWithLinks(text: string) {
+  // Check if text contains HTML anchor tags
+  if (text.includes('<a href')) {
+    return <span dangerouslySetInnerHTML={{ __html: text }} />;
+  }
+  return text;
+}
+
+// Function to colorize order status
+function colorizeOrderStatus(text: string) {
+  const statusColors: Record<string, string> = {
+    // Proceso Inicial / Neutro
+    'Solicitado': '#6B7280',          // gray-500
+    'Requested': '#6B7280',
+
+    // Atención / Pendiente
+    'Esperando Pago': '#F59E0B',      // amber-500
+    'Awaiting Payment': '#F59E0B',
+
+    // Confirmación / Acción
+    'Pagado': '#3B82F6',              // blue-500 (Cambiado a azul, el estándar para "pago ok")
+    'Paid': '#3B82F6',
+
+    // Logística y Compras (Violetas/Cianes para distinguir del resto)
+    'Algunos Comprados': '#8B5CF6',    // violet-500
+    'Some Purchased': '#8B5CF6',
+    
+    'Todos Comprados': '#A855F7',      // purple-500
+    'All Purchased': '#A855F7',
+
+    // Movimiento
+    'En Tránsito': '#06B6D4',         // cyan-500
+    'In Transit': '#06B6D4',
+
+    'Todos en Almacén': '#0EA5E9',     // sky-500
+    'All at Warehouse': '#0EA5E9',
+
+    'Enviado': '#6366F1',             // indigo-500 (Más profesional que el rojo para un envío)
+    'Shipped': '#6366F1',
+
+    // Éxito / Finalizado
+    'Entregado': '#10B981',           // emerald-500 (El verde final de "tarea cumplida")
+    'Delivered': '#10B981'
+};
+
+  let result = text;
+  Object.keys(statusColors).forEach(status => {
+    const color = statusColors[status];
+    const regex = new RegExp(`(\\b${status}\\b)`, 'gi');
+    result = result.replace(regex, `<strong style="color: ${color}; font-weight: 600;">$1</strong>`);
+  });
+
+  if (result !== text) {
+    return <span dangerouslySetInnerHTML={{ __html: result }} />;
+  }
+  
+  return renderTextWithLinks(text);
+}
+
 interface HelpCardProps {
   icon: React.ReactNode;
   title: string;
@@ -131,7 +191,7 @@ function HelpArticleModal({ isOpen, onClose, article, searchQuery = '' }: HelpAr
                     
                     if (line.startsWith('•') || line.startsWith('-')) {
                       const text = line.substring(1).trim();
-                      const content = searchQuery ? highlightText(text, searchQuery) : text;
+                      const content = searchQuery ? highlightText(text, searchQuery) : colorizeOrderStatus(text);
                       return (
                         <div key={i} className="flex gap-2 mb-2 ml-2">
                           <span className="text-capybara-orange mt-1.5 flex-shrink-0">•</span>
@@ -140,7 +200,7 @@ function HelpArticleModal({ isOpen, onClose, article, searchQuery = '' }: HelpAr
                       );
                     }
                     
-                    const content = searchQuery ? highlightText(line, searchQuery) : line;
+                    const content = searchQuery ? highlightText(line, searchQuery) : colorizeOrderStatus(line);
                     
                     if (/^\d+\)/.test(line)) {
                       return (
