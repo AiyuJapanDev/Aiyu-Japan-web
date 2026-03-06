@@ -6,7 +6,7 @@ import {
 } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import { useApp } from "@/contexts/AppContext";
-import { AlertTriangle, Ban, HelpCircle, Info } from "lucide-react";
+import { AlertTriangle, Ban, HelpCircle, Info, Ship } from "lucide-react";
 import { Link } from "react-router";
 
 export const RestrictionsSection = () => {
@@ -44,6 +44,14 @@ export const RestrictionsSection = () => {
     t("restrictionsNote3"),
     t("restrictionsNote4"),
     t("restrictionsNote5"),
+    t("restrictionsNote6"),
+  ];
+
+  const maritimeAllowedItems = [
+    t("restrictionsMaritimeItem1"),
+    t("restrictionsMaritimeItem2"),
+    t("restrictionsMaritimeItem3"),
+    t("restrictionsMaritimeItem4"),
   ];
 
   return (
@@ -108,6 +116,38 @@ export const RestrictionsSection = () => {
                     <p className="text-sm text-gray-600">{item.description}</p>
                   </div>
                 ))}
+              </div>
+            </div>
+
+            <div className="mt-12 rounded-3xl border border-green-200 bg-green-50 p-8">
+              <div className="mb-6 flex items-center gap-4">
+                <Ship className="h-8 w-8 text-green-600" />
+                <div>
+                  <h3 className="text-xl font-bold text-green-900">
+                    {t("restrictionsMaritimeTitle")}
+                  </h3>
+                  <p className="text-green-700">
+                    {t("restrictionsMaritimeDesc")}
+                  </p>
+                </div>
+              </div>
+              <div className="mb-4">
+                <p className="font-semibold text-green-900 mb-3">
+                  {t("restrictionsMaritimeAllowed")}
+                </p>
+                <ul className="space-y-2">
+                  {maritimeAllowedItems.map((item, index) => (
+                    <li key={index} className="flex items-start gap-3">
+                      <div className="mt-1 flex h-2 w-2 flex-shrink-0 rounded-full bg-green-500" />
+                      <span className="text-gray-700">{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div className="mt-4 rounded-xl bg-green-100 p-4">
+                <p className="text-sm text-green-800">
+                  {t("restrictionsMaritimeNote")}
+                </p>
               </div>
             </div>
           </div>

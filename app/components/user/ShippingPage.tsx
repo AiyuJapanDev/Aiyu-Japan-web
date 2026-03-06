@@ -42,6 +42,7 @@ import {
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useApp } from "@/contexts/AppContext";
+import { InfoTooltip } from "@/components/ui/InfoTooltip";
 import { useAuth } from "@/contexts/useAuth";
 import {
   AlertDialog,
@@ -579,7 +580,13 @@ export const ShippingPage = () => {
     return (
       <Card>
         <CardContent className="p-8 text-center">
-          <Truck className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+          <div className="flex justify-center items-center mb-4">
+            <Truck className="h-12 w-12 text-muted-foreground" />
+            <InfoTooltip 
+              title={t("shippingTitle")} 
+              content={t("tooltipEmptyShipping")} 
+            />
+          </div>
           <p className="text-muted-foreground">{t("noShipmentsYet")}</p>
           <p className="text-sm text-muted-foreground mt-2">
             {t("noShipmentsDescription")}
@@ -659,6 +666,10 @@ export const ShippingPage = () => {
       <h3 className="text-xl font-bold flex items-center gap-2">
         <FileText className="h-10 w-8" />
         {t("shipmentsTitle")}
+        <InfoTooltip 
+          title={t("shippingTitle")} 
+          content={t("tooltipShippingSection")} 
+        />
       </h3>
       <p className="text-2xl flex gap-2">
         <Badge className="text-gray-900 text-xl" variant="outline">

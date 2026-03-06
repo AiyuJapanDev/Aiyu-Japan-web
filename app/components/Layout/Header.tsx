@@ -50,6 +50,7 @@ import LogOutBtn from "../ui/custom/LogOutBtn";
 import Logo from "/aiyu-japan-logo-typography.png";
 import LogoMobile from "/aiyu_logo_small.png";
 import { useAuth } from "@/contexts/useAuth";
+import ReactGA from "react-ga4";
 
 const Header = () => {
   const { language, t } = useApp();
@@ -58,6 +59,15 @@ const Header = () => {
   const { user, isAdmin, profile } = useAuth();
   const root = params.lang;
   const location = useLocation();
+
+  const handleShoppingCartClick = () => {
+    ReactGA.event({
+      category: "Product Request",
+      action: "Open Request Form",
+      label: "Product Request Intent - Header Cart",
+    });
+    navigate("/user-dashboard");
+  };
 
   const handleLanguageChange = (newLang: string) => {
     const currentPath = location.pathname;
@@ -333,17 +343,18 @@ const Header = () => {
                    {
                     isAdmin ?
                       null
-                     : <Link to="/user-dashboard">
-                        <div>
+                     : <div>
                           <div className="flex justify-end">
-                          <Button className="bubble-btn-primary w-28 hover:bg-yellow-400">
+                          <Button 
+                            className="bubble-btn-primary w-28 hover:bg-yellow-400"
+                            onClick={handleShoppingCartClick}
+                          >
                             {t("startShopping")}
                             <ShoppingCart className="w-4 h-4" />
                           </Button>
                             <div className="h-2 w-2 bg-yellow-500 rounded-full animate-pulse"></div>
                           </div>
                         </div>
-                      </Link>
                   }
 
                   <div className="hidden lg:flex items-center gap-2">
@@ -439,11 +450,13 @@ const Header = () => {
                     </HoverCard>
               : ""}
 
-              {isAdmin ? "" : user ? <Link to="/user-dashboard">
-                    <Button className="w-10 h-10 bg-capybara-orange border-2 hover:bg-yellow-400 rounded-full">
+              {isAdmin ? "" : user ? <Button 
+                    className="w-10 h-10 bg-capybara-orange border-2 hover:bg-yellow-400 rounded-full"
+                    onClick={handleShoppingCartClick}
+                  >
                       <ShoppingCart className="w-4 h-4 text-white font-bold" />
                     </Button>
-              </Link>: ""}
+              : ""}
 
 
               

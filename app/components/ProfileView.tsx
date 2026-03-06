@@ -13,6 +13,7 @@ import { Loader2, User, Edit, Save, X, ChevronDown } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
 import JapaneseAddress from '@/components/JapaneseAddress';
 import { ALL_COUNTRIES } from '@/lib/shippingUtils';
+import { InfoTooltip } from '@/components/ui/InfoTooltip';
 
 const ProfileView = () => {
   const { user, profile, refreshProfile } = useAuth();
@@ -358,6 +359,10 @@ const ProfileView = () => {
               <CardTitle className="flex items-center">
                 <User className="mr-2 h-5 w-5 text-capybara-orange" />
                 {t('profileInformation')}
+                <InfoTooltip 
+                  title={t('profileInformation')} 
+                  content={t('tooltipProfileInfo')} 
+                />
               </CardTitle>
 
               <ChevronDown className="h-5 w-5 transition-transform duration-200 data-[state=open]:rotate-180" />

@@ -39,13 +39,14 @@ import { useCurrencyRates } from "@/hooks/useCurrencyRates";
 import { useSystemSettings } from "@/hooks/useSystemSettings";
 import { notifyAllAdmins } from "@/lib/notificationUtils";
 import { useApp } from "@/contexts/AppContext";
+import ReactGA from "react-ga4";
 
 interface ShippingQuoteDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   selectedItems: Array<{
     id: string;
-    order_id?: string; // Made optional for admin-added items
+    order_id?: string;
     product_request: {
       item_name: string;
       quantity: number;
@@ -383,6 +384,13 @@ const ShippingQuoteDialog: React.FC<ShippingQuoteDialogProps> = ({
           quoteData.id,
         );
       }
+
+      ReactGA.event({
+        category: "Shipping Quote",
+        action: "Request Shipping Quote",
+        label: `${selectedCountry} - ${shippingMethod}`,
+        value: Math.round(shippingCost),
+      });
 
       toast({
         title: "Shipping Quote Requested",

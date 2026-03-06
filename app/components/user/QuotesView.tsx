@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useApp } from "@/contexts/AppContext";
+import ReactGA from "react-ga4";
 import {
   Card,
   CardContent,
@@ -144,7 +145,6 @@ export function QuotesView() {
       ];
     }
 
-    // Determine current step
     let currentStepIndex = 0;
     const hasQuote = order.quotes.some(
       (q) => q.status === "sent" || q.status === "pending"
@@ -170,11 +170,15 @@ export function QuotesView() {
   };
 
   const handlePayment = (quoteUrl: string) => {
+    ReactGA.event({
+      category: "Payment",
+      action: "Open Payment Link",
+      label: "Payment Intent",
+    });
     window.open(quoteUrl, "_blank");
   };
 
   const handleEditOrder = (orderId: string) => {
-    // Navigate to order editing (we'll create this page next)
     navigate(`/edit-order/${orderId}`);
   };
 

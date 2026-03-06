@@ -24,6 +24,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { StatementSync } from "node:sqlite";
 import { useApp } from "@/contexts/AppContext";
 import { ALL_COUNTRIES } from "@/lib/shippingUtils";
+import ReactGA from "react-ga4";
 
 const Auth = () => {
   const { user, signUp, signIn } = useAuth();
@@ -216,6 +217,11 @@ const Auth = () => {
     if (isLogin) {
       const { error } = await signIn(formData.email, formData.password);
       if (!error) {
+        ReactGA.event({
+          category: "User",
+          action: "Login",
+          label: "Successful Login",
+        });
         navigate("/dashboard");
       }
     } else {
@@ -330,6 +336,11 @@ const Auth = () => {
           variant: "destructive",
         });
       } else {
+        ReactGA.event({
+          category: "User",
+          action: "Sign Up",
+          label: `Country: ${formData.country}`,
+        });
         setEmailSent(true);
       }
     }

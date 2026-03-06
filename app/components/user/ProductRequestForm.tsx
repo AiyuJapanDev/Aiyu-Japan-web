@@ -21,6 +21,8 @@ import {
 import {
   Dialog, DialogContent,
 } from "@/components/ui/dialog";
+import ReactGA from "react-ga4";
+import { InfoTooltip } from "@/components/ui/InfoTooltip";
 
 interface ProductItem {
   url: string;
@@ -152,6 +154,13 @@ export function ProductRequestForm() {
         );
       }
 
+      ReactGA.event({
+        category: "Product Request",
+        action: "Submit Product Order",
+        label: `Order #${orderPersonalId} - ${validItems.length} items`,
+        value: validItems.length,
+      });
+
       clearForm();
       setShowSuccessDialog(true);
     } catch (error: any) {
@@ -191,6 +200,10 @@ export function ProductRequestForm() {
               <CardTitle className="text-xl flex items-center gap-2 text-gray-800">
                 <ShoppingCart className="h-5 w-5 text-orange-400" />
                 {t("productRequestTitle")}
+                <InfoTooltip 
+                  title={t("productRequestTitle")} 
+                  content={t("tooltipProductRequest")} 
+                />
               </CardTitle>
               <CardDescription>{t("productRequestSubtitle")}</CardDescription>
             </div>
@@ -222,8 +235,13 @@ export function ProductRequestForm() {
                     className="mt-0.5 border-orange-300 data-[state=checked]:bg-orange-400 data-[state=checked]:border-orange-400"
                   />
                   <div className="space-y-1">
-                    <Label htmlFor="use-credits" className="text-sm font-medium text-gray-700 cursor-pointer">
+                    <Label htmlFor="use-credits" className="text-sm font-medium text-gray-700 cursor-pointer flex items-center">
                       {t("useCreditsForOrder")}
+                      <InfoTooltip 
+                        title={t("useCreditsForOrder")} 
+                        content={t("tooltipUseCredits")} 
+                        iconClassName="h-3.5 w-3.5"
+                      />
                     </Label>
                     <p className="text-xs text-gray-500">
                       {t("applyCreditsDiscountNote")}
