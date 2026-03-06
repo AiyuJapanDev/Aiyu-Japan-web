@@ -3,7 +3,7 @@ import { New } from "@/types/strapi-news";
 import { StoreCategory, StoreMarket } from "@/types/strapi-stores";
 
 const STRAPI_URL = process.env.VITE_STRAPI_URL;
-const STRAPI_API_KEY = process.env.VITE_STRAPI_API_KEY;
+const STRAPI_API_KEY = process.env.STRAPI_API_KEY;
 
 class StrapiError extends Error {
   constructor(
