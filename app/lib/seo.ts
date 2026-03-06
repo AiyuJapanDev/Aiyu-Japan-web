@@ -76,5 +76,37 @@ export function generateMeta({
   ];
 }
 
+/**
+ * Generates breadcrumb structured data (JSON-LD) for a page
+ * @param items - Array of breadcrumb items with name and path
+ * @param lang - Current language
+ * @returns JSON-LD string for breadcrumbs
+ */
+export interface BreadcrumbItem {
+  name: string;
+  path?: string; // Path without lang prefix, e.g. "blog" or "store-guide/fees"
+}
+
+export function generateBreadcrumbs(items: BreadcrumbItem[], lang: string): string {
+  const breadcrumbList = items.map((item, index) => {
+    const url = item.path 
+      ? `${SITE_URL}/${lang}/${item.path}`
+      : `${SITE_URL}/${lang}`;
+    
+    return {
+      "@type": "ListItem",
+      position: index + 1,
+      name: item.name,
+      item: url,
+    };
+  });
+
+  return JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: breadcrumbList,
+  });
+}
+
 // Re-export for use in sitemap
 export { SITE_URL };

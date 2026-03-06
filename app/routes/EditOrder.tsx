@@ -1,6 +1,13 @@
 import ProtectedRoute from '@/components/ProtectedRoute';
 import { EditOrder as EditOrderComponent } from '@/components/user/EditOrder';
 
+export function meta() {
+  return [
+    { title: "Edit Order | Aiyu Japan" },
+    { name: "robots", content: "noindex, nofollow" },
+  ];
+}
+
 export default function EditOrder() {
   return (
     <ProtectedRoute>

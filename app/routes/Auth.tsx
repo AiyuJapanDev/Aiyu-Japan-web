@@ -26,6 +26,13 @@ import { useApp } from "@/contexts/AppContext";
 import { ALL_COUNTRIES } from "@/lib/shippingUtils";
 import ReactGA from "react-ga4";
 
+export function meta() {
+  return [
+    { title: "Sign In | Aiyu Japan" },
+    { name: "robots", content: "noindex, nofollow" },
+  ];
+}
+
 const Auth = () => {
   const { user, signUp, signIn } = useAuth();
   const navigate = useNavigate();

@@ -6,7 +6,8 @@ import { ArrowLeft, Calendar } from "lucide-react";
 import { useNavigate } from "react-router";
 import { useEffect } from "react";
 import ReactGA from "react-ga4";
-import { generateMeta } from "@/lib/seo";
+import { generateMeta, generateBreadcrumbs, BreadcrumbItem as SchemaBreadcrumbItem } from "@/lib/seo";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
 
 import type { Route } from ".react-router/types/app/routes/+types/ArticlePage";
 import BlockRenderer from "@/components/blocks/Blockrenderer";
@@ -45,7 +46,7 @@ export function meta({ data }: Route.MetaArgs) {
 
 export default function ArticlePage({ loaderData }: Route.ComponentProps) {
   const navigate = useNavigate();
-  const { t } = useApp();
+  const { t, language } = useApp();
   
   useEffect(() => {
     if (loaderData && loaderData.article && loaderData.article.title) {
@@ -77,8 +78,21 @@ export default function ArticlePage({ loaderData }: Route.ComponentProps) {
   const { src, srcset } = getImage(cover);
   const sizes = "(min-width: 1260px) 1153px, 94.04vw";
 
+  // Breadcrumbs
+  const breadcrumbItems: SchemaBreadcrumbItem[] = [
+    { name: language === 'es' ? 'Inicio' : 'Home', path: '' },
+    { name: 'Blog', path: 'blog' },
+    { name: title, path: `blog/${article.slug}` },
+  ];
+  const breadcrumbSchema = generateBreadcrumbs(breadcrumbItems, lang);
+
   return (
     <div className="min-h-screen bg-gray-50 pb-20 w-full">
+      {/* Structured Data for Breadcrumbs */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: breadcrumbSchema }}
+      />
       {/* Hero Section */}
       <div className="relative w-full h-[60vh] min-h-[400px] bg-gray-900 overflow-hidden">
         {src && (
@@ -135,7 +149,17 @@ export default function ArticlePage({ loaderData }: Route.ComponentProps) {
 
       {/* Content Section */}
       <article className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 -mt-10 relative z-10">
-        <div className="bg-white rounded-xl shadow-xl p-8 md:p-12 prose border max-w-none overflow-clip ck-content relative">
+        {/* Breadcrumbs */}
+        <div className="bg-white rounded-t-xl px-8 pt-6 pb-4">
+          <Breadcrumbs
+            items={[
+              { label: 'Blog', href: `/${lang}/blog` },
+              { label: title },
+            ]}
+          />
+        </div>
+        
+        <div className="bg-white rounded-b-xl shadow-xl p-8 md:p-12 prose border max-w-none overflow-clip ck-content relative">
           <BlockRenderer blocks={blocks} lang={lang} contentData={blocks} />
         </div>
       </article>

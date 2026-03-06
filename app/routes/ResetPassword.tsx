@@ -8,6 +8,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Eye, EyeOff } from "lucide-react";
 
+export function meta() {
+  return [
+    { title: "Reset Password | Aiyu Japan" },
+    { name: "robots", content: "noindex, nofollow" },
+  ];
+}
+
 const ResetPassword = () => {
   const navigate = useNavigate();
   const { toast } = useToast();

@@ -5,6 +5,13 @@ import { Button } from '@/components/ui/button';
 import { Link } from 'react-router';
 import { Mail, CheckCircle } from 'lucide-react';
 
+export function meta() {
+  return [
+    { title: "Email Verified | Aiyu Japan" },
+    { name: "robots", content: "noindex, nofollow" },
+  ];
+}
+
 const EmailVerification = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center px-4">

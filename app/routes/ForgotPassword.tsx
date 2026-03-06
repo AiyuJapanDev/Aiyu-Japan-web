@@ -8,6 +8,12 @@ import { Link } from 'react-router';
 import { ArrowLeft, Mail } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
 
+export function meta() {
+  return [
+    { title: "Forgot Password | Aiyu Japan" },
+    { name: "robots", content: "noindex, nofollow" },
+  ];
+}
 
 const ForgotPassword = () => {
   const { resetPassword } = useAuth();

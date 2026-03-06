@@ -26,6 +26,13 @@ import {
   HelpCircle
 } from 'lucide-react';
 
+export function meta() {
+  return [
+    { title: "Dashboard | Aiyu Japan" },
+    { name: "robots", content: "noindex, nofollow" },
+  ];
+}
+
 type NavItem = {
   id: string;
   label: string;

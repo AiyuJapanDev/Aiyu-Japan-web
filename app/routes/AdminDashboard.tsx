@@ -20,6 +20,13 @@ import { ShippingRequestsManagement } from "@/components/admin/ShippingRequestsM
 import { NotificationsView } from "@/components/user/NotificationsView";
 import Settings from "@/components/admin/Settings";
 
+export function meta() {
+  return [
+    { title: "Admin Dashboard | Aiyu Japan" },
+    { name: "robots", content: "noindex, nofollow" },
+  ];
+}
+
 const fetchUsers = async () => {
   // Fetch profiles with emails and roles from the database
   const { data: profilesData, error: profilesError } = await supabase
