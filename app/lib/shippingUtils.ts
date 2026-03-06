@@ -223,6 +223,33 @@ export const PERU_MARITIME_SHIPPING = {
   step: 1000
 };
 
+// ============= UPS SHIPPING CONFIGURATION =================
+
+export const UPS_COUNTRIES = [
+  "Bolivia", "Chile", "Colombia", "Ecuador", "Guyana",
+  "Peru", "Saint Martin", "Suriname", "Uruguay"
+];
+
+export const UPS_BOX_SIZES = [
+  { id: "s60",  label: "Size 60",  dim: "L+W+H < 60 cm",  maxWeightKg: 2,  maxWeightG: 2000,  maxDimSum: 60,  price: 6615,  tag: "#2dd4bf" },
+  { id: "s80",  label: "Size 80",  dim: "L+W+H < 80 cm",  maxWeightKg: 5,  maxWeightG: 5000,  maxDimSum: 80,  price: 9450,  tag: "#f97316" },
+  { id: "s100", label: "Size 100", dim: "L+W+H < 100 cm", maxWeightKg: 10, maxWeightG: 10000, maxDimSum: 100, price: 18112, tag: "#a855f7" },
+  { id: "s120", label: "Size 120", dim: "L+W+H < 120 cm", maxWeightKg: 15, maxWeightG: 15000, maxDimSum: 120, price: 28349, tag: "#22c55e" },
+  { id: "s140", label: "Size 140", dim: "L+W+H < 140 cm", maxWeightKg: 20, maxWeightG: 20000, maxDimSum: 140, price: 40161, tag: "#ec4899" },
+  { id: "s160", label: "Size 160", dim: "L+W+H < 160 cm", maxWeightKg: 25, maxWeightG: 25000, maxDimSum: 160, price: 53548, tag: "#8b5cf6" },
+];
+
+export const hasUpsShipping = (country: string): boolean => {
+  return UPS_COUNTRIES.includes(country);
+};
+
+export const getAvailableUpsBoxes = (weightGrams: number, totalDimensionsSum?: number) => {
+  return UPS_BOX_SIZES.map(box => ({
+    ...box,
+    enabled: weightGrams <= box.maxWeightG && (!totalDimensionsSum || totalDimensionsSum <= box.maxDimSum),
+  }));
+};
+
 // ============= DHL SHIPPING CONFIGURATION =================
 
 // DHL Zone Definitions (separate from regular zones)
@@ -500,7 +527,7 @@ export const calculateShippingCost = (
 
 export const calculateShippingCostByCountry = (
   country: string,
-  shippingMethod: 'economic' | 'express' | 'paraguay' | 'paraguay-maritime' | 'peru-maritime' | 'dhl',
+  shippingMethod: 'economic' | 'express' | 'paraguay' | 'paraguay-maritime' | 'peru-maritime' | 'dhl' | 'ups',
   weight: number,
   dimensions?: { L?: number; W?: number; H?: number },
   fuelPercentage?: number
@@ -636,11 +663,12 @@ export const useAnimatedNumber = (targetNumber: number, duration = 100) => {
   return animatedValue;
 };
 
-export const getWeightRange = (shippingMethod: 'economic' | 'express' | 'paraguay' | 'paraguay-maritime' | 'peru-maritime' | 'dhl') => {
+export const getWeightRange = (shippingMethod: 'economic' | 'express' | 'paraguay' | 'paraguay-maritime' | 'peru-maritime' | 'dhl' | 'ups') => {
   if (shippingMethod === 'express') return { min: 500, max: 10000 };
   if (shippingMethod === 'paraguay') return { min: 200, max: 25000 };
   if (shippingMethod === 'paraguay-maritime') return { min: 1000, max: 30000 };
   if (shippingMethod === 'peru-maritime') return { min: 1000, max: 30000 };
   if (shippingMethod === 'dhl') return { min: 500, max: 10000 };
+  if (shippingMethod === 'ups') return { min: 1, max: 25000 };
   return { min: 300, max: 2000 };
 };

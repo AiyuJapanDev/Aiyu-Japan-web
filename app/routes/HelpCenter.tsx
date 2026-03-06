@@ -19,6 +19,22 @@ import {
   Wallet,
   FileText
 } from "lucide-react";
+import { generateMeta } from "@/lib/seo";
+import type { Route } from ".react-router/types/app/routes/+types/HelpCenter";
+
+export async function loader({ params }: Route.LoaderArgs) {
+  return { lang: params.lang || "es" };
+}
+
+export function meta({ data }: { data: Awaited<ReturnType<typeof loader>> }) {
+  const lang = data?.lang || "es";
+  const titles: Record<string, { title: string; description: string }> = {
+    es: { title: "Centro de Ayuda", description: "Encuentra respuestas a tus preguntas sobre nuestro servicio de compras en Japón." },
+    en: { title: "Help Center", description: "Find answers to your questions about our Japanese proxy shopping service." },
+  };
+  const { title, description } = titles[lang] || titles.es;
+  return generateMeta({ title, description, lang, path: "help-center" });
+}
 
 export default function PublicHelpCenter() {
   const { language } = useApp();

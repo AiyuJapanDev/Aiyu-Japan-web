@@ -1,6 +1,28 @@
 import React, { useEffect } from 'react';
 import { useApp } from '@/contexts/AppContext';
 import ShippingCalculator from '@/components/ShippingCalculator';
+import { generateMeta } from '@/lib/seo';
+import type { Route } from ".react-router/types/app/routes/+types/Calculator";
+
+export async function loader({ params }: Route.LoaderArgs) {
+  return { lang: params.lang || "es" };
+}
+
+export function meta({ data }: { data: Awaited<ReturnType<typeof loader>> }) {
+  const lang = data?.lang || "es";
+  const titles: Record<string, { title: string; description: string }> = {
+    es: {
+      title: "Calculadora de Envío",
+      description: "Calcula el costo estimado de envío desde Japón a tu país con nuestra calculadora gratuita.",
+    },
+    en: {
+      title: "Shipping Calculator",
+      description: "Calculate estimated shipping costs from Japan to your country with our free calculator.",
+    },
+  };
+  const { title, description } = titles[lang] || titles.es;
+  return generateMeta({ title, description, lang, path: "calculator" });
+}
 
 const Calculator = () => {
   const { t } = useApp();

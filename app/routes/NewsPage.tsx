@@ -6,6 +6,7 @@ import { getImage } from "@/lib/utils";
 import { New } from "@/types/strapi-news";
 import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router";
+import { generateMeta } from "@/lib/seo";
 
 export async function loader({ params }: Route.LoaderArgs) {
   const { posts, total } = contentData[params.lang].newsPosts;
@@ -17,6 +18,19 @@ export async function loader({ params }: Route.LoaderArgs) {
   }
 
   return { newPost, lang: params.lang };
+}
+
+export function meta({ data }: Route.MetaArgs) {
+  if (!data) return [{ title: "Aiyu Japan" }];
+  const { newPost, lang } = data;
+  const { title, slug } = newPost as New;
+  return generateMeta({
+    title,
+    description: title,
+    lang,
+    path: `news/${slug}`,
+    type: "article",
+  });
 }
 
 export default function NewsPage({ loaderData }: Route.ComponentProps) {

@@ -9,6 +9,22 @@ import {
   ShoppingBag,
   User2,
 } from "lucide-react";
+import { generateMeta } from "@/lib/seo";
+import type { Route } from ".react-router/types/app/routes/+types/FeesSection";
+
+export async function loader({ params }: Route.LoaderArgs) {
+  return { lang: params.lang || "es" };
+}
+
+export function meta({ data }: { data: Awaited<ReturnType<typeof loader>> }) {
+  const lang = data?.lang || "es";
+  const titles: Record<string, { title: string; description: string }> = {
+    es: { title: "Tarifas y Precios", description: "Conoce nuestras tarifas de servicio, almacenamiento y opciones de envío internacional desde Japón." },
+    en: { title: "Fees & Pricing", description: "Learn about our service fees, storage costs, and international shipping options from Japan." },
+  };
+  const { title, description } = titles[lang] || titles.es;
+  return generateMeta({ title, description, lang, path: "store-guide/fees" });
+}
 
 export const FeesSection = () => {
   const { t } = useApp();

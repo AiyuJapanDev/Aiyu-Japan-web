@@ -5,6 +5,28 @@ import ShoppingCategories from "@/components/sections/ShoppingCategories";
 import { useApp } from "@/contexts/AppContext";
 import { useIntersectionObserver } from "@/hooks/useIntersectionObserver";
 import { useEffect } from "react";
+import { generateMeta } from "@/lib/seo";
+import type { Route } from ".react-router/types/app/routes/+types/Services";
+
+export async function loader({ params }: Route.LoaderArgs) {
+  return { lang: params.lang || "es" };
+}
+
+export function meta({ data }: { data: Awaited<ReturnType<typeof loader>> }) {
+  const lang = data?.lang || "es";
+  const titles: Record<string, { title: string; description: string }> = {
+    es: {
+      title: "Servicios",
+      description: "Conoce todos nuestros servicios de compras en Japón: proxy shopping, envío internacional y más.",
+    },
+    en: {
+      title: "Services",
+      description: "Discover all our Japanese shopping services: proxy shopping, international shipping & more.",
+    },
+  };
+  const { title, description } = titles[lang] || titles.es;
+  return generateMeta({ title, description, lang, path: "services" });
+}
 
 const Services = () => {
   const { t } = useApp();

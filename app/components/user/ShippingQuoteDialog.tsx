@@ -33,8 +33,11 @@ import {
   getWeightRange,
   isDHLOnlyCountry,
   hasExpressShipping,
+  hasUpsShipping,
+  UPS_BOX_SIZES,
   PERU_MARITIME_SHIPPING,
 } from "@/lib/shippingUtils";
+import UpsBoxSelector from "@/components/UpsBoxSelector";
 import { useCurrencyRates } from "@/hooks/useCurrencyRates";
 import { useSystemSettings } from "@/hooks/useSystemSettings";
 import { notifyAllAdmins } from "@/lib/notificationUtils";
@@ -83,7 +86,9 @@ const ShippingQuoteDialog: React.FC<ShippingQuoteDialogProps> = ({
     | "paraguay-maritime"
     | "peru-maritime"
     | "dhl"
+    | "ups"
   >("economic");
+  const [selectedUpsBox, setSelectedUpsBox] = useState<string | null>(null);
   const [fullName, setFullName] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [address, setAddress] = useState("");
@@ -129,6 +134,19 @@ const ShippingQuoteDialog: React.FC<ShippingQuoteDialogProps> = ({
 
   const numericWeight = Math.round(usesVolumetric ? volumetricTotalWeight : realTotalWeight) || 0;
 
+  const totalDimensionsSum = useMemo(() => {
+    if (selectedItems.length === 0) return undefined;
+    
+    const sum = selectedItems.reduce((total, item) => {
+      if (item.length && item.width && item.height) {
+        return total + item.length + item.width + item.height;
+      }
+      return total;
+    }, 0);
+    
+    return sum > 0 ? sum : undefined;
+  }, [selectedItems]);
+
   useEffect(() => {
     if (selectedCountry === "Paraguay") {
       setShippingMethod("paraguay");
@@ -138,15 +156,21 @@ const ShippingQuoteDialog: React.FC<ShippingQuoteDialogProps> = ({
     ) {
       setShippingMethod("economic");
     } else if (
-      shippingMethod === "peru-maritime" &&
-      selectedCountry !== "Peru"
+      shippingMethod === "ups" &&
+      !hasUpsShipping(selectedCountry)
     ) {
-      setShippingMethod("economic");
+      setShippingMethod(isDHLOnly ? "dhl" : "economic");
     }
   }, [selectedCountry]);
 
   useEffect(() => {
-    if (isDHLOnly && shippingMethod !== "dhl") {
+    if (shippingMethod !== "ups") {
+      setSelectedUpsBox(null);
+    }
+  }, [shippingMethod]);
+
+  useEffect(() => {
+    if (isDHLOnly && shippingMethod !== "dhl" && shippingMethod !== "ups") {
       setShippingMethod("dhl");
     }
   }, [isDHLOnly, shippingMethod]);
@@ -161,6 +185,8 @@ const ShippingQuoteDialog: React.FC<ShippingQuoteDialogProps> = ({
     }
   }, [selectedCountry, shippingMethod, numericWeight]);
 
+  const hasUps = selectedCountry ? hasUpsShipping(selectedCountry) : false;
+
   const availableMethods =
     selectedCountry === "Paraguay"
       ? [
@@ -172,8 +198,13 @@ const ShippingQuoteDialog: React.FC<ShippingQuoteDialogProps> = ({
         ]
       : selectedCountry === "Peru"
         ? isDHLOnly
-          ? [{ value: "dhl", label: t("dhlShipping") }]
-          : numericWeight > 2000
+          ? [
+              { value: "dhl", label: t("dhlShipping") },
+              ...(hasUps && realTotalWeight <= 25000
+                ? [{ value: "ups", label: t("upsShippingLabel") }]
+                : []),
+            ]
+          : realTotalWeight > 2000
             ? [
                 ...(hasExpress
                   ? [{ value: "express", label: t("expressShippingLabel") }]
@@ -183,6 +214,9 @@ const ShippingQuoteDialog: React.FC<ShippingQuoteDialogProps> = ({
                   value: "peru-maritime",
                   label: t("peruMaritimeShippingLabel"),
                 },
+                ...(hasUps && realTotalWeight <= 25000
+                  ? [{ value: "ups", label: t("upsShippingLabel") }]
+                  : []),
               ]
             : [
                 { value: "economic", label: t("economicShippingLabel") },
@@ -194,15 +228,26 @@ const ShippingQuoteDialog: React.FC<ShippingQuoteDialogProps> = ({
                   value: "peru-maritime",
                   label: t("peruMaritimeShippingLabel"),
                 },
+                ...(hasUps && realTotalWeight <= 25000
+                  ? [{ value: "ups", label: t("upsShippingLabel") }]
+                  : []),
               ]
         : isDHLOnly
-          ? [{ value: "dhl", label: t("dhlShipping") }]
-          : numericWeight > 2000
+          ? [
+              { value: "dhl", label: t("dhlShipping") },
+              ...(hasUps && realTotalWeight <= 25000
+                ? [{ value: "ups", label: t("upsShippingLabel") }]
+                : []),
+            ]
+          : realTotalWeight > 2000
             ? [
                 ...(hasExpress
                   ? [{ value: "express", label: t("expressShippingLabel") }]
                   : []),
                 { value: "dhl", label: t("dhlShipping") },
+                ...(hasUps && realTotalWeight <= 25000
+                  ? [{ value: "ups", label: t("upsShippingLabel") }]
+                  : []),
               ]
             : [
                 { value: "economic", label: t("economicShippingLabel") },
@@ -210,19 +255,27 @@ const ShippingQuoteDialog: React.FC<ShippingQuoteDialogProps> = ({
                   ? [{ value: "express", label: t("expressShippingLabel") }]
                   : []),
                 { value: "dhl", label: t("dhlShipping") },
+                ...(hasUps && realTotalWeight <= 25000
+                  ? [{ value: "ups", label: t("upsShippingLabel") }]
+                  : []),
               ];
 
   useEffect(() => {
-    if (numericWeight > 2000 && shippingMethod === "economic") {
-      setShippingMethod("express");
+    if (realTotalWeight > 2000 && shippingMethod === "economic") {
+      setShippingMethod(hasExpress ? "express" : "dhl");
     }
-  }, [numericWeight, shippingMethod]);
+    // If UPS is selected but weight exceeds max UPS capacity, switch to dhl
+    if (shippingMethod === "ups" && realTotalWeight > 25000) {
+      setShippingMethod("dhl");
+    }
+  }, [realTotalWeight, shippingMethod, hasExpress]);
 
   const dimensions =
     (shippingMethod === "dhl" ||
       shippingMethod === "paraguay" ||
       shippingMethod === "paraguay-maritime" ||
-      shippingMethod === "peru-maritime") &&
+      shippingMethod === "peru-maritime" ||
+      shippingMethod === "ups") &&
     length &&
     width &&
     height
@@ -230,7 +283,7 @@ const ShippingQuoteDialog: React.FC<ShippingQuoteDialogProps> = ({
       : undefined;
 
   const shippingCostResult =
-    selectedCountry && !settingsLoading
+    selectedCountry && !settingsLoading && shippingMethod !== "ups"
       ? calculateShippingCostByCountry(
           selectedCountry,
           shippingMethod,
@@ -243,6 +296,10 @@ const ShippingQuoteDialog: React.FC<ShippingQuoteDialogProps> = ({
       : null;
 
   const shippingCost = (() => {
+    if (shippingMethod === "ups" && selectedUpsBox) {
+      const box = UPS_BOX_SIZES.find(b => b.id === selectedUpsBox);
+      return box ? box.price : null;
+    }
     if (!shippingCostResult) return null;
     let cost = typeof shippingCostResult === "number"
       ? shippingCostResult
@@ -304,6 +361,9 @@ const ShippingQuoteDialog: React.FC<ShippingQuoteDialogProps> = ({
         postal_code: postalCode,
         city,
         state,
+        ...(shippingMethod === "ups" && selectedUpsBox
+          ? { ups_box_id: selectedUpsBox }
+          : {}),
         ...((shippingMethod === "dhl" ||
           shippingMethod === "paraguay" ||
           shippingMethod === "paraguay-maritime" ||
@@ -529,7 +589,8 @@ const ShippingQuoteDialog: React.FC<ShippingQuoteDialogProps> = ({
                     | "paraguay"
                     | "paraguay-maritime"
                     | "peru-maritime"
-                    | "dhl",
+                    | "dhl"
+                    | "ups",
                 )
               }
               className="space-y-2 mt-2"
@@ -554,6 +615,19 @@ const ShippingQuoteDialog: React.FC<ShippingQuoteDialogProps> = ({
               ))}
             </RadioGroup>
           </div>
+
+          {shippingMethod === "ups" && (
+            <div className="p-4 bg-capybara-cream/30 rounded-2xl border-2 border-capybara-yellow/40">
+              <UpsBoxSelector
+                weightGrams={numericWeight}
+                selectedBox={selectedUpsBox}
+                onSelectBox={(boxId) => {
+                  setSelectedUpsBox(boxId);
+                }}
+                totalDimensionsSum={totalDimensionsSum}
+              />
+            </div>
+          )}
 
           {/* Dimensions (only for calculator mode, not from storage) */}
           {selectedItems.length === 0 &&

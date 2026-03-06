@@ -1,5 +1,21 @@
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
+import { generateMeta } from '@/lib/seo';
+import type { Route } from ".react-router/types/app/routes/+types/TermsOfService";
+
+export async function loader({ params }: Route.LoaderArgs) {
+  return { lang: params.lang || "es" };
+}
+
+export function meta({ data }: { data: Awaited<ReturnType<typeof loader>> }) {
+  const lang = data?.lang || "es";
+  return generateMeta({
+    title: "Terms of Service",
+    description: "Aiyu Japan terms of service. Rules and conditions for using our Japanese proxy shopping service.",
+    lang,
+    path: "terms-of-service",
+  });
+}
 
 const TermsOfService = () => {
   return (

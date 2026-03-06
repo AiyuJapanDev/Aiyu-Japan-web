@@ -14,9 +14,12 @@ import {
   getZoneForCountry,
   isDHLOnlyCountry,
   hasExpressShipping,
+  hasUpsShipping,
+  UPS_BOX_SIZES,
   useAnimatedNumber,
   PERU_MARITIME_SHIPPING,
 } from "@/lib/shippingUtils";
+import UpsBoxSelector from "@/components/UpsBoxSelector";
 import { useEffect, useState } from "react";
 import ReactGA from "react-ga4";
 
@@ -27,8 +30,9 @@ const ShippingCalculator = () => {
     useSystemSettings();
   const [selectedCountry, setSelectedCountry] = useState("");
   const [shippingMethod, setShippingMethod] = useState<
-    "economic" | "express" | "paraguay" | "paraguay-maritime" | "peru-maritime" | "dhl"
+    "economic" | "express" | "paraguay" | "paraguay-maritime" | "peru-maritime" | "dhl" | "ups"
   >("economic");
+  const [selectedUpsBox, setSelectedUpsBox] = useState<string | null>(null);
   const [length, setLength] = useState("");
   const [width, setWidth] = useState("");
   const [height, setHeight] = useState("");
@@ -45,6 +49,8 @@ const ShippingCalculator = () => {
   const zoneInfo = selectedCountry ? getZoneForCountry(selectedCountry) : null;
   const isDHLOnly = selectedCountry ? isDHLOnlyCountry(selectedCountry) : false;
 
+  const hasUps = selectedCountry ? hasUpsShipping(selectedCountry) : false;
+
   useEffect(() => {
     if (selectedCountry === "Paraguay") {
       setShippingMethod("paraguay");
@@ -52,11 +58,38 @@ const ShippingCalculator = () => {
       setShippingMethod("economic");
     } else if (shippingMethod === "peru-maritime" && selectedCountry !== "Peru") {
       setShippingMethod("economic");
+    } else if (shippingMethod === "ups" && !hasUpsShipping(selectedCountry)) {
+      setShippingMethod(isDHLOnly ? "dhl" : "economic");
     }
   }, [selectedCountry]);
 
+  // Reset UPS box selection when method changes or weight changes
   useEffect(() => {
-    if (isDHLOnly && shippingMethod !== "dhl") {
+    if (shippingMethod !== "ups") {
+      setSelectedUpsBox(null);
+    }
+  }, [shippingMethod]);
+
+  // Auto-deselect UPS box if weight exceeds its capacity, or recalculate price
+  useEffect(() => {
+    if (shippingMethod === "ups" && selectedUpsBox) {
+      const box = UPS_BOX_SIZES.find(b => b.id === selectedUpsBox);
+      if (box && weight[0] > box.maxWeightG) {
+        setSelectedUpsBox(null);
+        setShippingResults(null);
+      } else if (box) {
+        setShippingResults({
+          shippingCost: box.price,
+          usd: convertCurrency(box.price, "usd"),
+          mxn: convertCurrency(box.price, "mxn"),
+          clp: convertCurrency(box.price, "clp"),
+        });
+      }
+    }
+  }, [weight, selectedUpsBox, shippingMethod, convertCurrency]);
+
+  useEffect(() => {
+    if (isDHLOnly && shippingMethod !== "dhl" && shippingMethod !== "ups") {
       setShippingMethod("dhl");
     }
   }, [isDHLOnly, shippingMethod]);
@@ -67,9 +100,21 @@ const ShippingCalculator = () => {
     }
   }, [selectedCountry, shippingMethod]);
 
+  useEffect(() => {
+    const currentWeight = weight[0];
+    if (shippingMethod === "economic" && currentWeight > 2000) {
+      setShippingMethod(hasExpressShipping(selectedCountry) ? "express" : "dhl");
+    }
+    if (shippingMethod === "ups" && currentWeight > 25000) {
+      setShippingMethod("dhl");
+    }
+  }, [weight, shippingMethod, selectedCountry]);
+
   const isParaguay = selectedCountry === "Paraguay";
   const isPeru = selectedCountry === "Peru";
   const hasExpress = selectedCountry ? hasExpressShipping(selectedCountry) : false;
+  
+  const currentWeight = weight[0];
 
   const availableMethods =
     selectedCountry === "Paraguay"
@@ -79,20 +124,26 @@ const ShippingCalculator = () => {
         ]
       : selectedCountry === "Peru"
         ? [
-            { value: "economic", label: t("economicShipping") },
+            ...(currentWeight <= 2000 ? [{ value: "economic", label: t("economicShipping") }] : []),
             ...(hasExpress ? [{ value: "express", label: t("expressShippingMethod") }] : []),
             { value: "dhl", label: t("dhlShipping") },
-            { value: "peru-maritime", label: t("peruMaritimeShippingLabel") }
+            { value: "peru-maritime", label: t("peruMaritimeShippingLabel") },
+            ...(hasUps && currentWeight <= 25000 ? [{ value: "ups", label: t("upsShippingLabel") }] : [])
           ]
         : isDHLOnly
-          ? [{ value: "dhl", label: t("dhlShipping") }]
+          ? [
+              { value: "dhl", label: t("dhlShipping") },
+              ...(hasUps && currentWeight <= 25000 ? [{ value: "ups", label: t("upsShippingLabel") }] : []),
+            ]
           : [
-              { value: "economic", label: t("economicShipping") },
+              ...(currentWeight <= 2000 ? [{ value: "economic", label: t("economicShipping") }] : []),
               ...(hasExpress ? [{ value: "express", label: t("expressShippingMethod") }] : []),
               { value: "dhl", label: t("dhlShipping") },
+              ...(hasUps && currentWeight <= 25000 ? [{ value: "ups", label: t("upsShippingLabel") }] : []),
             ];
 
 useEffect(() => {
+    if (shippingMethod === "ups") return; // UPS cost handled by box selector
     if (selectedCountry && !ratesLoading && !settingsLoading) {
       const dimensions =
         (shippingMethod === "dhl" || shippingMethod === "paraguay" || shippingMethod === "paraguay-maritime") &&
@@ -238,7 +289,7 @@ useEffect(() => {
             value={shippingMethod}
             onValueChange={(v) =>
               setShippingMethod(
-                v as "economic" | "express" | "paraguay" | "paraguay-maritime" | "peru-maritime" | "dhl"
+                v as "economic" | "express" | "paraguay" | "paraguay-maritime" | "peru-maritime" | "dhl" | "ups"
               )
             }
             className="space-y-2 mt-2"
@@ -268,11 +319,11 @@ useEffect(() => {
           </RadioGroup>
         </div>
 
-        {(shippingMethod === "dhl" || shippingMethod === "paraguay" || shippingMethod === "paraguay-maritime" || shippingMethod === "peru-maritime") && (
+        {(shippingMethod === "dhl" || shippingMethod === "paraguay" || shippingMethod === "paraguay-maritime" || shippingMethod === "peru-maritime" || shippingMethod === "ups") && (
           <div className="space-y-4 p-4 bg-capybara-cream/30 rounded-2xl border-2 border-capybara-yellow/40">
             <div className="space-y-3">
               <Label className="font-body text-sm font-semibold text-gray-700">
-                {t("dimensionsLabel")}
+                {t("dimensionsLabel")} {shippingMethod === "ups" && `(${t("optional")} - ${t("forBoxValidation")})`}
               </Label>
               <div className="grid grid-cols-3 gap-3">
                 <div>
@@ -319,6 +370,36 @@ useEffect(() => {
                 </div>
               </div>
             </div>
+          </div>
+        )}
+
+        {shippingMethod === "ups" && (
+          <div className="p-4 bg-capybara-cream/30 rounded-2xl border-2 border-capybara-yellow/40">
+            <UpsBoxSelector
+              weightGrams={weight[0]}
+              selectedBox={selectedUpsBox}
+              onSelectBox={(boxId) => {
+                setSelectedUpsBox(boxId);
+                if (boxId) {
+                  const box = UPS_BOX_SIZES.find(b => b.id === boxId);
+                  if (box) {
+                    setShippingResults({
+                      shippingCost: box.price,
+                      usd: convertCurrency(box.price, "usd"),
+                      mxn: convertCurrency(box.price, "mxn"),
+                      clp: convertCurrency(box.price, "clp"),
+                    });
+                  }
+                } else {
+                  setShippingResults(null);
+                }
+              }}
+              totalDimensionsSum={
+                length && width && height
+                  ? Number(length) + Number(width) + Number(height)
+                  : undefined
+              }
+            />
           </div>
         )}
 

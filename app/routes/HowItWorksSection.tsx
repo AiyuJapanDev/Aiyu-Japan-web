@@ -4,9 +4,20 @@ import { Route } from ".react-router/types/app/routes/+types/HowItWorksSection";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router";
 import DetailedHowItWorks from "@/components/sections/DetailedHowItWorks";
+import { generateMeta } from "@/lib/seo";
 
 export async function loader({ params }: Route.LoaderArgs) {
-  return null;
+  return { lang: params.lang || "es" };
+}
+
+export function meta({ data }: { data: Awaited<ReturnType<typeof loader>> }) {
+  const lang = data?.lang || "es";
+  const titles: Record<string, { title: string; description: string }> = {
+    es: { title: "Cómo Funciona", description: "Aprende paso a paso cómo funciona nuestro servicio de compras en Japón: solicita, compramos y enviamos." },
+    en: { title: "How It Works", description: "Learn step by step how our Japanese proxy shopping service works: request, we buy, and we ship." },
+  };
+  const { title, description } = titles[lang] || titles.es;
+  return generateMeta({ title, description, lang, path: "store-guide/how-it-works" });
 }
 
 export const HowItWorksSection = () => {

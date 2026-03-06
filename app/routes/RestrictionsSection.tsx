@@ -8,6 +8,22 @@ import { Button } from "@/components/ui/button";
 import { useApp } from "@/contexts/AppContext";
 import { AlertTriangle, Ban, HelpCircle, Info, Ship } from "lucide-react";
 import { Link } from "react-router";
+import { generateMeta } from "@/lib/seo";
+import type { Route } from ".react-router/types/app/routes/+types/RestrictionsSection";
+
+export async function loader({ params }: Route.LoaderArgs) {
+  return { lang: params.lang || "es" };
+}
+
+export function meta({ data }: { data: Awaited<ReturnType<typeof loader>> }) {
+  const lang = data?.lang || "es";
+  const titles: Record<string, { title: string; description: string }> = {
+    es: { title: "Restricciones de Envío", description: "Conoce los artículos prohibidos y restricciones para envíos internacionales desde Japón." },
+    en: { title: "Shipping Restrictions", description: "Learn about prohibited items and restrictions for international shipments from Japan." },
+  };
+  const { title, description } = titles[lang] || titles.es;
+  return generateMeta({ title, description, lang, path: "store-guide/restrictions" });
+}
 
 export const RestrictionsSection = () => {
   const { t } = useApp();

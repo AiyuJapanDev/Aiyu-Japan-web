@@ -7,9 +7,20 @@ import {
   ShieldCheck,
   ShoppingBag,
 } from "lucide-react";
+import { generateMeta } from "@/lib/seo";
 
 export async function loader({ params }: Route.LoaderArgs) {
-  return {};
+  return { lang: params.lang || "es" };
+}
+
+export function meta({ data }: { data: Awaited<ReturnType<typeof loader>> }) {
+  const lang = data?.lang || "es";
+  const titles: Record<string, { title: string; description: string }> = {
+    es: { title: "¿Qué es un Proxy Service?", description: "Descubre qué es un servicio de proxy shopping y cómo Aiyu Japan te ayuda a comprar productos de Japón." },
+    en: { title: "What Is a Proxy Service?", description: "Discover what a proxy shopping service is and how Aiyu Japan helps you buy products from Japan." },
+  };
+  const { title, description } = titles[lang] || titles.es;
+  return generateMeta({ title, description, lang, path: "store-guide/what-is" });
 }
 
 export default function WhatIsSection({ loaderData }: Route.ComponentProps) {

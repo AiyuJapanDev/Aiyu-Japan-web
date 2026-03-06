@@ -4,6 +4,28 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useApp } from "@/contexts/AppContext";
 import { Instagram, Mail, MessageCircle } from "lucide-react";
+import { generateMeta } from "@/lib/seo";
+import type { Route } from ".react-router/types/app/routes/+types/Contact";
+
+export async function loader({ params }: Route.LoaderArgs) {
+  return { lang: params.lang || "es" };
+}
+
+export function meta({ data }: { data: Awaited<ReturnType<typeof loader>> }) {
+  const lang = data?.lang || "es";
+  const titles: Record<string, { title: string; description: string }> = {
+    es: {
+      title: "Contacto",
+      description: "Contacta con nosotros para cualquier consulta sobre nuestro servicio de compras en Japón.",
+    },
+    en: {
+      title: "Contact Us",
+      description: "Get in touch with us for any questions about our Japanese proxy shopping service.",
+    },
+  };
+  const { title, description } = titles[lang] || titles.es;
+  return generateMeta({ title, description, lang, path: "contact" });
+}
 
 const Contact = () => {
   const { t } = useApp();

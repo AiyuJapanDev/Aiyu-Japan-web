@@ -1,5 +1,21 @@
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
+import { generateMeta } from '@/lib/seo';
+import type { Route } from ".react-router/types/app/routes/+types/PrivacyPolicy";
+
+export async function loader({ params }: Route.LoaderArgs) {
+  return { lang: params.lang || "es" };
+}
+
+export function meta({ data }: { data: Awaited<ReturnType<typeof loader>> }) {
+  const lang = data?.lang || "es";
+  return generateMeta({
+    title: "Privacy Policy",
+    description: "Aiyu Japan privacy policy. How we collect, use, and protect your personal information.",
+    lang,
+    path: "privacy-policy",
+  });
+}
 
 const PrivacyPolicy = () => {
   return (

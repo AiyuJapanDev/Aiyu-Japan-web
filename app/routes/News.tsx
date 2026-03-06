@@ -8,6 +8,7 @@ import { Link } from "react-router";
 
 import { useApp } from "@/contexts/AppContext";
 import contentData from "@/lib/data.server";
+import { generateMeta } from "@/lib/seo";
 
 export async function loader({ params }: Route.LoaderArgs) {
   const page = params.page ? parseInt(params.page, 10) : 1;
@@ -22,6 +23,22 @@ export async function loader({ params }: Route.LoaderArgs) {
     total,
     locale: params.lang,
   };
+}
+
+export function meta({ data }: { data: Awaited<ReturnType<typeof loader>> }) {
+  const lang = data?.locale || "es";
+  const titles: Record<string, { title: string; description: string }> = {
+    es: {
+      title: "Noticias",
+      description: "Últimas noticias y actualizaciones sobre Aiyu Japan y el servicio de compras en Japón.",
+    },
+    en: {
+      title: "News",
+      description: "Latest news and updates about Aiyu Japan and our Japanese proxy shopping service.",
+    },
+  };
+  const { title, description } = titles[lang] || titles.es;
+  return generateMeta({ title, description, lang, path: "news" });
 }
 
 export default function News({ loaderData }: Route.ComponentProps) {

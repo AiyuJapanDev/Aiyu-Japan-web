@@ -14,6 +14,7 @@ import { Link } from "react-router";
 import { useApp } from "@/contexts/AppContext";
 import contentData from "@/lib/data.server";
 import { getImage } from "@/lib/utils";
+import { generateMeta } from "@/lib/seo";
 import Autoplay from "embla-carousel-autoplay";
 
 export async function loader({ params }: Route.LoaderArgs) {
@@ -30,6 +31,22 @@ export async function loader({ params }: Route.LoaderArgs) {
     total,
     locale: params.lang,
   };
+}
+
+export function meta({ data }: { data: Awaited<ReturnType<typeof loader>> }) {
+  const lang = data?.locale || "es";
+  const titles: Record<string, { title: string; description: string }> = {
+    es: {
+      title: "Blog",
+      description: "Lee nuestros artículos sobre compras en Japón, guías de productos, y novedades del mercado japonés.",
+    },
+    en: {
+      title: "Blog",
+      description: "Read our articles about shopping in Japan, product guides, and Japanese market updates.",
+    },
+  };
+  const { title, description } = titles[lang] || titles.es;
+  return generateMeta({ title, description, lang, path: "blog" });
 }
 
 export default function Blog({ loaderData }: Route.ComponentProps) {

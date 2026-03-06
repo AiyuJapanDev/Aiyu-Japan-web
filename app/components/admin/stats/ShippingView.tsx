@@ -46,6 +46,21 @@ export function ShippingView({
   const methodChartConfig: ChartConfig = {
     count: { label: t("statsItemsCount"), color: "#6366f1" },
   };
+  
+  const getMethodLabel = (method: string) => {
+    const lang = t('language') === 'Español' ? 'es' : 'en';
+    const shortNames: Record<string, { es: string; en: string }> = {
+      'economic': { es: 'Económico', en: 'Economic' },
+      'express': { es: 'Express', en: 'Express' },
+      'dhl': { es: 'DHL Express', en: 'DHL Express' },
+      'paraguay': { es: 'Paraguay Aéreo', en: 'Paraguay Air' },
+      'paraguay-maritime': { es: 'Paraguay Marítimo', en: 'Paraguay Maritime' },
+      'peru-maritime': { es: 'Perú Marítimo', en: 'Peru Maritime' },
+      'ups': { es: 'UPS', en: 'UPS' },
+    };
+    return shortNames[method]?.[lang] || method;
+  };
+  
   const topDestinations = showAllDestinations ? allDestinations : allDestinations.slice(0, 5);
 
   return (
@@ -133,8 +148,31 @@ export function ShippingView({
             <BarChart data={shippingMethodData} layout="vertical">
               <CartesianGrid strokeDasharray="3 3" horizontal={false} />
               <XAxis type="number" tickLine={false} axisLine={false} fontSize={12} />
-              <YAxis type="category" dataKey="method" tickLine={false} axisLine={false} fontSize={11} width={110} />
-              <ChartTooltip content={<ChartTooltipContent />} />
+              <YAxis 
+                type="category" 
+                dataKey="method" 
+                tickLine={false} 
+                axisLine={false} 
+                fontSize={11} 
+                width={120}
+                tickFormatter={getMethodLabel}
+              />
+              <ChartTooltip 
+                wrapperStyle={{ outline: 'none', zIndex: 1000 }}
+                cursor={{ fill: 'rgba(99, 102, 241, 0.1)' }}
+                content={({ active, payload }) => {
+                  if (active && payload && payload.length) {
+                    const data = payload[0].payload;
+                    return (
+                      <div className="bg-white px-3 py-2 border border-slate-200 rounded-lg shadow-lg">
+                        <p className="text-xs font-semibold text-slate-800 mb-0.5">{getMethodLabel(data.method)}</p>
+                        <p className="text-sm font-bold text-slate-900 tabular-nums">{data.count} {t("statsItemsCount").toLowerCase()}</p>
+                      </div>
+                    );
+                  }
+                  return null;
+                }}
+              />
               <Bar dataKey="count" fill="var(--color-count)" radius={[0, 6, 6, 0]} />
             </BarChart>
           </ChartContainer>

@@ -6,6 +6,7 @@ import { ArrowLeft, Calendar } from "lucide-react";
 import { useNavigate } from "react-router";
 import { useEffect } from "react";
 import ReactGA from "react-ga4";
+import { generateMeta } from "@/lib/seo";
 
 import type { Route } from ".react-router/types/app/routes/+types/ArticlePage";
 import BlockRenderer from "@/components/blocks/Blockrenderer";
@@ -26,38 +27,20 @@ export async function loader({ params }: Route.LoaderArgs) {
   return { article, lang };
 }
 
-export function meta({ loaderData }: Route.ComponentProps) {
-  const {
-    title,
-    content,
-    cover,
-    publishedAt,
-    locale,
-    author,
-    category,
-    description,
-  } = loaderData as Article;
+export function meta({ data }: Route.MetaArgs) {
+  if (!data) return [{ title: "Aiyu Japan" }];
+  const { article, lang } = data;
+  const { title, description, cover, slug } = article;
+  const { src } = getImage(cover);
 
-  const { src, srcset } = getImage(cover);
-  return [
-    { title: "Aiyu Japan" },
-    {
-      property: "og:title",
-      content: title,
-    },
-    {
-      property: "og:image",
-      content: src,
-    },
-    {
-      name: "description",
-      content: description,
-    },
-    {
-      name: "og:type",
-      content: "article",
-    },
-  ];
+  return generateMeta({
+    title,
+    description: description || title,
+    lang,
+    path: `blog/${slug}`,
+    image: src,
+    type: "article",
+  });
 }
 
 export default function ArticlePage({ loaderData }: Route.ComponentProps) {

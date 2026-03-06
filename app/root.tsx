@@ -25,7 +25,7 @@ import NotFound from "./routes/NotFound";
 import { Route } from ".react-router/types/app/+types/root";
 import { Language } from "./lib/i18n";
 import ReactGA from "react-ga4";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 const queryClient = new QueryClient();
 
@@ -45,6 +45,42 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <Meta />
         <Links />
+        {/* JSON-LD Structured Data */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "Organization",
+              name: "Aiyu Japan",
+              url: "https://www.aiyujapan.com",
+              logo: "https://www.aiyujapan.com/Logo.png",
+              description:
+                "Japanese proxy shopping service. We buy products from Japan and ship them to your country.",
+              sameAs: [
+                "https://www.instagram.com/aiyu.japan/",
+                "https://www.facebook.com/profile.php?id=61566577742246",
+              ],
+              contactPoint: {
+                "@type": "ContactPoint",
+                email: "info@aiyujapan.com",
+                contactType: "customer service",
+                availableLanguage: ["Spanish", "English", "Japanese"],
+              },
+            }),
+          }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "WebSite",
+              name: "Aiyu Japan",
+              url: "https://www.aiyujapan.com",
+            }),
+          }}
+        />
       </head>
       <body>
         {/* <div className='fixed z-99 w-[200px] h-[2px] bg-green-500 bottom-[100px] left-[25%]'></div> */}
@@ -73,17 +109,29 @@ export function Layout({ children }: { children: React.ReactNode }) {
   );
 }
 
-// Inicializar Google Analytics 4
-if (typeof window !== 'undefined') {
-  ReactGA.initialize('G-4J7LVRVXDT');
-}
+const GA4_MEASUREMENT_ID = import.meta.env.VITE_GA4_MEASUREMENT_ID;
 
 export default function App() {
   const location = useLocation();
+  const gaInitialized = useRef(false);
+
+  // Inicializar GA4 una sola vez dentro del ciclo de vida de React
+  useEffect(() => {
+    if (!gaInitialized.current && typeof window !== 'undefined') {
+      ReactGA.initialize(GA4_MEASUREMENT_ID, {
+        gaOptions: {
+          send_page_view: false, // Evitar pageview duplicado — lo enviamos manualmente abajo
+        },
+      });
+      gaInitialized.current = true;
+    }
+  }, []);
 
   // Rastrear pageviews cuando cambia la ruta
   useEffect(() => {
-    ReactGA.send({ hitType: "pageview", page: location.pathname + location.search });
+    if (gaInitialized.current) {
+      ReactGA.send({ hitType: "pageview", page: location.pathname + location.search });
+    }
   }, [location]);
 
   return <Outlet />;

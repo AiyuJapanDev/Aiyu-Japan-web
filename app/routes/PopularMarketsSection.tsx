@@ -14,6 +14,7 @@ import { StoreCategory, StoreMarket } from "@/types/strapi-stores";
 import { ExternalLink } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router";
+import { generateMeta } from "@/lib/seo";
 
 const MARKETS_PER_PAGE = 12;
 
@@ -25,7 +26,18 @@ export async function loader({ params }: Route.LoaderArgs) {
     storeCategories,
     markets,
     currentPage: page,
+    lang: params.lang,
   };
+}
+
+export function meta({ data }: { data: Awaited<ReturnType<typeof loader>> }) {
+  const lang = data?.lang || "es";
+  const titles: Record<string, { title: string; description: string }> = {
+    es: { title: "Tiendas Populares de Japón", description: "Explora las tiendas más populares de Japón: Amazon JP, Mercari, Rakuten, Uniqlo y más." },
+    en: { title: "Popular Japanese Markets", description: "Explore the most popular Japanese stores: Amazon JP, Mercari, Rakuten, Uniqlo and more." },
+  };
+  const { title, description } = titles[lang] || titles.es;
+  return generateMeta({ title, description, lang, path: "store-guide/popular-markets" });
 }
 
 export const PopularMarketsSection = ({ loaderData }: Route.ComponentProps) => {

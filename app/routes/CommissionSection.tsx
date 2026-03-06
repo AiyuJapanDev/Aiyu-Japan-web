@@ -1,5 +1,21 @@
 import { useApp } from "@/contexts/AppContext";
 import { CheckCircle, HelpCircle } from "lucide-react";
+import { generateMeta } from "@/lib/seo";
+import type { Route } from ".react-router/types/app/routes/+types/CommissionSection";
+
+export async function loader({ params }: Route.LoaderArgs) {
+  return { lang: params.lang || "es" };
+}
+
+export function meta({ data }: { data: Awaited<ReturnType<typeof loader>> }) {
+  const lang = data?.lang || "es";
+  const titles: Record<string, { title: string; description: string }> = {
+    es: { title: "Comisión", description: "Información sobre las comisiones de nuestro servicio de proxy shopping en Japón." },
+    en: { title: "Commission", description: "Information about our Japanese proxy shopping service commissions." },
+  };
+  const { title, description } = titles[lang] || titles.es;
+  return generateMeta({ title, description, lang, path: "store-guide/commission" });
+}
 
 export const CommissionSection = () => {
   const { t } = useApp();

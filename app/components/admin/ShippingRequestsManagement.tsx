@@ -1547,6 +1547,23 @@ export const ShippingRequestsManagement = React.memo(
                                       : "No Tax/VAT ID included"}
                                   </p>
 
+                                  {request.shipping_address.ups_box_id && (
+                                    <p className="mt-2 font-bold text-blue-600">
+                                      UPS Box: {request.shipping_address.ups_box_id.toUpperCase()}
+                                    </p>
+                                  )}
+
+                                  {request.shipping_address.dimensions && (
+                                    <div className="mt-2 p-2 bg-blue-50/50 rounded border border-blue-100 italic">
+                                      <p className="text-xs font-semibold text-blue-800">Dimensions (cm):</p>
+                                      <p className="text-xs">
+                                        L: {request.shipping_address.dimensions.length} | 
+                                        W: {request.shipping_address.dimensions.width} | 
+                                        H: {request.shipping_address.dimensions.height}
+                                      </p>
+                                    </div>
+                                  )}
+
                                   {request.shipping_address.address_notes && (
                                     <p className="mt-2 text-muted-foreground">
                                       Notes:{" "}

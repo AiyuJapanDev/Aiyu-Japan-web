@@ -27,6 +27,14 @@ export default function HelpButton() {
 
     return () => clearTimeout(showTimeout);
   }, []);
+  
+  const shouldHide = location.pathname.includes('/admin-dashboard') || 
+    location.pathname.includes('/help-center') ||
+    (location.pathname.includes('/user-dashboard') && location.search.includes('tab=help'));
+  
+  if (shouldHide) {
+    return null;
+  }
 
   const handleClick = () => {
     ReactGA.event({

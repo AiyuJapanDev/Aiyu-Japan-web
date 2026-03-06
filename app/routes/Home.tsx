@@ -3,6 +3,7 @@ import BlockRenderer from "@/components/blocks/Blockrenderer";
 import HeroSection from "@/components/sections/HeroSection";
 import { useApp } from "@/contexts/AppContext";
 import contentData from "@/lib/data.server";
+import { generateMeta } from "@/lib/seo";
 import { useEffect } from "react";
 
 export async function loader({ params }: Route.LoaderArgs) {
@@ -26,44 +27,30 @@ export async function loader({ params }: Route.LoaderArgs) {
   };
 }
 
-export function meta() {
-  return [
-    { title: "Aiyu Japan" },
-    {
-      property: "og:title",
-      content: "Aiyu Japan | From Japan to Your Home Anyday",
+export function meta({ data }: { data: Awaited<ReturnType<typeof loader>> }) {
+  const lang = data?.lang || "es";
+
+  const titles: Record<string, { title: string; description: string }> = {
+    es: {
+      title: "Aiyu Japan | De Japón a Tu Casa",
+      description:
+        "¡Servicio personalizado de compras en Japón! Compramos por ti y te lo enviamos a tu país.",
     },
-    {
-      name: "description",
-      content:
-        "We are passionate about connecting different cultures and building great services. Login to use our service and find out more!.",
+    en: {
+      title: "Aiyu Japan | From Japan to Your Home",
+      description:
+        "Personalized Japanese proxy shopping service! We buy for you and ship to your country.",
     },
-    {
-      property: "og:description",
-      content:
-        "We are passionate about connecting different cultures and building great services. Login to use our service and find out more!.",
-    },
-    {
-      property: "og:image",
-      content: "https://aiyujapan.com/aiyupreview.png",
-    },
-    {
-      property: "og:url",
-      content: "https://aiyujapan.com",
-    },
-    {
-      property: "og:type",
-      content: "website",
-    },
-    {
-      name: "twitter:card",
-      content: "summary_large_image",
-    },
-    {
-      name: "twitter:image",
-      content: "https://aiyujapan.com/aiyupreview.png",
-    },
-  ];
+  };
+
+  const { title, description } = titles[lang] || titles.es;
+
+  return generateMeta({
+    title,
+    description,
+    lang,
+    path: "",
+  });
 }
 
 const Home = ({ loaderData }: Route.ComponentProps) => {
