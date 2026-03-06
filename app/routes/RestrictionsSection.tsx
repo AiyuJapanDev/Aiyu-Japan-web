@@ -218,7 +218,7 @@ export const RestrictionsSection = () => {
                     </Link>
                     <Link
                       className="flex gap-4 items-center font-bold"
-                      to={"https://wa.me/819072380362"}
+                      to={"https://wa.me/819072380062"}
                     >
                       <img
                         src="/whatsapp.svg"
