@@ -208,7 +208,7 @@ export function UserHelpCenter() {
                   <Mail className="h-5 w-5 text-capybara-orange" />
                   <div className="text-left">
                     <div className="text-sm font-medium">Email</div>
-                    <div className="text-xs text-gray-500">support@aiyujapan.com</div>
+                    <div className="text-xs text-gray-500">info@aiyujapan.com</div>
                   </div>
                 </a>
                 <a 
@@ -225,7 +225,7 @@ export function UserHelpCenter() {
                   </div>
                 </a>
                 <a 
-                  href="https://wa.me/819072380362"
+                  href="https://wa.me/819072380062"
                   target="_blank"
                   rel="noopener noreferrer"
                   onClick={() => ReactGA.event({ category: 'Help Center', action: 'Click Contact', label: 'WhatsApp' })}
@@ -234,7 +234,7 @@ export function UserHelpCenter() {
                   <MessageSquare className="h-5 w-5 text-green-600" />
                   <div className="text-left">
                     <div className="text-sm font-medium">WhatsApp</div>
-                    <div className="text-xs text-gray-500">+81 90 7238 0362</div>
+                    <div className="text-xs text-gray-500">+81 90 7238 0062</div>
                   </div>
                 </a>
               </div>
